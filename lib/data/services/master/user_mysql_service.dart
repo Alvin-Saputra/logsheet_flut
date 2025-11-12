@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:bcrypt/bcrypt.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:mysql_client/mysql_client.dart';
@@ -59,19 +60,30 @@ class UserMySQLService {
 
       connection = connResult.connection;
       final result = await connection!.execute(
-        "SELECT userid, username, roles, isactive FROM m_user WHERE username = :username AND password = :password AND isactive = 'T'",
-        {"username": username, "password": password},
+        "SELECT userid, username, password, roles, isactive FROM m_user WHERE username = :username AND isactive = 'T'",
+        {"username": username},
       );
 
       if (result.rows.isNotEmpty) {
         final row = result.rows.first.assoc();
         log('User logged in: ${row['username']}');
-        return (user: result.rows.first.assoc(), errorMessage: null);
+        final bool checkPassword = BCrypt.checkpw(password, row['password']!);
+        if (checkPassword) {
+          return (user: result.rows.first.assoc(), errorMessage: null);
+        } else {
+          log(
+            'Login failed: Invalid credentials or inactive user. users: ${result.rows.length}',
+          );
+          return (
+            user: null,
+            errorMessage:
+                'Username atau password salah, atau akun tidak aktif.',
+          );
+        }
       } else {
         log(
           'Login failed: Invalid credentials or inactive user. users: ${result.rows.length}',
         );
-        // connResult.connection?.close();
         return (
           user: null,
           errorMessage: 'Username atau password salah, atau akun tidak aktif.',

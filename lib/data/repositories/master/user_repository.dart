@@ -1,3 +1,7 @@
+import 'dart:developer';
+
+import 'package:bcrypt/bcrypt.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logsheet_app/data/remote/master/role_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/services/master/user_mysql_service.dart';
@@ -10,10 +14,17 @@ class UserRepository {
   // -- CRUD OPERATIONS, FETCH DATA FROM THE MYSQL DATABASE
   // REGISTER
   Future<bool> registerUser(UserEntity user) async {
+    // Password Hash
+    final String hashedPassword = BCrypt.hashpw(
+      user.password,
+      BCrypt.gensalt(logRounds: int.parse(dotenv.env['HASH_SALT_ROUNDS']!)),
+    );
+
+    log(hashedPassword);
     return await _mySQLService.registerUser(
       user.userid,
       user.username,
-      user.password,
+      hashedPassword,
       user.isActive,
       user.role,
     );
@@ -24,6 +35,13 @@ class UserRepository {
     String username,
     String password,
   ) async {
+    // // Password Hash
+    final String hashedPassword = BCrypt.hashpw(
+      password,
+      BCrypt.gensalt(logRounds: int.parse(dotenv.env['HASH_SALT_ROUNDS']!)),
+    );
+
+    log(hashedPassword);
     final loginResult = await _mySQLService.loginUser(username, password);
     if (loginResult.errorMessage != null) {
       return (user: null, errorMessage: loginResult.errorMessage);
