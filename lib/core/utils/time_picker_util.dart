@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_picker.dart';
+import 'package:logsheet_app/core/widgets/custom_hour_minute_picker.dart';
 
 void showHourPickerAndUpdateState({
   required BuildContext context,

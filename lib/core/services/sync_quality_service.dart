@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logsheet_app/core/database/database_instance.dart';
-import 'package:logsheet_app/data/dao/quality_report_refinery_dao.dart';
+import 'package:logsheet_app/core/database/dao/quality_report_refinery_dao.dart';
 import 'sync_result.dart';
 
 class SyncQualityService {

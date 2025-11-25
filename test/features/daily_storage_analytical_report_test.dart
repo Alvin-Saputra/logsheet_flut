@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:logsheet_app/data/remote/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_from_db_entity.dart';
-import 'package:logsheet_app/data/remote/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_to_db_entity.dart';
-import 'package:logsheet_app/data/repositories/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_repository.dart';
-import 'package:logsheet_app/providers/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
+import 'package:logsheet_app/features/quality_control/data/model/daily_storage_tank_analytical/daily_storage_tank_analytical_from_db_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/daily_storage_tank_analytical/daily_storage_tank_analytical_to_db_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/repositories/daily_storage_tank_analytical/daily_storage_tank_analytical_repository.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
 
 // Import the generated mocks file
 import 'daily_storage_analytical_report_test.mocks.dart';
