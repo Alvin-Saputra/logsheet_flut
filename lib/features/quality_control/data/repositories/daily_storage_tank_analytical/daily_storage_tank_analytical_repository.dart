@@ -1,8 +1,8 @@
 import 'dart:developer';
 
-import 'package:logsheet_app/features/quality_control/data/model/daily_storage_tank_analytical/daily_storage_tank_analytical_from_db_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/daily_storage_tank_analytical/daily_storage_tank_analytical_to_db_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/datasources/daily_storage_tank_analytical/daily_storage_tank_analytical_mysql_service.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/daily_storage_tank_analytical/daily_storage_tank_analytical_from_db_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/daily_storage_tank_analytical/daily_storage_tank_analytical_to_db_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/local/daily_storage_tank_analytical/daily_storage_tank_analytical_mysql_service.dart';
 
 class DailyStorageTankAnalyticalRepository {
   final DailyStorageTankAnalyticalMySQLService _mySQLService;

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/daily_storage_tank_analytical/daily_storage_tank_analytical_to_db_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/daily_storage_tank_analytical/daily_storage_tank_analytical_to_db_entity.dart';
 import 'package:logsheet_app/core/widgets/custom_checkbox_field.dart';
 import 'package:logsheet_app/core/widgets/custom_date_field.dart';
 import 'package:logsheet_app/core/widgets/custom_remark_field.dart';

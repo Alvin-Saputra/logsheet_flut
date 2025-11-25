@@ -13,7 +13,7 @@ import 'package:logsheet_app/features/master_data/presentation/provider/master/u
 import 'package:provider/provider.dart';
 import 'package:logsheet_app/core/database/app_database.dart';
 import 'package:logsheet_app/core/database/dao/quality_report_refinery_dao.dart';
-import 'package:logsheet_app/features/quality_control/data/model/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/quality_refinery/quality_report_production_entity.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
 
 class QualityEditProductionPage extends StatefulWidget {

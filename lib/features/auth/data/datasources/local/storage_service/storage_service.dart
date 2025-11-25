@@ -13,6 +13,7 @@ class StorageService {
     password: 'password',
     businessUnit: 'business_unit',
     plant: 'plant',
+    sessionToken: 'session_token',
   );
 
   // Save username
@@ -35,6 +36,10 @@ class StorageService {
     await _secureStorage.write(key: keys.plant, value: value);
   }
 
+  Future<void> saveSessionToken(String value) async {
+    await _secureStorage.write(key: keys.sessionToken, value: value);
+  }
+
   // Read username
   Future<void> readUsername() async {
     await _secureStorage.read(key: keys.username);
@@ -53,6 +58,10 @@ class StorageService {
   // Read Plant
   Future<void> readPlant() async {
     await _secureStorage.read(key: keys.plant);
+  }
+
+  Future<void> readSessionToken() async{
+    await _secureStorage.read(key: keys.sessionToken);
   }
 
   // Delete username
@@ -83,6 +92,7 @@ class StorageService {
         keys.password: data[keys.password],
         keys.businessUnit: data[keys.businessUnit],
         keys.plant: data[keys.plant],
+        keys.sessionToken: data[keys.sessionToken]
       };
     } on PlatformException catch (e) {
       log("Error PlatformException: $e");

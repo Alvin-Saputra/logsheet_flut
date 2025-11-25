@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/user_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/quality_refinery/quality_report_production_entity.dart';
 import 'package:mysql_client/mysql_client.dart';
 
 class QualityReportProductionMySQLService {

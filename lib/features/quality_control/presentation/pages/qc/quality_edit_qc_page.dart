@@ -8,7 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/core/utils/check_if_null_string.dart';
-import 'package:logsheet_app/features/quality_control/data/model/quality_refinery/quality_report_qc_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/product_provider.dart';
@@ -18,7 +18,7 @@ import 'package:logsheet_app/features/master_data/presentation/provider/master/u
 import 'package:provider/provider.dart';
 import 'package:logsheet_app/core/database/app_database.dart';
 import 'package:logsheet_app/core/database/dao/quality_report_refinery_dao.dart';
-import 'package:logsheet_app/features/quality_control/data/model/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/quality_refinery/quality_report_production_entity.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
 
 class QualityEditQCPage extends StatefulWidget {

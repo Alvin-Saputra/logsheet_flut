@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/user_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/quality_refinery/quality_report_production_entity.dart';
 import 'package:logsheet_app/features/transactions/report_notification_data_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/quality_report/quality_report_production_repository.dart';
 

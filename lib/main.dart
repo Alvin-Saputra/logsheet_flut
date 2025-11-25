@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:logsheet_app/core/network/api_config.dart';
+import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
 import 'package:logsheet_app/features/auth/data/datasources/remote/api_service.dart';
 import 'package:logsheet_app/core/theme/app_theme.dart';
+import 'package:logsheet_app/features/auth/presentation/provider/auth_provider.dart';
 import 'package:logsheet_app/features/daily_production/data/repository/daily_production/daily_production_fractionation_repository.dart';
 import 'package:logsheet_app/features/daily_production/data/repository/daily_production/daily_production_refinery_repository.dart';
 import 'package:logsheet_app/features/production/data/repository/dry_fractionation/dry_fractionation_repository.dart';
@@ -34,11 +36,11 @@ import 'package:logsheet_app/features/master_data/data/datasources/master/busine
 import 'package:logsheet_app/features/master_data/data/datasources/master/data_form_no_mysql_service.dart';
 import 'package:logsheet_app/features/master_data/data/datasources/master/plant_mysql_service.dart';
 import 'package:logsheet_app/features/master_data/data/datasources/master/product_mysql_service.dart';
-import 'package:logsheet_app/features/quality_control/data/datasources/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_mysql_service.dart';
-import 'package:logsheet_app/features/quality_control/data/datasources/daily_quality_composite_fractionation/daily_quality_composite_fractionation_mysql_service.dart';
-import 'package:logsheet_app/features/quality_control/data/datasources/daily_storage_tank_analytical/daily_storage_tank_analytical_mysql_service.dart';
-import 'package:logsheet_app/features/quality_control/data/datasources/quality_report/quality_report_production_mysql_service.dart';
-import 'package:logsheet_app/features/quality_control/data/datasources/quality_report/quality_report_qc_mysql_service.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_mysql_service.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/local/daily_quality_composite_fractionation/daily_quality_composite_fractionation_mysql_service.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/local/daily_storage_tank_analytical/daily_storage_tank_analytical_mysql_service.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/local/quality_report/quality_report_production_mysql_service.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/local/quality_report/quality_report_qc_mysql_service.dart';
 import 'package:logsheet_app/features/master_data/data/datasources/master/user_mysql_service.dart';
 import 'package:logsheet_app/features/master_data/data/datasources/master/value_mysql_service.dart';
 import 'package:logsheet_app/features/auth/presentation/pages/login_page.dart';
@@ -75,6 +77,7 @@ void main() async {
 
   final dioClient = DioClient();
   final apiService = ApiService(dioClient.dio);
+  final storageService = StorageService();
 
   runApp(
     MultiProvider(
@@ -284,6 +287,10 @@ void main() async {
           create:
               (context) =>
                   UserProvider(context.read<UserRepository>(), apiService),
+        ),
+
+        ChangeNotifierProvider(
+          create: (context) => AuthProvider(apiService, storageService),
         ),
         // Provide the Business Unit Provider
         ChangeNotifierProvider(

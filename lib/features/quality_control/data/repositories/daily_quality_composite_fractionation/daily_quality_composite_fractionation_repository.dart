@@ -1,7 +1,7 @@
 import 'dart:developer';
 
-import 'package:logsheet_app/features/quality_control/data/model/daily_quality_composite_fractionation/daily_quality_composite_fractionation_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/datasources/daily_quality_composite_fractionation/daily_quality_composite_fractionation_mysql_service.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/daily_quality_composite_fractionation/daily_quality_composite_fractionation_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/local/daily_quality_composite_fractionation/daily_quality_composite_fractionation_mysql_service.dart';
 
 class DailyQualityCompositeFractionationRepository {
   final DailyQualityCompositeFractionationMysqlService _mySQLService;

@@ -6,7 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/daily_quality_composite_fractionation/daily_quality_composite_fractionation_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/daily_quality_composite_fractionation/daily_quality_composite_fractionation_entity.dart';
 import 'package:logsheet_app/core/widgets/custom_checkbox_field.dart';
 import 'package:logsheet_app/core/widgets/custom_hour_picker.dart';
 import 'package:logsheet_app/core/widgets/custom_remark_field.dart';

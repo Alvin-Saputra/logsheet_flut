@@ -2,8 +2,8 @@ import 'dart:developer';
 
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
-import 'package:logsheet_app/features/quality_control/data/model/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_detail_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_header_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_detail_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_header_entity.dart';
 import 'package:mysql_client/mysql_client.dart';
 
 class AnalyticalResultIncomingMaterialByVesselMySQLService {

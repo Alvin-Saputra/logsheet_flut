@@ -49,6 +49,11 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void setCurrentUser(UserEntity? user) {
+    _currentUser = user;
+    notifyListeners();
+  }
+
   Future<void> fetchAllUsers() async {
     _setLoading(true);
     _setErrorMessage(null);

@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/widgets.dart';
-import 'package:logsheet_app/features/quality_control/data/model/daily_quality_composite_fractionation/daily_quality_composite_fractionation_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/daily_quality_composite_fractionation/daily_quality_composite_fractionation_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/daily_quality_composite_fractionation/daily_quality_composite_fractionation_repository.dart';
 
 class DailyQualityCompositeFractionationProvider with ChangeNotifier {

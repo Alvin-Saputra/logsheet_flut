@@ -2,15 +2,15 @@ import 'dart:developer';
 
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
-import 'package:logsheet_app/features/quality_control/data/model/daily_quality_composite_fractionation/daily_quality_composite_fractionation_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/daily_storage_tank_analytical/daily_storage_tank_analytical_to_db_entity.dart';
 import 'package:mysql_client/mysql_client.dart';
 
-class DailyQualityCompositeFractionationMysqlService {
-  final String dailyQualityCompositeFractionationTable =
-      "t_daily_quality_composite_fractionation_500_mt";
+class DailyStorageTankAnalyticalMySQLService {
+  final String dailyStorageTankAnalyticalReport =
+      "t_daily_storage_tank_analytical_report";
 
-  Future<bool> insertDailyQualityCompositeFractionationReport({
-    required DailyQualityCompositeFractionationEntity report,
+  Future<bool> insertDailyStorageTankAnalytical({
+    required DailyStorageTankAnalyticalToDbEntity report,
   }) async {
     MySQLConnection? connection;
     try {
@@ -36,11 +36,11 @@ class DailyQualityCompositeFractionationMysqlService {
         });
 
         final String reportSql =
-            'INSERT INTO $dailyQualityCompositeFractionationTable (${reportColumns.join(', ')}) VALUES (${reportParams.join(', ')})';
+            'INSERT INTO $dailyStorageTankAnalyticalReport (${reportColumns.join(', ')}) VALUES (${reportParams.join(', ')})';
         await connection!.execute(reportSql, reportSqlParams);
       }); // Added closing parenthesis for transactional
     } catch (e) {
-      log('Error in insertDailyQualityCompositeFractionation: $e');
+      log('Error in insertdailyStorageTankAnalyticalReport: $e');
       return false;
     } finally {
       await connection?.close();
@@ -60,7 +60,7 @@ class DailyQualityCompositeFractionationMysqlService {
       connection = connResult.connection!;
 
       final sql =
-          "UPDATE m_controlnumber SET autonumber = :autonumber WHERE plantid = :plantid AND prefix = 'Q03A'";
+          "UPDATE m_controlnumber SET autonumber = :autonumber WHERE plantid = :plantid AND prefix = 'Q01'";
       final params = {"autonumber": newAutoNumber, "plantid": plantCode};
 
       final result = await connection.execute(sql, params);
@@ -92,7 +92,7 @@ class DailyQualityCompositeFractionationMysqlService {
 
       connection = connResult.connection!;
       final result = await connection.execute(
-        "SELECT concat(prefix,plantid,accountingyear,autonumber) as id FROM m_controlnumber WHERE plantid = :plant AND prefix = 'Q03A'",
+        "SELECT concat(prefix,plantid,accountingyear,autonumber) as id FROM m_controlnumber WHERE plantid = :plant AND prefix = 'Q01'",
         {"plant": plantCode},
       );
 
@@ -119,7 +119,7 @@ class DailyQualityCompositeFractionationMysqlService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getAllDailyQualityCompositeReport(
+  Future<List<Map<String, dynamic>>> getAllDailyStorageTankReport(
     String? dateFilter,
     String? role,
   ) async {
@@ -139,7 +139,50 @@ class DailyQualityCompositeFractionationMysqlService {
       if (AppRoles.leadQC.contains(role)) {
         baseQuery = """
       SELECT 
-       * FROM t_daily_quality_composite_fractionation_500_mt  AS a
+        a.id, 
+        a.company, 
+        a.plant, 
+        a.transaction_date, 
+        a.posting_date, 
+        a.tank_no, 
+        a.oil_type, 
+        a.kapasitas_tanki, 
+        a.quantity, 
+        a.empty_space, 
+        a.suhu, 
+        a.qp_ffa, 
+        a.qp_moisture, 
+        a.qp_lovibond_color_r, 
+        a.qp_lovibond_color_y, 
+        a.qp_iv, 
+        a.qp_pv, 
+        a.qp_slip_melting_point, 
+        a.qp_cloud_point, 
+        a.qp_anv, 
+        a.qp_beta_carotene, 
+        a.qp_p, 
+        a.qp_dobi, 
+        a.qp_totox, 
+        a.qp_odor, 
+        a.remarks, 
+        a.flag, 
+        a.entry_by, 
+        a.entry_date, 
+        a.prepared_by, 
+        a.prepared_date, 
+        a.prepared_status, 
+        a.prepared_status_remarks, 
+        a.approved_by, 
+        a.approved_date, 
+        a.approved_status, 
+        a.approved_status_remarks, 
+        a.updated_by, 
+        a.updated_date, 
+        a.form_no, 
+        a.date_issued, 
+        a.revision_no, 
+        a.revision_date
+      FROM t_daily_storage_tank_analytical_report AS a
       WHERE 
          DATE(a.transaction_date) = :date AND a.prepared_status IS NULL
       ORDER BY 
@@ -147,8 +190,51 @@ class DailyQualityCompositeFractionationMysqlService {
 """;
       } else {
         baseQuery = """
-      SELECT *
-      FROM t_daily_quality_composite_fractionation_500_mt AS a
+      SELECT 
+        a.id, 
+        a.company, 
+        a.plant, 
+        a.transaction_date, 
+        a.posting_date, 
+        a.tank_no, 
+        a.oil_type, 
+        a.kapasitas_tanki, 
+        a.quantity, 
+        a.empty_space, 
+        a.suhu, 
+        a.qp_ffa, 
+        a.qp_moisture, 
+        a.qp_lovibond_color_r, 
+        a.qp_lovibond_color_y, 
+        a.qp_iv, 
+        a.qp_pv, 
+        a.qp_slip_melting_point, 
+        a.qp_cloud_point, 
+        a.qp_anv, 
+        a.qp_beta_carotene, 
+        a.qp_p, 
+        a.qp_dobi, 
+        a.qp_totox, 
+        a.qp_odor, 
+        a.remarks, 
+        a.flag, 
+        a.entry_by, 
+        a.entry_date, 
+        a.prepared_by, 
+        a.prepared_date, 
+        a.prepared_status, 
+        a.prepared_status_remarks, 
+        a.approved_by, 
+        a.approved_date, 
+        a.approved_status, 
+        a.approved_status_remarks, 
+        a.updated_by, 
+        a.updated_date, 
+        a.form_no, 
+        a.date_issued, 
+        a.revision_no, 
+        a.revision_date
+      FROM t_daily_storage_tank_analytical_report AS a
       WHERE 
          DATE(a.transaction_date) = :date
       ORDER BY 
@@ -181,27 +267,23 @@ class DailyQualityCompositeFractionationMysqlService {
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log(
-          'Failed to get MySQL connection for deletedailyQualityCompositeFractionation.',
-        );
+        log('Failed to get MySQL connection for DailyStorageTankAnalyticalReport.');
         return false;
       }
       connection = connResult.connection!;
 
       final String sql =
-          "UPDATE $dailyQualityCompositeFractionationTable SET flag = 'D' WHERE id = :id";
+          "UPDATE $dailyStorageTankAnalyticalReport SET flag = 'D' WHERE id = :id";
       final Map<String, String> params = {"id": id};
 
       final result = await connection.execute(sql, params);
 
       log(
-        'Successfully updated flag to "D" for dailyQualityCompositeFractionation with ID: $id',
+        'Successfully updated flag to "D" for DailyStorageTankAnalyticalReport with ID: $id',
       );
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
-      log(
-        'Error deleting dailyQualityCompositeFractionation (updating flag): $e',
-      );
+      log('Error deleting DailyStorageTankAnalyticalReport (updating flag): $e');
       return false;
     } finally {
       try {
@@ -213,8 +295,8 @@ class DailyQualityCompositeFractionationMysqlService {
     }
   }
 
-  Future<bool> updateDailyQualityCompositeFractionationReport({
-    required DailyQualityCompositeFractionationEntity report,
+  Future<bool> updateDailyStorageTankAnalyticalReport({
+    required DailyStorageTankAnalyticalToDbEntity report,
     required String id,
   }) async {
     MySQLConnection? connection;
@@ -222,7 +304,7 @@ class DailyQualityCompositeFractionationMysqlService {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log(
-          'Failed to get MySQL connection for update DailyQualityCompositeFractionationReport.',
+          'Failed to get MySQL connection for updateDailyStorageTankAnalyticalReport.',
         );
         return false;
       }
@@ -243,7 +325,7 @@ class DailyQualityCompositeFractionationMysqlService {
       sqlParams['id'] = id;
 
       final String sql = '''
-      UPDATE $dailyQualityCompositeFractionationTable
+      UPDATE $dailyStorageTankAnalyticalReport
       SET ${setClauses.join(', ')}
       WHERE id = :id
     ''';
@@ -251,55 +333,14 @@ class DailyQualityCompositeFractionationMysqlService {
       final result = await connection.execute(sql, sqlParams);
 
       log(
-        'Updated DailyQualityCompositeFractionationReport for ID $id. Affected rows: ${result.affectedRows}',
+        'Updated DailyStorageTankAnalyticalReport for ID $id. Affected rows: ${result.affectedRows}',
       );
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
-      log('Error in update DailyQualityCompositeFractionationReport: $e');
+      log('Error in updateDailyStorageTankAnalyticalReport: $e');
       return false;
     } finally {
       await closeMySQLConnection(connection);
-    }
-  }
-
-  Future<List<Map<String, dynamic>>>
-  getAllDailyQualityCompositeApprovalReport() async {
-    MySQLConnection? connection;
-
-    try {
-      final connResult = await getMySQLConnection();
-      if (connResult.connection == null) {
-        log('Failed to get MySQL connection for get all approval reports.');
-        return [];
-      }
-
-      connection = connResult.connection;
-
-      // Query without date filter
-      const String baseQuery = """
-      SELECT 
-      *
-      FROM t_daily_quality_composite_fractionation_500_mt AS a
-      ORDER BY a.id ASC;
-    """;
-
-      final IResultSet result = await connection!.execute(baseQuery);
-
-      log(
-        'Fetched ${result.rows.length} Daily Quality Composite Fractionation Approval reports',
-      );
-
-      return result.rows.map((row) => row.assoc()).toList();
-    } catch (e) {
-      log('Error fetching all approval reports: $e');
-      return [];
-    } finally {
-      try {
-        await closeMySQLConnection(connection);
-        log("Is still connected: ${connection?.connected}");
-      } catch (e) {
-        log('Error closing connection: $e');
-      }
     }
   }
 
@@ -329,14 +370,14 @@ class DailyQualityCompositeFractionationMysqlService {
 
       if (AppRoles.leadQC.contains(role)) {
         query = """
-          UPDATE $dailyQualityCompositeFractionationTable
+          UPDATE $dailyStorageTankAnalyticalReport
           SET prepared_status = :status, prepared_by = :approvedBy, prepared_date = :approvedDate, prepared_status_remarks = :remark
           WHERE id = :id
         """;
       } else if (AppRoles.qualityControlManagerApproval.contains(role)) {
         query = """
-          UPDATE $dailyQualityCompositeFractionationTable
-          SET checked_status = :status, checked_by = :approvedBy, checked_date = :approvedDate, checked_status_remarks = :remark
+          UPDATE $dailyStorageTankAnalyticalReport
+          SET approved_status = :status, approved_by = :approvedBy, approved_date = :approvedDate, approved_status_remarks = :remark
           WHERE id = :id
         """;
       } else {
@@ -353,6 +394,86 @@ class DailyQualityCompositeFractionationMysqlService {
     } catch (e) {
       log('Error updating approval status for Change Product Checklist: $e');
       return false;
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+        log("Is still connected: ${connection?.connected}");
+      } catch (e) {
+        log('Error closing connection: $e');
+      }
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAllDailyStorageTankApproval() async {
+    MySQLConnection? connection;
+
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for get all approval reports.');
+        return [];
+      }
+
+      connection = connResult.connection;
+
+      // Query without date filter
+      const String baseQuery = """
+      SELECT 
+        a.id, 
+        a.company, 
+        a.plant, 
+        a.transaction_date, 
+        a.posting_date, 
+        a.tank_no, 
+        a.oil_type, 
+        a.kapasitas_tanki, 
+        a.quantity, 
+        a.empty_space, 
+        a.suhu, 
+        a.qp_ffa, 
+        a.qp_moisture, 
+        a.qp_lovibond_color_r, 
+        a.qp_lovibond_color_y, 
+        a.qp_iv, 
+        a.qp_pv, 
+        a.qp_slip_melting_point, 
+        a.qp_cloud_point, 
+        a.qp_anv, 
+        a.qp_beta_carotene, 
+        a.qp_p, 
+        a.qp_dobi, 
+        a.qp_totox, 
+        a.qp_odor, 
+        a.remarks, 
+        a.flag, 
+        a.entry_by, 
+        a.entry_date, 
+        a.prepared_by, 
+        a.prepared_date, 
+        a.prepared_status, 
+        a.prepared_status_remarks, 
+        a.approved_by, 
+        a.approved_date, 
+        a.approved_status, 
+        a.approved_status_remarks, 
+        a.updated_by, 
+        a.updated_date, 
+        a.form_no, 
+        a.date_issued, 
+        a.revision_no, 
+        a.revision_date
+      FROM t_daily_storage_tank_analytical_report AS a
+      ORDER BY a.id ASC;
+    """;
+
+      final IResultSet result = await connection!.execute(baseQuery);
+
+      log('Fetched ${result.rows.length} Daily Storage Tank Approval reports');
+
+      return result.rows.map((row) => row.assoc()).toList();
+    } catch (e) {
+      log('Error fetching all approval reports: $e');
+      return [];
     } finally {
       try {
         await closeMySQLConnection(connection);

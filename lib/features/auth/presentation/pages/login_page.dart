@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/features/auth/presentation/provider/auth_provider.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/business_unit_entity.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/plant_entity.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/user_entity.dart';
@@ -193,7 +194,7 @@ class _LoginPageState extends State<LoginPage> {
       });
       return;
     }
-
+    final authProvider = context.read<AuthProvider>();
     final userProvider = context.read<UserProvider>();
     final businessUnitProvider = context.read<BusinessUnitProvider>();
     final plantProvider = context.read<PlantProvider>();
@@ -206,7 +207,7 @@ class _LoginPageState extends State<LoginPage> {
       final selectedPlantEntity = plantProvider.plantList.firstWhere(
         (plant) => plant.code == selectedPlant,
       );
-      final user = await userProvider.loginApiUser(
+      final user = await authProvider.loginUser(
         username,
         password,
         selectedBusinessUnitEntity.buCode,
@@ -219,6 +220,8 @@ class _LoginPageState extends State<LoginPage> {
 
         if (!mounted) return;
 
+        userProvider.setCurrentUser(user);
+
         // Set the providers
         businessUnitProvider.setCurrentBusinessUnit(selectedBusinessUnitEntity);
         plantProvider.setCurrentPlant(selectedPlantEntity);
@@ -226,13 +229,7 @@ class _LoginPageState extends State<LoginPage> {
         await dataForm.fetchAll();
 
         if (!mounted) return;
-        // Save credentials for next time
-        // await _saveToStorageService(
-        //   user: user,
-        //   plant: selectedPlantEntity,
-        //   bu: selectedBusinessUnitEntity,
-        //   password: password,
-        // );
+
         if (user.role == "ADM") {
           if (!mounted) return;
           Navigator.pushReplacement(
@@ -277,88 +274,6 @@ class _LoginPageState extends State<LoginPage> {
       }
     }
   }
-
-  // Future<void> _handleApiLogin() async {
-  //   if (_isLoggingIn) return;
-
-  //   setState(() {
-  //     _isLoggingIn = true;
-  //     _errorMessage = null;
-  //   });
-
-  //   final username = _usernameController.text.trim();
-  //   final password = _passwordController.text.trim();
-
-  //   if (username.isEmpty || password.isEmpty) {
-  //     setState(() {
-  //       _errorMessage = 'Please fill in username and password.';
-  //       _isLoggingIn = false;
-  //     });
-  //     return;
-  //   }
-
-  //   final userProvider = context.read<UserProvider>();
-  //   final businessUnitProvider = context.read<BusinessUnitProvider>();
-  //   final plantProvider = context.read<PlantProvider>();
-
-  //   final selectedBusinessUnitEntity = businessUnitProvider.listBusinessUnits
-  //       .firstWhere((bu) => bu.buCode == selectedBusinessUnit);
-
-  //   final selectedPlantEntity = plantProvider.plantList.firstWhere(
-  //     (plant) => plant.code == selectedPlant,
-  //   );
-
-  //   try {
-  //     final response = await userProvider.loginApiUser(
-  //       username,
-  //       password,
-  //       selectedBusinessUnitEntity.buCode,
-  //       selectedPlantEntity.code,
-  //     );
-
-  //     if (response == null || userProvider.currentUser == null) {
-  //       setState(() {
-  //         _errorMessage =
-  //             userProvider.errorMessage ?? 'Login failed. Please try again.';
-  //       });
-  //     } else {
-  //       // Login sukses, langsung navigasi sesuai role
-  //       if (!mounted) return;
-
-  //       if (userProvider.currentUser!.role == "ADM") {
-  //         Navigator.pushReplacement(
-  //           context,
-  //           MaterialPageRoute(
-  //             builder:
-  //                 (context) => AdminHomePage(
-  //                   userEntity: userProvider.currentUser!,
-  //                   userName: userProvider.currentUser!.username,
-  //                 ),
-  //           ),
-  //         );
-  //       } else {
-  //         Navigator.pushReplacement(
-  //           context,
-  //           MaterialPageRoute(
-  //             builder:
-  //                 (context) =>
-  //                     UserHomePage(userEntity: userProvider.currentUser!),
-  //           ),
-  //         );
-  //       }
-  //     }
-  //   } catch (e) {
-  //     setState(() {
-  //       _errorMessage = 'Login error: $e';
-  //     });
-  //   } finally {
-  //     if (mounted) {
-  //       setState(() {
-  //         _isLoggingIn = false;
-  //       });
-  //     }
-  //   }
-  // }
 
   @override
   void dispose() {
