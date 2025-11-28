@@ -39,30 +39,30 @@ class AnalyticalResultIncomingMaterialByVesselDetailEntity {
     required this.palkaPMni,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'id_hdr': idHdr,
+  // Map<String, dynamic> toMap() {
+  //   return {
+  //     'id': id,
+  //     'id_hdr': idHdr,
 
-      'palka_s_no': palkaSNo,
-      'palka_s_ffa': palkaSFfa,
-      'palka_s_iv': palkaSIv,
-      'palka_s_dobi': palkaSDobi,
-      'palka_s_mni': palkaSMni,
+  //     'palka_s_no': palkaSNo,
+  //     'palka_s_ffa': palkaSFfa,
+  //     'palka_s_iv': palkaSIv,
+  //     'palka_s_dobi': palkaSDobi,
+  //     'palka_s_mni': palkaSMni,
 
-      'palka_c_no': palkaCNo,
-      'palka_c_ffa': palkaCFfa,
-      'palka_c_iv': palkaCIv,
-      'palka_c_dobi': palkaCDobi,
-      'palka_c_mni': palkaCMni,
+  //     'palka_c_no': palkaCNo,
+  //     'palka_c_ffa': palkaCFfa,
+  //     'palka_c_iv': palkaCIv,
+  //     'palka_c_dobi': palkaCDobi,
+  //     'palka_c_mni': palkaCMni,
 
-      'palka_p_no': palkaPNo,
-      'palka_p_ffa': palkaPFfa,
-      'palka_p_iv': palkaPIv,
-      'palka_p_dobi': palkaPDobi,
-      'palka_p_mni': palkaPMni,
-    };
-  }
+  //     'palka_p_no': palkaPNo,
+  //     'palka_p_ffa': palkaPFfa,
+  //     'palka_p_iv': palkaPIv,
+  //     'palka_p_dobi': palkaPDobi,
+  //     'palka_p_mni': palkaPMni,
+  //   };
+  // }
 
   AnalyticalResultIncomingMaterialByVesselDetailEntity copyWith({
   String? id,

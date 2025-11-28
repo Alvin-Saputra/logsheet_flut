@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:logsheet_app/core/network/api_config.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
-import 'package:logsheet_app/features/auth/data/datasources/remote/api_service.dart';
+import 'package:logsheet_app/features/auth/data/datasources/remote/auth_api_service.dart';
 import 'package:logsheet_app/core/theme/app_theme.dart';
 import 'package:logsheet_app/features/auth/presentation/provider/auth_provider.dart';
 import 'package:logsheet_app/features/daily_production/data/repository/daily_production/daily_production_fractionation_repository.dart';
@@ -18,6 +18,7 @@ import 'package:logsheet_app/features/master_data/data/repository/master/data_fo
 import 'package:logsheet_app/features/master_data/data/repository/master/plant_repository.dart';
 import 'package:logsheet_app/features/master_data/data/repository/master/product_repository.dart';
 import 'package:logsheet_app/features/master_data/data/repository/master/user_repository.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_api_service.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_repository.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/daily_quality_composite_fractionation/daily_quality_composite_fractionation_repository.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/daily_storage_tank_analytical/daily_storage_tank_analytical_repository.dart';
@@ -76,7 +77,9 @@ void main() async {
   await dotenv.load(fileName: ".env");
 
   final dioClient = DioClient();
-  final apiService = ApiService(dioClient.dio);
+  final loginApiService = AuthApiService(dioClient.dio);
+  final analyticalResultIncomingMaterialByVesselApiService =
+      AnalyticalResultIncomingMaterialByVesselApiService(dioClient.dio);
   final storageService = StorageService();
 
   runApp(
@@ -155,8 +158,10 @@ void main() async {
         // Provide User Repository
         Provider<UserRepository>(
           create:
-              (context) =>
-                  UserRepository(context.read<UserMySQLService>(), apiService),
+              (context) => UserRepository(
+                context.read<UserMySQLService>(),
+                loginApiService,
+              ),
         ),
         // Provide Business Unit Repository
         Provider<BusinessUnitRepository>(
@@ -286,11 +291,11 @@ void main() async {
         ChangeNotifierProvider(
           create:
               (context) =>
-                  UserProvider(context.read<UserRepository>(), apiService),
+                  UserProvider(context.read<UserRepository>(), loginApiService),
         ),
 
         ChangeNotifierProvider(
-          create: (context) => AuthProvider(apiService, storageService),
+          create: (context) => AuthProvider(loginApiService, storageService),
         ),
         // Provide the Business Unit Provider
         ChangeNotifierProvider(
@@ -401,6 +406,8 @@ void main() async {
               (context) => AnalyticalResultIncomingMaterialByVesselProvider(
                 context
                     .read<AnalyticalResultIncomingMaterialByVesselRepository>(),
+                storageService,
+                analyticalResultIncomingMaterialByVesselApiService,
               ),
         ),
 

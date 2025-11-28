@@ -60,8 +60,8 @@ class StorageService {
     await _secureStorage.read(key: keys.plant);
   }
 
-  Future<void> readSessionToken() async{
-    await _secureStorage.read(key: keys.sessionToken);
+  Future<String?> readSessionToken() async {
+    return await _secureStorage.read(key: keys.sessionToken);
   }
 
   // Delete username
@@ -92,7 +92,7 @@ class StorageService {
         keys.password: data[keys.password],
         keys.businessUnit: data[keys.businessUnit],
         keys.plant: data[keys.plant],
-        keys.sessionToken: data[keys.sessionToken]
+        keys.sessionToken: data[keys.sessionToken],
       };
     } on PlatformException catch (e) {
       log("Error PlatformException: $e");
@@ -107,6 +107,7 @@ class StorageService {
       _secureStorage.delete(key: keys.password),
       _secureStorage.delete(key: keys.businessUnit),
       _secureStorage.delete(key: keys.plant),
+      _secureStorage.delete(key: keys.sessionToken),
     ]);
   }
 }

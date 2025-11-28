@@ -1,15 +1,26 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_api_service.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_detail_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_header_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_report_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_header_model.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/analytical_result_incoming_material_by_vessel/fetch_analytical_result_incoming_material_by_vessel_response.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_repository.dart';
 
 class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
   final AnalyticalResultIncomingMaterialByVesselRepository _repository;
+  final AnalyticalResultIncomingMaterialByVesselApiService _apiService;
+  final StorageService _storageService;
 
-  AnalyticalResultIncomingMaterialByVesselProvider(this._repository);
+  AnalyticalResultIncomingMaterialByVesselProvider(
+    this._repository,
+    this._storageService,
+    this._apiService,
+  );
 
   // Loading state for fetching
   bool _isLoading = false;
@@ -47,6 +58,11 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
   List<AnalyticalResultIncomingMaterialByVesselReportEntity>
   get uniqueReportList => _uniqueReportList;
 
+  List<AnalyticalResultIncomingMaterialByVesselHeaderEntity>
+  _reportListFromApi = [];
+  List<AnalyticalResultIncomingMaterialByVesselHeaderEntity>
+  get reportListFromApi => _reportListFromApi;
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
@@ -79,163 +95,244 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> insertAnalyticalResultIncomingMaterialByVessel({
+  Future<void> fetchReport(String plantId) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      String token = await _storageService.readSessionToken() ?? '';
+      final response = await _apiService.fetchReports('Bearer $token', plantId);
+
+      if (response != null && response.success == true) {
+        final data = response.data;
+        _reportListFromApi = data;
+        _reportListFromApi =
+            _reportListFromApi.where((item) => item.flag == 'T').toList();
+        notifyListeners();
+      } else {
+        _setErrorMessage('Fetch report failed.');
+      }
+      notifyListeners();
+    } catch (e) {
+      _setErrorMessage("$e");
+      notifyListeners();
+    } finally {
+      _setLoading(false);
+      notifyListeners();
+    }
+  }
+
+  Future<bool> insertReport({
     required AnalyticalResultIncomingMaterialByVesselHeaderEntity headerInput,
-    required List<AnalyticalResultIncomingMaterialByVesselDetailEntity>
-    detailInput,
-    required String plantCode,
+    required String menudId,
   }) async {
     _setLoadingInput(true);
 
     try {
-      // 1. Generate header id (juga update autonumber di DB)
-      final newHeaderId = await generateIdHeader(plantCode);
+      final body = {
+        "menu_id": menudId,
+        "company": headerInput.company,
+        "plant": headerInput.plant,
+        "arrival": DateFormat(
+          'yyyy-MM-dd HH:mm:ss',
+        ).format(headerInput.arrival!),
+        "material": headerInput.material,
+        "quantity": headerInput.quantity.toString(),
+        "supplier": headerInput.supplier,
+        "ship_name": headerInput.shipName,
+        "contract_do_nomor": headerInput.contractDoNomor,
+        "hasil_analisa_ffa": headerInput.hasilAnalisaFfa.toString(),
+        "hasil_analisa_iv": headerInput.hasilAnalisaIv.toString(),
+        "hasil_analisa_moisture": headerInput.hasilAnalisaMoisture.toString(),
+        "hasil_analisa_dobi": headerInput.hasilAnalisaDobi.toString(),
+        "hasil_analisa_pv": headerInput.hasilAnalisaPv.toString(),
+        "hasil_analisa_anv": headerInput.hasilAnalisaAnv.toString(),
+        "ffa": headerInput.ffa.toString(),
+        "mni": headerInput.mni.toString(),
+        "dobi": headerInput.dobi.toString(),
+        "others": headerInput.others,
+        "remarks": headerInput.remarks,
+        "detail":
+            headerInput.details
+                .map(
+                  (detail) => {
+                    "palka_s_no": detail.palkaSNo.toString(),
+                    "palka_s_ffa": detail.palkaSFfa.toString(),
+                    "palka_s_iv": detail.palkaSIv.toString(),
+                    "palka_s_dobi": detail.palkaSDobi.toString(),
+                    "palka_s_mni": detail.palkaSMni.toString(),
+                    "palka_c_no": detail.palkaCNo.toString(),
+                    "palka_c_ffa": detail.palkaCFfa.toString(),
+                    "palka_c_iv": detail.palkaCIv.toString(),
+                    "palka_c_dobi": detail.palkaCDobi.toString(),
+                    "palka_c_mni": detail.palkaCMni.toString(),
+                    "palka_p_no": detail.palkaPNo.toString(),
+                    "palka_p_ffa": detail.palkaPFfa.toString(),
+                    "palka_p_iv": detail.palkaPIv.toString(),
+                    "palka_p_dobi": detail.palkaPDobi.toString(),
+                    "palka_p_mni": detail.palkaPMni.toString(),
+                  },
+                )
+                .toList(),
+      };
 
-      if (newHeaderId == null || newHeaderId.isEmpty) {
-        _setErrorMessage('Failed to generate header id');
+      String token = await _storageService.readSessionToken() ?? '';
+
+      final response = await _apiService.insertReport(body, 'Bearer $token');
+
+      if (response != null && response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage('Insert report failed.');
+        notifyListeners();
         return false;
       }
-
-      // 2. Make header with the new id (menggunakan copyWith pada header)
-      final header = headerInput.copyWith(id: newHeaderId);
-
-      // 3. Determine prefix (bagian sebelum autonumber header) & sisipkan 'D' di pos ke-3
-      const int autoLength = 6; // panjang autonumber (ubah jika perlu)
-      final int headerLen = newHeaderId.length;
-
-      if (headerLen <= autoLength) {
-        _setErrorMessage('Header id length is too short to extract prefix');
-        return false;
-      }
-
-      // prefixBeforeAuto = newHeaderId tanpa autonumber akhir
-      final prefixBeforeAuto = newHeaderId.substring(0, headerLen - autoLength);
-
-      // insert 'D' at index 3 of that prefix
-      final prefixWithD = prefixBeforeAuto.replaceRange(3, 3, 'D');
-
-      // 4. Build detail list: prefixWithD + autonumber detail (padLeft ke 6)
-      final details = <AnalyticalResultIncomingMaterialByVesselDetailEntity>[];
-
-      for (var i = 0; i < detailInput.length; i++) {
-        final detailAuto = (i + 1).toString().padLeft(
-          autoLength,
-          '0',
-        ); // 000001, 000002, ...
-        final detailId = "$prefixWithD$detailAuto";
-
-        details.add(detailInput[i].copyWith(id: detailId, idHdr: newHeaderId));
-      }
-
-      // 5. Kirim ke repository
-      return await _repository.insertAnalyticalResultIncomingMaterialByVessel(
-        header: header,
-        details: details,
-      );
     } catch (e) {
       _setErrorMessage(e.toString());
+      notifyListeners();
       return false;
     } finally {
       _setLoadingInput(false);
-    }
-  }
-
-  Future<bool> updateAutoNumber(String plantCode, int newAutoNumber) async {
-    _setLoading(true);
-    _setErrorMessage(null);
-    try {
-      final result = await _repository.updateAutoNumber(
-        plantCode,
-        newAutoNumber,
-      );
-      return result;
-    } catch (e) {
-      _setErrorMessage('Failed to update autonumber: $e');
-      return false;
-    } finally {
-      _setLoading(false);
-    }
-  }
-
-  Future<String?> getLatestId(String plantCode) async {
-    _setLoading(true);
-    _setErrorMessage(null);
-    try {
-      _latestId = await _repository.getLatestId(plantCode);
-      log("latest ID = $_latestId");
-      return _latestId;
-    } catch (e) {
-      _setErrorMessage('Failed to get latest id: $e');
-      return null;
-    } finally {
-      _setLoading(false);
-    }
-  }
-
-  Future<String> generateIdHeader(String plantCode) async {
-    await getLatestId(plantCode);
-
-    if (_latestId == null || _latestId!.isEmpty) {
-      log("_latestId is null or empty in _generateHeaderId");
-      return '';
-    }
-
-    final latest = _latestId!;
-    log("Latest ID: $latest");
-
-    final prefixPart = latest.length > 9 ? latest.substring(0, 9) : latest;
-    final autoPart = latest.length > 9 ? latest.substring(9) : "";
-
-    int newAuto = 1;
-    if (autoPart.isNotEmpty) {
-      try {
-        newAuto = int.parse(autoPart) + 1;
-      } catch (e) {
-        log("Gagal parsing autonumber: $e");
-      }
-    }
-
-    final newAutoStr = newAuto.toString().padLeft(6, '0');
-
-    final newId = "$prefixPart$newAutoStr";
-
-    log("Generated new ID: $newId");
-
-    await updateAutoNumber(plantCode, newAuto);
-
-    return newId;
-  }
-
-  Future<void> getAllAnalyticalResultIncomingMaterialByVessel(
-    String date,
-    String role,
-  ) async {
-    _setLoading(true);
-    _setErrorMessage(null);
-
-    try {
-      _reportList.clear();
-      _reportList = await _repository
-          .getAllAnalyticalResultIncomingMaterialByVessel(date, role);
-
-      final uniqueData =
-          <String, AnalyticalResultIncomingMaterialByVesselReportEntity>{};
-
-      for (var item in _reportList) {
-        if (!uniqueData.containsKey(item.idHdr) && item.flag == 'T') {
-          uniqueData[item.idHdr] = item;
-        }
-      }
-
-      _uniqueReportList = uniqueData.values.toList();
-
       notifyListeners();
-      log('Unique Header Count: ${_reportList.length}');
-      log('Report List Length: ${_uniqueReportList.length}');
+    }
+  }
+
+  Future<bool> deleteReport({required String id}) async {
+    _setLoadingDelete(true);
+    _setErrorMessage(null);
+
+    try {
+      String token = await _storageService.readSessionToken() ?? '';
+      final response = await _apiService.deleteReport('Bearer $token', id);
+
+      if (response != null && response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage('Delete Report Failed');
+        notifyListeners();
+        return false;
+      }
     } catch (e) {
       _setErrorMessage("$e");
+      notifyListeners();
+      return false;
     } finally {
-      _setLoading(false);
+      _setLoadingDelete(false);
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateReport({
+    required AnalyticalResultIncomingMaterialByVesselHeaderEntity headerInput,
+    required String menudId,
+  }) async {
+    _setLoadingEdit(true);
+
+    try {
+      final body = {
+        "id": headerInput.id,
+        "material": headerInput.material,
+        "quantity": headerInput.quantity.toString(),
+        "supplier": headerInput.supplier,
+        "ship_name": headerInput.shipName,
+        "hasil_analisa_ffa": headerInput.hasilAnalisaFfa.toString(),
+        "hasil_analisa_iv": headerInput.hasilAnalisaIv.toString(),
+        "hasil_analisa_moisture": headerInput.hasilAnalisaMoisture.toString(),
+        "hasil_analisa_dobi": headerInput.hasilAnalisaDobi.toString(),
+        "hasil_analisa_pv": headerInput.hasilAnalisaPv.toString(),
+        "hasil_analisa_anv": headerInput.hasilAnalisaAnv.toString(),
+        "ffa": headerInput.ffa.toString(),
+        "mni": headerInput.mni.toString(),
+        "dobi": headerInput.dobi.toString(),
+        "others": headerInput.others,
+        "remarks": headerInput.remarks,
+        "detail":
+            headerInput.details
+                .map(
+                  (detail) => {
+                    "palka_s_no": detail.palkaSNo.toString(),
+                    "palka_s_ffa": detail.palkaSFfa.toString(),
+                    "palka_s_iv": detail.palkaSIv.toString(),
+                    "palka_s_dobi": detail.palkaSDobi.toString(),
+                    "palka_s_mni": detail.palkaSMni.toString(),
+                    "palka_c_no": detail.palkaCNo.toString(),
+                    "palka_c_ffa": detail.palkaCFfa.toString(),
+                    "palka_c_iv": detail.palkaCIv.toString(),
+                    "palka_c_dobi": detail.palkaCDobi.toString(),
+                    "palka_c_mni": detail.palkaCMni.toString(),
+                    "palka_p_no": detail.palkaPNo.toString(),
+                    "palka_p_ffa": detail.palkaPFfa.toString(),
+                    "palka_p_iv": detail.palkaPIv.toString(),
+                    "palka_p_dobi": detail.palkaPDobi.toString(),
+                    "palka_p_mni": detail.palkaPMni.toString(),
+                  },
+                )
+                .toList(),
+      };
+
+      String token = await _storageService.readSessionToken() ?? '';
+
+      final response = await _apiService.updateReport('Bearer $token', body);
+
+      if (response != null && response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage('Update report failed.');
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage(e.toString());
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoadingEdit(false);
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateApproveRejectReport({
+    required String id,
+    required String userName,
+    required String role,
+    required String status,
+    required String remarks,
+  }) async {
+    _setLoadingEdit(true);
+    _setErrorMessage(null);
+    try {
+      final body = {
+        "id": id,
+        "username": userName,
+        "role": role,
+        "approve_status": status,
+        "remark": remarks,
+      };
+
+      String token = await _storageService.readSessionToken() ?? '';
+      final response = await _apiService.updateApproveRejectReport(
+        'Bearer $token',
+        body,
+      );
+
+      if (response != null && response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage('Update Approve/Reject Report Failed');
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage(e.toString());
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoadingEdit(false);
+      notifyListeners();
     }
   }
 }

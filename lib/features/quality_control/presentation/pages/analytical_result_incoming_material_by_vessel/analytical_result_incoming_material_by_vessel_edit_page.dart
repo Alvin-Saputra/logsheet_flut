@@ -22,16 +22,21 @@ import 'package:logsheet_app/features/quality_control/presentation/provider/anal
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class AnalyticalResultIncomingMaterialByVesselInputPage extends StatefulWidget {
-  const AnalyticalResultIncomingMaterialByVesselInputPage({super.key});
+class AnalyticalResultIncomingMaterialByVesselEditPage extends StatefulWidget {
+  const AnalyticalResultIncomingMaterialByVesselEditPage({
+    super.key,
+    required this.data,
+  });
+
+  final AnalyticalResultIncomingMaterialByVesselHeaderEntity data;
 
   @override
-  State<AnalyticalResultIncomingMaterialByVesselInputPage> createState() =>
-      _AnalyticalResultIncomingMaterialByVesselInputPageState();
+  State<AnalyticalResultIncomingMaterialByVesselEditPage> createState() =>
+      _AnalyticalResultIncomingMaterialByVesselEditPageState();
 }
 
-class _AnalyticalResultIncomingMaterialByVesselInputPageState
-    extends State<AnalyticalResultIncomingMaterialByVesselInputPage> {
+class _AnalyticalResultIncomingMaterialByVesselEditPageState
+    extends State<AnalyticalResultIncomingMaterialByVesselEditPage> {
   final TextEditingController dateEntryController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController supplierController = TextEditingController();
@@ -70,6 +75,72 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await context.read<ValueProvider>().fetchOilTypes();
+
+      setState(() {
+        if (widget.data.material != null && widget.data.material!.isNotEmpty) {
+          selectedOilType = widget.data.material;
+        } else {
+          selectedOilType = null;
+        }
+        dateEntryController.text = DateFormat(
+          'dd-MM-yyyy',
+        ).format(widget.data.transactionDate!);
+        quantityController.text = widget.data.quantity.toString();
+        supplierController.text = widget.data.supplier.toString();
+        shipNameController.text = widget.data.shipName.toString();
+        contractDoController.text = widget.data.contractDoNomor.toString();
+        ffaController.text = widget.data.ffa.toString();
+        miController.text = widget.data.mni.toString();
+        dobiController.text = widget.data.shipName.toString();
+        othersController.text = widget.data.others.toString();
+        hasilAnalisaFfaController.text = widget.data.hasilAnalisaFfa.toString();
+        hasilAnalisaIvController.text = widget.data.hasilAnalisaIv.toString();
+        hasilAnalisaMoistureController.text =
+            widget.data.hasilAnalisaMoisture.toString();
+        hasilAnalisaDobiController.text =
+            widget.data.hasilAnalisaDobi.toString();
+        hasilAnalisaPvController.text = widget.data.hasilAnalisaPv.toString();
+        hasilAnalisaAnvController.text = widget.data.hasilAnalisaAnv.toString();
+
+        generateDetailRows(widget.data.details.length);
+
+        for (int i = 0; i < widget.data.details.length; i++) {
+          detailControllers[i]['palka_s_no']!.text =
+              widget.data.details[i].palkaSNo.toString();
+          detailControllers[i]['palka_s_ffa']!.text =
+              widget.data.details[i].palkaSFfa.toString();
+          detailControllers[i]['palka_s_iv']!.text =
+              widget.data.details[i].palkaSIv.toString();
+          detailControllers[i]['palka_s_dobi']!.text =
+              widget.data.details[i].palkaSDobi.toString();
+          detailControllers[i]['palka_s_mni']!.text =
+              widget.data.details[i].palkaSMni.toString();
+
+          detailControllers[i]['palka_c_no']!.text =
+              widget.data.details[i].palkaCNo.toString();
+          detailControllers[i]['palka_c_ffa']!.text =
+              widget.data.details[i].palkaCFfa.toString();
+          detailControllers[i]['palka_c_iv']!.text =
+              widget.data.details[i].palkaCIv.toString();
+          detailControllers[i]['palka_c_dobi']!.text =
+              widget.data.details[i].palkaCDobi.toString();
+          detailControllers[i]['palka_c_mni']!.text =
+              widget.data.details[i].palkaCMni.toString();
+
+          detailControllers[i]['palka_p_no']!.text =
+              widget.data.details[i].palkaPNo.toString();
+          detailControllers[i]['palka_p_ffa']!.text =
+              widget.data.details[i].palkaPFfa.toString();
+          detailControllers[i]['palka_p_iv']!.text =
+              widget.data.details[i].palkaPIv.toString();
+          detailControllers[i]['palka_p_dobi']!.text =
+              widget.data.details[i].palkaPDobi.toString();
+          detailControllers[i]['palka_p_mni']!.text =
+              widget.data.details[i].palkaPMni.toString();
+        }
+
+        remarkController.text = widget.data.remarks ?? '';
+      });
     });
   }
 
@@ -247,7 +318,6 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
               isNumeric: false,
             ),
 
-            _detailGeneratorSection(),
             if (detailControllers.isNotEmpty) _detailFormList(),
 
             const SizedBox(height: 8.0),
@@ -310,7 +380,7 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                 AnalyticalResultIncomingMaterialByVesselProvider provider,
                 Widget? child,
               ) {
-                return (provider.isLoadingInput)
+                return (provider.isLoadingEdit)
                     ? Center(child: CircularProgressIndicator())
                     : CustomSaveButton(
                       onPressed: () async {
@@ -359,47 +429,6 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
     setState(() {});
   }
 
-  Widget _detailGeneratorSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Berapa detail yang ingin diinput?",
-          style: TextStyle(fontSize: 14),
-        ),
-        SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                width: 80,
-                child: TextField(
-                  keyboardType: TextInputType.number,
-                  onChanged: (v) {
-                    numberOfRows = int.tryParse(v);
-                  },
-                  decoration: InputDecoration(
-                    hintText: "0",
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(width: 12),
-            ElevatedButton(
-              onPressed: () {
-                if (numberOfRows == null || numberOfRows! <= 0) return;
-                generateDetailRows(numberOfRows!);
-              },
-              child: Text("Generate"),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   Widget _detailFormList() {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8),
@@ -428,14 +457,7 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                 },
               ),
             ),
-            // Text(
-            //   "Detail ${index + 1}",
-            //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            // ),
-            // SizedBox(height: 12),
 
-            // // PALKA S
-            // Text("Palka S", style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 6),
 
             ExpandablePageView.builder(
@@ -581,23 +603,23 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
               id: "",
               idHdr: "",
 
-              palkaSNo: parseDouble(row['palka_s_no']!.text) ?? 0,
-              palkaSFfa: parseDouble(row['palka_s_ffa']!.text) ?? 0,
-              palkaSIv: parseDouble(row['palka_s_iv']!.text) ?? 0,
-              palkaSDobi: parseDouble(row['palka_s_dobi']!.text) ?? 0,
-              palkaSMni: parseDouble(row['palka_s_mni']!.text) ?? 0,
+              palkaSNo: parseDouble(row['palka_s_no']!.text),
+              palkaSFfa: parseDouble(row['palka_s_ffa']!.text),
+              palkaSIv: parseDouble(row['palka_s_iv']!.text),
+              palkaSDobi: parseDouble(row['palka_s_dobi']!.text),
+              palkaSMni: parseDouble(row['palka_s_mni']!.text),
 
-              palkaCNo: parseDouble(row['palka_c_no']!.text) ?? 0,
-              palkaCFfa: parseDouble(row['palka_c_ffa']!.text) ?? 0,
-              palkaCIv: parseDouble(row['palka_c_iv']!.text) ?? 0,
-              palkaCDobi: parseDouble(row['palka_c_dobi']!.text) ?? 0,
-              palkaCMni: parseDouble(row['palka_c_mni']!.text) ?? 0,
+              palkaCNo: parseDouble(row['palka_c_no']!.text),
+              palkaCFfa: parseDouble(row['palka_c_ffa']!.text),
+              palkaCIv: parseDouble(row['palka_c_iv']!.text),
+              palkaCDobi: parseDouble(row['palka_c_dobi']!.text),
+              palkaCMni: parseDouble(row['palka_c_mni']!.text),
 
-              palkaPNo: parseDouble(row['palka_p_no']!.text) ?? 0,
-              palkaPFfa: parseDouble(row['palka_p_ffa']!.text) ?? 0,
-              palkaPIv: parseDouble(row['palka_p_iv']!.text) ?? 0,
-              palkaPDobi: parseDouble(row['palka_p_dobi']!.text) ?? 0,
-              palkaPMni: parseDouble(row['palka_p_mni']!.text) ?? 0,
+              palkaPNo: parseDouble(row['palka_p_no']!.text),
+              palkaPFfa: parseDouble(row['palka_p_ffa']!.text),
+              palkaPIv: parseDouble(row['palka_p_iv']!.text),
+              palkaPDobi: parseDouble(row['palka_p_dobi']!.text),
+              palkaPMni: parseDouble(row['palka_p_mni']!.text),
             );
           }).toList();
 
@@ -643,14 +665,6 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
         revisionDate: formData?.revisionDate,
         details: detail,
       );
-
-      // final isSuccess = await context
-      //     .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-      //     .insertAnalyticalResultIncomingMaterialByVessel(
-      //       headerInput: header,
-      //       detailInput: detail,
-      //       plantCode: plant?.code ?? '',
-      //     );
 
       final isSuccess = await context
           .read<AnalyticalResultIncomingMaterialByVesselProvider>()

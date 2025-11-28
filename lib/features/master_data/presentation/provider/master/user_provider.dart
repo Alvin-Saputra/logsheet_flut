@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/features/auth/data/datasources/remote/api_service.dart';
+import 'package:logsheet_app/features/auth/data/datasources/remote/auth_api_service.dart';
 import 'package:logsheet_app/features/auth/data/model/login_response.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/role_entity.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/user_entity.dart';
@@ -9,7 +9,7 @@ import 'package:logsheet_app/features/master_data/data/repository/master/user_re
 
 class UserProvider with ChangeNotifier {
   final UserRepository _repository;
-  final ApiService _apiService;
+  final AuthApiService _apiService;
 
   UserProvider(this._repository, this._apiService);
 

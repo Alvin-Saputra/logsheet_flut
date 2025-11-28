@@ -14,9 +14,9 @@ import 'package:logsheet_app/features/quality_control/presentation/provider/dail
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class AnalyticalResultIncomingMaterialByVesselListDetailPage
+class AnalyticalResultIncomingMaterialByVesselReportDetailPage
     extends StatefulWidget {
-  AnalyticalResultIncomingMaterialByVesselListDetailPage({
+  AnalyticalResultIncomingMaterialByVesselReportDetailPage({
     super.key,
     required this.data,
   });
@@ -24,12 +24,12 @@ class AnalyticalResultIncomingMaterialByVesselListDetailPage
   final AnalyticalResultIncomingMaterialByVesselHeaderEntity data;
 
   @override
-  State<AnalyticalResultIncomingMaterialByVesselListDetailPage> createState() =>
-      _AnalyticalResultIncomingMaterialByVesselListDetailPageState();
+  State<AnalyticalResultIncomingMaterialByVesselReportDetailPage> createState() =>
+      _AnalyticalResultIncomingMaterialByVesselReportDetailPageState();
 }
 
-class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
-    extends State<AnalyticalResultIncomingMaterialByVesselListDetailPage> {
+class _AnalyticalResultIncomingMaterialByVesselReportDetailPageState
+    extends State<AnalyticalResultIncomingMaterialByVesselReportDetailPage> {
   final TextEditingController remarkController = TextEditingController();
   final PageController detailPageControllers = PageController();
   @override
@@ -311,143 +311,6 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                         ],
                       ),
                     ]),
-
-                    if ((AppRoles.leadQC.contains(
-                          userProvider.currentUser?.role,
-                        )) ||
-                        (AppRoles.qualityControlManagerApproval.contains(
-                          userProvider.currentUser?.role,
-                        )))
-                      _buildSection('Approval Actions', [
-                        if (widget.data.preparedStatus == "Approved" &&
-                            widget.data.approvedStatus == "Approved") ...[
-                          Text(
-                            "Checklist Approved",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green,
-                            ),
-                          ),
-                        ] else if (widget.data.preparedStatus == "Rejected" ||
-                            widget.data.approvedStatus == "Rejected") ...[
-                          Text(
-                            "Checklist Rejected",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ] else if (AppRoles.leadQC.contains(
-                          userProvider.currentUser?.role,
-                        )) ...[
-                          if (widget.data.preparedStatus == null) ...[
-                            Text('Prepared Status:'),
-                            SizedBox(height: 8.0),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0,
-                                      vertical: 8.0,
-                                    ),
-                                    child: ElevatedButton(
-                                      onPressed: () async {
-                                        _showRejectBottomSheet(context);
-                                      },
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: const [
-                                          Text('Reject'),
-                                          Icon(Icons.close),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0,
-                                      vertical: 8.0,
-                                    ),
-                                    child: ElevatedButton(
-                                      onPressed: () async {
-                                        bool isSuccess =
-                                            await _approveRejectReport(
-                                              "Approved",
-                                            );
-                                        if (isSuccess) {
-                                          showSnackBar(
-                                            "Berhasil Approve Checklist",
-                                            context,
-                                          );
-
-                                          log("Sukses Approve");
-                                          if (!mounted) return;
-                                          Navigator.of(this.context).pop();
-                                        } else {
-                                          showSnackBar(
-                                            "Gagal Approve Checklist",
-                                            context,
-                                          );
-                                        }
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.green,
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: const [
-                                          Text('Approve'),
-                                          Icon(Icons.check),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ] else if (widget.data.preparedStatus != null &&
-                              widget.data.approvedStatus == null) ...[
-                            Text(
-                              "Waiting Apprvoal From Manager Productions...",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.orange,
-                              ),
-                            ),
-                          ],
-                        ] else if (AppRoles.qualityControlManagerApproval
-                            .contains(userProvider.currentUser?.role)) ...[
-                          if (widget.data.approvedStatus == null) ...[
-                            Text(
-                              "Waiting Apprvoal From Leader QC...",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.orange,
-                              ),
-                            ),
-                          ] else if (widget.data.preparedStatus == "Approved" ||
-                              widget.data.approvedStatus == "Rejected") ...[
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Text(
-                                  "Checklist Prepared",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.amber,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ]),
                   ],
                 ),
               ),
@@ -542,31 +405,7 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
       ),
       centerTitle: true,
       iconTheme: const IconThemeData(color: Colors.black),
-      actions: [
-        if (widget.data?.preparedStatus == null)
-          IconButton(
-            onPressed: () async {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (context) =>
-                          AnalyticalResultIncomingMaterialByVesselEditPage(
-                            data: widget.data,
-                          ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.edit),
-          ),
-        if (widget.data?.preparedStatus == null)
-          IconButton(
-            onPressed: () async {
-              return _showDeleteConfirmationDialog(context);
-            },
-            icon: const Icon(Icons.delete_rounded, color: Colors.red),
-          ),
-      ],
+      
     );
   }
 

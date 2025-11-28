@@ -2,11 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/widgets.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
-import 'package:logsheet_app/features/auth/data/datasources/remote/api_service.dart';
+import 'package:logsheet_app/features/auth/data/datasources/remote/auth_api_service.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/user_entity.dart';
 
 class AuthProvider with ChangeNotifier {
-  final ApiService _apiService;
+  final AuthApiService _apiService;
   final StorageService _storageService;
 
   AuthProvider(this._apiService, this._storageService);
@@ -101,5 +101,28 @@ class AuthProvider with ChangeNotifier {
       print("Saved token: $savedLoginInfo");
     }
     // Jika ingin fitur "Remember Me", simpan credential lain di sini
+  }
+
+  Future<bool> logoutUser() async {
+    _setLoading(true);
+    _setErrorMessage(null);
+    try {
+      String token = await _storageService.readSessionToken() ?? '';
+      final response = await _apiService.logout('Bearer $token');
+
+      if (response.success == true) {
+        await _storageService.deleteAllLoginData();
+        _setAuthenticationStatus(false);
+        return true;
+      } else {
+        _setErrorMessage('Logout gagal.');
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage('API logout error: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
   }
 }

@@ -1,4 +1,4 @@
-import 'package:logsheet_app/features/auth/data/datasources/remote/api_service.dart';
+import 'package:logsheet_app/features/auth/data/datasources/remote/auth_api_service.dart';
 import 'package:logsheet_app/features/auth/data/model/login_response.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/role_entity.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/user_entity.dart';
@@ -6,7 +6,7 @@ import 'package:logsheet_app/features/master_data/data/datasources/master/user_m
 
 class UserRepository {
   final UserMySQLService _mySQLService;
-  final ApiService _apiService;
+  final AuthApiService _apiService;
 
   UserRepository(this._mySQLService, this._apiService);
 

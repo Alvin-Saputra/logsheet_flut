@@ -307,7 +307,8 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
       bool? success;
 
       log("PROD ID: ${updatedItem.id}, QC ID: ${updatedItem.idFk}");
-
+      log("Flag: ${updatedItem.flag}");
+      
       if (!mounted) return;
       final currentUser = context.read<UserProvider>().currentUser;
 

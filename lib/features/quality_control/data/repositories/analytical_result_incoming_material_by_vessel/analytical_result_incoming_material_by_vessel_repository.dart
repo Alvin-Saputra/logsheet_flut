@@ -10,15 +10,15 @@ class AnalyticalResultIncomingMaterialByVesselRepository {
 
   AnalyticalResultIncomingMaterialByVesselRepository(this._mySQLService);
 
-  Future<bool> insertAnalyticalResultIncomingMaterialByVessel({
-    required AnalyticalResultIncomingMaterialByVesselHeaderEntity header,
-    required List<AnalyticalResultIncomingMaterialByVesselDetailEntity> details,
-  }) async {
-    return await _mySQLService.insertAnalyticalResultIncomingMaterialByVessel(
-      header: header,
-      details: details,
-    );
-  }
+  // Future<bool> insertAnalyticalResultIncomingMaterialByVessel({
+  //   required AnalyticalResultIncomingMaterialByVesselHeaderEntity header,
+  //   required List<AnalyticalResultIncomingMaterialByVesselDetailEntity> details,
+  // }) async {
+  //   return await _mySQLService.insertAnalyticalResultIncomingMaterialByVessel(
+  //     header: header,
+  //     details: details,
+  //   );
+  // }
 
   Future<String?> getLatestId(String plantCode) async {
     return await _mySQLService.getLatestId(plantCode);

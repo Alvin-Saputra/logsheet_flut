@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
+import 'package:logsheet_app/features/auth/presentation/provider/auth_provider.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/user_entity.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
@@ -30,7 +31,9 @@ import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_startup_production/maintenance_startup_production_approval_list_page.dart';
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_startup_production/maintenance_startup_production_list_page.dart';
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_startup_production/maintenance_startup_production_report_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_report_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_report_list_page.dart';
@@ -100,13 +103,14 @@ class _UserHomePageState extends State<UserHomePage> {
     );
 
     if (shouldLogout == true && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-      );
-
-      final storage = StorageService();
-      await storage.deleteAllLoginData();
+      final authProvider = context.read<AuthProvider>();
+      bool isSuccess = await authProvider.logoutUser();
+      if (isSuccess) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+        );
+      }
     }
   }
 
@@ -381,7 +385,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.19"), Text("Build 2025-11-24")],
+              children: [Text("Version 1.0.19"), Text("Build 2025-11-27")],
             ),
           ],
         ),
@@ -715,6 +719,36 @@ class _UserHomePageState extends State<UserHomePage> {
                         builder:
                             (_) =>
                                 AnalyticalResultIncomingMaterialByVesselListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'Report\n(FQOC-009)',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                AnalyticalResultIncomingMaterialByVesselReportListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                 _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'Approval\n(FQOC-009)',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                AnalyticalResultIncomingMaterialByVesselApprovalListPage(),
                       ),
                     );
                   },

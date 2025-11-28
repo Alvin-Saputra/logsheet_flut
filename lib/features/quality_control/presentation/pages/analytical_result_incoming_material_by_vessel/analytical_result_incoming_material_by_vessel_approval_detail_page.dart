@@ -14,9 +14,9 @@ import 'package:logsheet_app/features/quality_control/presentation/provider/dail
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class AnalyticalResultIncomingMaterialByVesselListDetailPage
+class AnalyticalResultIncomingMaterialByVesseApprovalDetailPage
     extends StatefulWidget {
-  AnalyticalResultIncomingMaterialByVesselListDetailPage({
+  AnalyticalResultIncomingMaterialByVesseApprovalDetailPage({
     super.key,
     required this.data,
   });
@@ -24,12 +24,13 @@ class AnalyticalResultIncomingMaterialByVesselListDetailPage
   final AnalyticalResultIncomingMaterialByVesselHeaderEntity data;
 
   @override
-  State<AnalyticalResultIncomingMaterialByVesselListDetailPage> createState() =>
-      _AnalyticalResultIncomingMaterialByVesselListDetailPageState();
+  State<AnalyticalResultIncomingMaterialByVesseApprovalDetailPage>
+  createState() =>
+      _AnalyticalResultIncomingMaterialByVesseApprovalDetailPageState();
 }
 
-class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
-    extends State<AnalyticalResultIncomingMaterialByVesselListDetailPage> {
+class _AnalyticalResultIncomingMaterialByVesseApprovalDetailPageState
+    extends State<AnalyticalResultIncomingMaterialByVesseApprovalDetailPage> {
   final TextEditingController remarkController = TextEditingController();
   final PageController detailPageControllers = PageController();
   @override
@@ -312,7 +313,7 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                       ),
                     ]),
 
-                    if ((AppRoles.leadQC.contains(
+                   if ((AppRoles.leadQC.contains(
                           userProvider.currentUser?.role,
                         )) ||
                         (AppRoles.qualityControlManagerApproval.contains(
@@ -329,7 +330,7 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                             ),
                           ),
                         ] else if (widget.data.preparedStatus == "Rejected" ||
-                            widget.data.approvedStatus == "Rejected") ...[
+                           widget.data.approvedStatus == "Rejected") ...[
                           Text(
                             "Checklist Rejected",
                             style: TextStyle(
@@ -337,11 +338,11 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                               color: Colors.red,
                             ),
                           ),
-                        ] else if (AppRoles.leadQC.contains(
-                          userProvider.currentUser?.role,
-                        )) ...[
-                          if (widget.data.preparedStatus == null) ...[
-                            Text('Prepared Status:'),
+                        ] else if (AppRoles.qualityControlManagerApproval
+                            .contains(userProvider.currentUser?.role)) ...[
+                          if (widget.data.preparedStatus == "Approved" &&
+                              widget.data.approvedStatus == null) ...[
+                            Text('Approved Status:'),
                             SizedBox(height: 8.0),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -382,16 +383,14 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                                         if (isSuccess) {
                                           showSnackBar(
                                             "Berhasil Approve Checklist",
-                                            context,
+                                            this.context,
                                           );
-
-                                          log("Sukses Approve");
-                                          if (!mounted) return;
                                           Navigator.of(this.context).pop();
+                                          log("Sukses Approve");
                                         } else {
                                           showSnackBar(
                                             "Gagal Approve Checklist",
-                                            context,
+                                            this.context,
                                           );
                                         }
                                       },
@@ -411,39 +410,25 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                                 ),
                               ],
                             ),
-                          ] else if (widget.data.preparedStatus != null &&
-                              widget.data.approvedStatus == null) ...[
+                          ] else if (widget.data.preparedStatus == null) ...[
                             Text(
-                              "Waiting Apprvoal From Manager Productions...",
+                              "Waiting Approval From Leader Productions...",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.orange,
                               ),
                             ),
                           ],
-                        ] else if (AppRoles.qualityControlManagerApproval
-                            .contains(userProvider.currentUser?.role)) ...[
+                        ] else if (AppRoles.leadQC.contains(
+                          userProvider.currentUser?.role,
+                        )) ...[
                           if (widget.data.approvedStatus == null) ...[
                             Text(
-                              "Waiting Apprvoal From Leader QC...",
+                              "Waiting Apprvoal From Manager Productions...",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.orange,
                               ),
-                            ),
-                          ] else if (widget.data.preparedStatus == "Approved" ||
-                              widget.data.approvedStatus == "Rejected") ...[
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Text(
-                                  "Checklist Prepared",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.amber,
-                                  ),
-                                ),
-                              ],
                             ),
                           ],
                         ],
@@ -542,31 +527,6 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
       ),
       centerTitle: true,
       iconTheme: const IconThemeData(color: Colors.black),
-      actions: [
-        if (widget.data?.preparedStatus == null)
-          IconButton(
-            onPressed: () async {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (context) =>
-                          AnalyticalResultIncomingMaterialByVesselEditPage(
-                            data: widget.data,
-                          ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.edit),
-          ),
-        if (widget.data?.preparedStatus == null)
-          IconButton(
-            onPressed: () async {
-              return _showDeleteConfirmationDialog(context);
-            },
-            icon: const Icon(Icons.delete_rounded, color: Colors.red),
-          ),
-      ],
     );
   }
 

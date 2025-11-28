@@ -3,15 +3,13 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_list_detail_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_input_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_list_detail_page.dart';
 import 'package:logsheet_app/core/widgets/custom_date_field.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
 import 'package:provider/provider.dart';
 
 class AnalyticalResultIncomingMaterialByVesselListPage extends StatefulWidget {
@@ -43,15 +41,14 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
                   (context) =>
                       AnalyticalResultIncomingMaterialByVesselInputPage(),
             ),
-          ).then((_) {
+          ).then((_) async {
             if (!mounted) return;
-            final formatted = parseDateTimeForQuery(dateEntryController.text);
-            context
+
+            final plant = context.read<PlantProvider>().currentPlant;
+            final plantId = plant?.code ?? '';
+            await context
                 .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-                .getAllAnalyticalResultIncomingMaterialByVessel(
-                  formatted ?? '',
-                  userRole!,
-                );
+                .fetchReport(plantId);
           });
           ;
         },
@@ -99,20 +96,20 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
                     ) {
                       return (provider.isLoading)
                           ? Center(child: CircularProgressIndicator())
-                          : (provider.uniqueReportList.isEmpty)
+                          : (provider.reportListFromApi.isEmpty)
                           ? Center(child: Text('No data'))
                           : ListView.builder(
-                            itemCount: provider.uniqueReportList.length,
+                            itemCount: provider.reportListFromApi.length,
                             itemBuilder: (context, index) {
-                              final item = provider.uniqueReportList[index];
+                              final item = provider.reportListFromApi[index];
                               return _cardItem(
-                                id: item.idHdr ?? '',
+                                id: item.id ?? '',
                                 date: item.transactionDate?.toString() ?? '',
 
                                 entryBy: item.entryBy ?? '',
                                 tank: item.material,
                                 role: role,
-                                workCenter: item.quantity,
+                                quantity: item.quantity.toString(),
                               );
                             },
                           );
@@ -146,14 +143,19 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
                 dateEntryController.text,
               );
               log('Searching for date: $formattedDate');
-              if (formattedDate != null) {
-                await context
-                    .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-                    .getAllAnalyticalResultIncomingMaterialByVessel(
-                      formattedDate,
-                      role,
-                    );
-              }
+              // if (formattedDate != null) {
+              // await context
+              //     .read<AnalyticalResultIncomingMaterialByVesselProvider>()
+              //     .getAllAnalyticalResultIncomingMaterialByVessel(
+              //       formattedDate,
+              //       role,
+              //     );
+              final plant = context.read<PlantProvider>().currentPlant;
+              final plantId = plant?.code ?? '';
+              await context
+                  .read<AnalyticalResultIncomingMaterialByVesselProvider>()
+                  .fetchReport(plantId);
+              // }
             },
             icon: const Icon(Icons.search),
             label: const Text('Cari'),
@@ -174,7 +176,7 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
   Widget _cardItem({
     required String id,
     required String date,
-    required String? workCenter,
+    required String? quantity,
     required String? tank,
     required String? entryBy,
     required String? role,
@@ -185,18 +187,22 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
           context,
           MaterialPageRoute(
             builder:
-                (context) =>
-                    AnalyticalResultIncomingMaterialByVesselListDetailPage(id: id),
+                (
+                  context,
+                ) => AnalyticalResultIncomingMaterialByVesselListDetailPage(
+                  data: context
+                      .read<AnalyticalResultIncomingMaterialByVesselProvider>()
+                      .reportListFromApi
+                      .firstWhere((element) => element.id == id),
+                ),
           ),
-        ).then((_) {
+        ).then((_) async {
           if (!mounted) return;
-          final formatted = parseDateTimeForQuery(dateEntryController.text);
-          context
+          final plant = context.read<PlantProvider>().currentPlant;
+          final plantId = plant?.code ?? '';
+          await context
               .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-              .getAllAnalyticalResultIncomingMaterialByVessel(
-                formatted ?? '',
-                role!,
-              );
+              .fetchReport(plantId);
         });
       },
       child: Card(
@@ -272,7 +278,7 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'Work Center: $workCenter',
+                    'Work Center: $quantity',
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                 ],

@@ -2,31 +2,28 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/daily_quality_composite_fractionation/daily_quality_composite_fractionation_entity.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_input_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_list_detail_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_input_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_list_detail_page.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_list_detail_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_input_page.dart';
 import 'package:logsheet_app/core/widgets/custom_date_field.dart';
-import 'package:logsheet_app/features/maintenance/presentation/provider/change_product_checklist/maintenance_change_product_checklist_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_report_detail_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_provider.dart';
 import 'package:provider/provider.dart';
 
-class DailyQualityCompositeFractionationListPage extends StatefulWidget {
-  const DailyQualityCompositeFractionationListPage({super.key});
+class AnalyticalResultIncomingMaterialByVesselReportListPage
+    extends StatefulWidget {
+  const AnalyticalResultIncomingMaterialByVesselReportListPage({super.key});
 
   @override
-  State<DailyQualityCompositeFractionationListPage> createState() =>
-      _DailyQualityCompositeFractionationListPageState();
+  State<AnalyticalResultIncomingMaterialByVesselReportListPage> createState() =>
+      _AnalyticalResultIncomingMaterialByVesselReportListPageState();
 }
 
-class _DailyQualityCompositeFractionationListPageState
-    extends State<DailyQualityCompositeFractionationListPage> {
+class _AnalyticalResultIncomingMaterialByVesselReportListPageState
+    extends State<AnalyticalResultIncomingMaterialByVesselReportListPage> {
   DataFormNoEntity? formData;
 
   final TextEditingController dateEntryController = TextEditingController();
@@ -43,14 +40,17 @@ class _DailyQualityCompositeFractionationListPageState
             context,
             MaterialPageRoute(
               builder:
-                  (context) => DailyQualityCompositeFractionationInputPage(),
+                  (context) =>
+                      AnalyticalResultIncomingMaterialByVesselInputPage(),
             ),
-          ).then((_) {
+          ).then((_) async {
             if (!mounted) return;
-            final formatted = parseDateTimeForQuery(dateEntryController.text);
-            context
-                .read<DailyQualityCompositeFractionationProvider>()
-                .getAllDailyCompositeFractionationReport(formatted, userRole);
+
+            final plant = context.read<PlantProvider>().currentPlant;
+            final plantId = plant?.code ?? '';
+            await context
+                .read<AnalyticalResultIncomingMaterialByVesselProvider>()
+                .fetchReport(plantId);
           });
           ;
         },
@@ -72,7 +72,7 @@ class _DailyQualityCompositeFractionationListPageState
                   form.isMenu == "Daily_Quality_Composite_Fractionation_500_mt",
             )
             .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
+    return AppBar(title: Text("Report List (${formData!.code})"), actions: [
         
       ],
     );
@@ -88,32 +88,32 @@ class _DailyQualityCompositeFractionationListPageState
               padding: const EdgeInsets.all(8.0),
               child: Builder(
                 builder: (context) {
-                  return Consumer<DailyQualityCompositeFractionationProvider>(
+                  return Consumer<
+                    AnalyticalResultIncomingMaterialByVesselProvider
+                  >(
                     builder: (
                       BuildContext context,
-                      DailyQualityCompositeFractionationProvider provider,
+                      AnalyticalResultIncomingMaterialByVesselProvider provider,
                       Widget? child,
                     ) {
                       return (provider.isLoading)
                           ? Center(child: CircularProgressIndicator())
-                          : (provider.reportsList.isEmpty)
+                          : (provider.reportListFromApi.isEmpty)
                           ? Center(child: Text('No data'))
                           : ListView.builder(
-                            itemCount: provider.reportsList.length,
+                            itemCount: provider.reportListFromApi.length,
                             itemBuilder: (context, index) {
-                              final item = provider.reportsList[index];
+                              final item = provider.reportListFromApi[index];
                               return _cardItem(
                                 id: item.id ?? '',
                                 date: item.transactionDate?.toString() ?? '',
-                                time:
-                                    formatTimeOfDay(
-                                      item.time,
-                                      showSecond: false,
-                                    ).toString(),
+
                                 entryBy: item.entryBy ?? '',
-                                tank: item.crystalizer,
+                                tank: item.material,
                                 role: role,
-                                workCenter: item.workCenter,
+                                quantity: item.quantity.toString(),
+                                approvedStatus: item.approvedStatus ?? '',
+                                preparedStatus: item.preparedStatus ?? '',
                               );
                             },
                           );
@@ -147,14 +147,19 @@ class _DailyQualityCompositeFractionationListPageState
                 dateEntryController.text,
               );
               log('Searching for date: $formattedDate');
-              if (formattedDate != null) {
-                await context
-                    .read<DailyQualityCompositeFractionationProvider>()
-                    .getAllDailyCompositeFractionationReport(
-                      formattedDate,
-                      role,
-                    );
-              }
+              // if (formattedDate != null) {
+              // await context
+              //     .read<AnalyticalResultIncomingMaterialByVesselProvider>()
+              //     .getAllAnalyticalResultIncomingMaterialByVessel(
+              //       formattedDate,
+              //       role,
+              //     );
+              final plant = context.read<PlantProvider>().currentPlant;
+              final plantId = plant?.code ?? '';
+              await context
+                  .read<AnalyticalResultIncomingMaterialByVesselProvider>()
+                  .fetchReport(plantId);
+              // }
             },
             icon: const Icon(Icons.search),
             label: const Text('Cari'),
@@ -175,27 +180,50 @@ class _DailyQualityCompositeFractionationListPageState
   Widget _cardItem({
     required String id,
     required String date,
-    required String? time,
-    required String? workCenter,
+    required String? quantity,
     required String? tank,
     required String? entryBy,
     required String? role,
+    required String approvedStatus,
+    required String preparedStatus,
+    Color? badgeColor,
+    String? showedStatus,
   }) {
+    if (preparedStatus == "Approved" && approvedStatus == "Approved") {
+      badgeColor = Colors.green;
+      showedStatus = "Approved";
+    } else if (preparedStatus == "Rejected" || approvedStatus == "Rejected") {
+      badgeColor = Colors.red;
+      showedStatus = "Rejected";
+    } else if (preparedStatus != '') {
+      badgeColor = Colors.orange;
+      showedStatus = "Prepared";
+    } else if (preparedStatus == '') {
+      badgeColor = Colors.blue;
+      showedStatus = "Submitted";
+    }
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder:
-                (context) =>
-                    DailyQualityCompositeFractionationListDetailPage(id: id),
+                (
+                  context,
+                ) => AnalyticalResultIncomingMaterialByVesselReportDetailPage(
+                  data: context
+                      .read<AnalyticalResultIncomingMaterialByVesselProvider>()
+                      .reportListFromApi
+                      .firstWhere((element) => element.id == id),
+                ),
           ),
-        ).then((_) {
+        ).then((_) async {
           if (!mounted) return;
-          final formatted = parseDateTimeForQuery(dateEntryController.text);
-          context
-              .read<DailyQualityCompositeFractionationProvider>()
-              .getAllDailyCompositeFractionationReport(formatted, role);
+          final plant = context.read<PlantProvider>().currentPlant;
+          final plantId = plant?.code ?? '';
+          await context
+              .read<AnalyticalResultIncomingMaterialByVesselProvider>()
+              .fetchReport(plantId);
         });
       },
       child: Card(
@@ -221,6 +249,17 @@ class _DailyQualityCompositeFractionationListPageState
                       horizontal: 10,
                       vertical: 4,
                     ),
+                    decoration: BoxDecoration(
+                      color: badgeColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '$showedStatus',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -240,12 +279,7 @@ class _DailyQualityCompositeFractionationListPageState
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                   SizedBox(width: 8),
-                  const Icon(Icons.av_timer, size: 18, color: Colors.grey),
-                  SizedBox(width: 8),
-                  Text(
-                    "$time",
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
-                  ),
+
                   SizedBox(width: 8),
                   const Icon(Icons.storage, size: 18, color: Colors.grey),
                   SizedBox(width: 8),
@@ -276,7 +310,7 @@ class _DailyQualityCompositeFractionationListPageState
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'Work Center: $workCenter',
+                    'Work Center: $quantity',
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                 ],

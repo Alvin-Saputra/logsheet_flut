@@ -326,6 +326,7 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
       }
 
       bool? success;
+      
 
       success = await context.read<QualityReportQCProvider>().updateReport(
         updatedItem,
@@ -335,6 +336,8 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
       );
 
       if (success) {
+        log("Flag: ${updatedItem.flag}");
+        print("INI ADALAH FLAG: ${updatedItem.flag}");
         QualityReportProductionEntity prodEntity =
             updatedItem.toProductionEntity();
         if (!mounted) return;
