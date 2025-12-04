@@ -85,7 +85,7 @@ class _DailyQualityCompositeFractionationApprovalListPageState
             .dataFormNoList
             .where(
               (form) =>
-                  form.isMenu == "Daily_Quality_Composite_Fractionation_500_mt",
+                  form.isMenu == "Daily_Quality_Composite_Fractionation",
             )
             .first;
     return AppBar(

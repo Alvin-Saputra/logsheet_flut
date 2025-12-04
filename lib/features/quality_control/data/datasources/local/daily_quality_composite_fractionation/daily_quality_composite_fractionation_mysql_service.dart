@@ -7,7 +7,7 @@ import 'package:mysql_client/mysql_client.dart';
 
 class DailyQualityCompositeFractionationMysqlService {
   final String dailyQualityCompositeFractionationTable =
-      "t_daily_quality_composite_fractionation_500_mt";
+      "t_daily_quality_composite_fractionation";
 
   Future<bool> insertDailyQualityCompositeFractionationReport({
     required DailyQualityCompositeFractionationEntity report,
@@ -139,7 +139,7 @@ class DailyQualityCompositeFractionationMysqlService {
       if (AppRoles.leadQC.contains(role)) {
         baseQuery = """
       SELECT 
-       * FROM t_daily_quality_composite_fractionation_500_mt  AS a
+       * FROM t_daily_quality_composite_fractionation  AS a
       WHERE 
          DATE(a.transaction_date) = :date AND a.prepared_status IS NULL
       ORDER BY 
@@ -148,7 +148,7 @@ class DailyQualityCompositeFractionationMysqlService {
       } else {
         baseQuery = """
       SELECT *
-      FROM t_daily_quality_composite_fractionation_500_mt AS a
+      FROM t_daily_quality_composite_fractionation AS a
       WHERE 
          DATE(a.transaction_date) = :date
       ORDER BY 
@@ -279,7 +279,7 @@ class DailyQualityCompositeFractionationMysqlService {
       const String baseQuery = """
       SELECT 
       *
-      FROM t_daily_quality_composite_fractionation_500_mt AS a
+      FROM t_daily_quality_composite_fractionation AS a
       ORDER BY a.id ASC;
     """;
 

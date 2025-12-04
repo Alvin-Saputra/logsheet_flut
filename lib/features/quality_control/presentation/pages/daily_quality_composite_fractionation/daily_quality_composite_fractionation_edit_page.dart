@@ -157,7 +157,7 @@ class _DailyQualityCompositeFractionationEditPageState
             .where(
               (form) =>
                   form.isMenu ==
-                      "Daily_Quality_Composite_Fractionation_500_mt" &&
+                      "Daily_Quality_Composite_Fractionation" &&
                   form.isActive == "T",
             )
             .first;

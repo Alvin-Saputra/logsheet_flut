@@ -7,7 +7,8 @@ class DioClient {
   DioClient()
     : _dio = Dio(
         BaseOptions(
-          baseUrl: 'http://10.0.2.2:8000/api', // Ganti URL API Anda
+          // baseUrl: 'http://10.0.2.2:8000/api',
+           baseUrl: 'https://logsheet-dev.gamasap.com/api',
           connectTimeout: const Duration(seconds: 60),
           receiveTimeout: const Duration(seconds: 60),
           headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},

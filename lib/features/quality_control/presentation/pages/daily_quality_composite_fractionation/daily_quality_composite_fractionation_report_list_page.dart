@@ -42,7 +42,7 @@ class _DailyQualityCompositeFractionationReportListPageState
             .dataFormNoList
             .where(
               (form) =>
-                  form.isMenu == "Daily_Quality_Composite_Fractionation_500_mt",
+                  form.isMenu == "Daily_Quality_Composite_Fractionation",
             )
             .first;
     return AppBar(title: Text("Report List (${formData!.code})"), actions: [

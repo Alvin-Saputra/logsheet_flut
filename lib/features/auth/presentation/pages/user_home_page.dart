@@ -76,7 +76,8 @@ class _UserHomePageState extends State<UserHomePage> {
       formChangeProductChecklist,
       formStartupProductChecklist,
       formDailyStorageTankAnalytical,
-      formDailyQualityCompositeFractionationA;
+      formDailyQualityCompositeFractionation,
+      formAnalyticalResultIncomingMaterialByVessel;
 
   Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
@@ -86,32 +87,62 @@ class _UserHomePageState extends State<UserHomePage> {
             title: const Text('Konfirmasi Logout'),
             content: const Text('Apakah Anda yakin ingin logout?'),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Batal'),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text(
-                  'Logout',
-                  style: TextStyle(color: Colors.white),
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Batal'),
+                  ),
+                  Consumer<AuthProvider>(
+                    builder: (
+                      BuildContext context,
+                      AuthProvider provider,
+                      Widget? child,
+                    ) {
+                      return (provider.isLoading)
+                          ? CircularProgressIndicator()
+                          : ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                            ),
+                            onPressed: () async {
+                              if (mounted) {
+                                final authProvider =
+                                    context.read<AuthProvider>();
+                                bool isSuccess =
+                                    await authProvider.logoutUser();
+                                if (isSuccess) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const LoginPage(),
+                                    ),
+                                  );
+                                }
+                                // final storage = StorageService();
+                                // await storage.deleteAllLoginData();
+                                // Navigator.pushReplacement(
+                                //   context,
+                                //   MaterialPageRoute(
+                                //     builder: (_) => const LoginPage(),
+                                //   ),
+                                // );
+                              }
+                            },
+                            child: const Text(
+                              'Logout',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          );
+                    },
+                  ),
+                ],
               ),
             ],
           ),
     );
-
-    if (shouldLogout == true && mounted) {
-      final authProvider = context.read<AuthProvider>();
-      bool isSuccess = await authProvider.logoutUser();
-      if (isSuccess) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginPage()),
-        );
-      }
-    }
   }
 
   Widget _buildDrawerSubheader(String title) {
@@ -304,14 +335,25 @@ class _UserHomePageState extends State<UserHomePage> {
             )
             .first;
 
-    formDailyQualityCompositeFractionationA =
+    formDailyQualityCompositeFractionation =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu == "Daily_Quality_Composite_Fractionation" &&
+                  form.isActive == "T",
+            )
+            .first;
+
+    formAnalyticalResultIncomingMaterialByVessel =
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
             .where(
               (form) =>
                   form.isMenu ==
-                      "Daily_Quality_Composite_Fractionation_500_mt" &&
+                      "Analytical_Result_Of_Incoming_Material_By_Vessel" &&
                   form.isActive == "T",
             )
             .first;
@@ -385,7 +427,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.19"), Text("Build 2025-11-27")],
+              children: [Text("Version 1.0.20"), Text("Build 2025-12-04")],
             ),
           ],
         ),
@@ -637,7 +679,7 @@ class _UserHomePageState extends State<UserHomePage> {
             ExpansionTile(
               leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
               title: Text(
-                'Daily Quality Composite Fractionation\n(${formDailyQualityCompositeFractionationA?.code})',
+                'Daily Quality Composite Fractionation\n(${formDailyQualityCompositeFractionation?.code})',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -650,7 +692,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 _buildDrawerItem(
                   icon: Icons.list_alt,
                   title:
-                      'List\n(${formDailyQualityCompositeFractionationA?.code})',
+                      'List\n(${formDailyQualityCompositeFractionation?.code})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -665,7 +707,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 _buildDrawerItem(
                   icon: Icons.list_alt,
                   title:
-                      'Reports\n(${formDailyQualityCompositeFractionationA?.code})',
+                      'Reports\n(${formDailyQualityCompositeFractionation?.code})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -681,7 +723,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 _buildDrawerItem(
                   icon: Icons.list_alt,
                   title:
-                      'Approval\n(${formDailyQualityCompositeFractionationA?.code})(A)',
+                      'Approval\n(${formDailyQualityCompositeFractionation?.code})(A)',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -699,7 +741,7 @@ class _UserHomePageState extends State<UserHomePage> {
             ExpansionTile(
               leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
               title: Text(
-                'Analytical Result Of Incoming Material By Vessel\n(${formDailyQualityCompositeFractionationA?.code})',
+                'Analytical Result Of Incoming Material By Vessel\n(${formAnalyticalResultIncomingMaterialByVessel?.code})',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -711,7 +753,7 @@ class _UserHomePageState extends State<UserHomePage> {
               children: [
                 _buildDrawerItem(
                   icon: Icons.list_alt,
-                  title: 'List\n(FQOC-009)',
+                  title: 'List\n(${formAnalyticalResultIncomingMaterialByVessel?.code})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -726,7 +768,7 @@ class _UserHomePageState extends State<UserHomePage> {
 
                 _buildDrawerItem(
                   icon: Icons.list_alt,
-                  title: 'Report\n(FQOC-009)',
+                  title: 'Report\n(${formAnalyticalResultIncomingMaterialByVessel?.code})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -739,7 +781,7 @@ class _UserHomePageState extends State<UserHomePage> {
                   },
                 ),
 
-                 _buildDrawerItem(
+                _buildDrawerItem(
                   icon: Icons.list_alt,
                   title: 'Approval\n(FQOC-009)',
                   onTap: () {

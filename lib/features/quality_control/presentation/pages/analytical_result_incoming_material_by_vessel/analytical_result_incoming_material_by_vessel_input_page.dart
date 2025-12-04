@@ -32,6 +32,7 @@ class AnalyticalResultIncomingMaterialByVesselInputPage extends StatefulWidget {
 
 class _AnalyticalResultIncomingMaterialByVesselInputPageState
     extends State<AnalyticalResultIncomingMaterialByVesselInputPage> {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController dateEntryController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController supplierController = TextEditingController();
@@ -83,7 +84,11 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
-            .where((form) => form.isMenu == "Change_Product_Checklist")
+            .where(
+              (form) =>
+                  form.isMenu ==
+                  "Analytical_Result_Of_Incoming_Material_By_Vessel",
+            )
             .first;
     return AppBar(
       title: Text(
@@ -96,17 +101,79 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
   Widget _buildBody(BuildContext context) {
     return Padding(
       padding: EdgeInsetsGeometry.all(16.0),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            Consumer<ValueProvider>(
-              builder: (context, provider, child) {
-                if (provider.isOilTypeLoading) {
-                  // Return a disabled dropdown with a loading indicator or message
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Consumer<ValueProvider>(
+                builder: (context, provider, child) {
+                  if (provider.isOilTypeLoading) {
+                    // Return a disabled dropdown with a loading indicator or message
+                    return DropdownButtonFormField<String>(
+                      value: null,
+                      items: [],
+                      onChanged: null, // Disable the dropdown
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Loading Oil Types...',
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  if (provider.oilTypeLists.isEmpty) {
+                    return TextFormField(
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Oil Types Tidak Ditemukan.',
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Icon(Icons.warning_amber_rounded),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.refresh),
+                          onPressed: () {
+                            context.read<ValueProvider>().fetchOilTypes();
+                          },
+                        ),
+                      ),
+                    );
+                  }
                   return DropdownButtonFormField<String>(
-                    value: null,
-                    items: [],
-                    onChanged: null, // Disable the dropdown
+                    value: selectedOilType,
+                    items:
+                        provider.oilTypeLists.map((item) {
+                          return DropdownMenuItem<String>(
+                            value: item.name,
+                            child: Text(
+                              "${item.name}",
+                              style: TextStyle(fontSize: 14),
+                            ),
+                          );
+                        }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedOilType = value;
+                      });
+                    },
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: const Color(0xFFF0ECE9),
@@ -114,218 +181,186 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      hintText: 'Loading Oil Types...',
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                      hintText: 'Pilih Oil Type',
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: SvgPicture.asset(
+                          'assets/icons/oil-refinery-tanks.svg',
+                          height: 24,
+                          width: 24,
                         ),
                       ),
                     ),
                   );
-                }
-                if (provider.oilTypeLists.isEmpty) {
-                  return TextFormField(
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFFF0ECE9),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      hintText: 'Oil Types Tidak Ditemukan.',
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: Icon(Icons.warning_amber_rounded),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.refresh),
-                        onPressed: () {
-                          context.read<ValueProvider>().fetchOilTypes();
-                        },
-                      ),
-                    ),
-                  );
-                }
-                return DropdownButtonFormField<String>(
-                  value: selectedOilType,
-                  items:
-                      provider.oilTypeLists.map((item) {
-                        return DropdownMenuItem<String>(
-                          value: item.name,
-                          child: Text(
-                            "${item.name}",
-                            style: TextStyle(fontSize: 14),
-                          ),
-                        );
-                      }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedOilType = value;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: const Color(0xFFF0ECE9),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    hintText: 'Pilih Oil Type',
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: SvgPicture.asset(
-                        'assets/icons/oil-refinery-tanks.svg',
-                        height: 24,
-                        width: 24,
-                      ),
-                    ),
+                },
+              ),
+              const SizedBox(height: 8),
+              CustomDateField(
+                controller: dateEntryController,
+                label: 'Tanggal',
+                icon: Icons.event,
+              ),
+              const SizedBox(height: 8),
+              CustomTextField(
+                controller: quantityController,
+                label: 'Quantity',
+                icon: Icons.storage_rounded,
+                isNumeric: true,
+                isRequired: true,
+              ),
+              CustomTextField(
+                controller: supplierController,
+                label: 'Supplier',
+                icon: Icons.person_rounded,
+                isNumeric: false,
+                isRequired: true,
+              ),
+              CustomTextField(
+                controller: shipNameController,
+                label: "Ship's Name",
+                icon: Icons.person_rounded,
+                isNumeric: false,
+                isRequired: true,
+              ),
+              CustomTextField(
+                controller: contractDoController,
+                label: "Contract/D.O Nomor",
+                icon: Icons.person_rounded,
+                isNumeric: false,
+              ),
+
+              CustomTextField(
+                controller: ffaController,
+                label: "FFA (%)",
+                icon: Icons.person_rounded,
+                isNumeric: true,
+              ),
+
+              CustomTextField(
+                controller: miController,
+                label: "M&I (%)",
+                icon: Icons.person_rounded,
+                isNumeric: true,
+              ),
+
+              CustomTextField(
+                controller: dobiController,
+                label: "Dobi (%)",
+                icon: Icons.person_rounded,
+                isNumeric: true,
+              ),
+
+              CustomTextField(
+                controller: othersController,
+                label: "Others",
+                icon: Icons.person_rounded,
+                isNumeric: false,
+              ),
+
+              _detailGeneratorSection(),
+              if (detailControllers.isNotEmpty) _detailFormList(),
+
+              const SizedBox(height: 8.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    "Hasil Analisa Komposite Palka",
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
-                );
-              },
-            ),
-            const SizedBox(height: 8),
-            CustomDateField(
-              controller: dateEntryController,
-              label: 'Tanggal',
-              icon: Icons.event,
-            ),
-            const SizedBox(height: 8),
-            CustomTextField(
-              controller: quantityController,
-              label: 'Quantity',
-              icon: Icons.storage_rounded,
-              isNumeric: true,
-            ),
-            CustomTextField(
-              controller: supplierController,
-              label: 'Supplier',
-              icon: Icons.person_rounded,
-              isNumeric: false,
-            ),
-            CustomTextField(
-              controller: shipNameController,
-              label: "Ship's Name",
-              icon: Icons.person_rounded,
-              isNumeric: false,
-            ),
-            CustomTextField(
-              controller: contractDoController,
-              label: "Contract/D.O Nomor",
-              icon: Icons.person_rounded,
-              isNumeric: false,
-            ),
+                ],
+              ),
 
-            CustomTextField(
-              controller: ffaController,
-              label: "FFA (%)",
-              icon: Icons.person_rounded,
-              isNumeric: true,
-            ),
+              CustomTextField(
+                controller: hasilAnalisaFfaController,
+                label: "FFA",
+                icon: Icons.person_rounded,
+                isNumeric: true,
+              ),
 
-            CustomTextField(
-              controller: miController,
-              label: "M&I (%)",
-              icon: Icons.person_rounded,
-              isNumeric: true,
-            ),
+              CustomTextField(
+                controller: hasilAnalisaIvController,
+                label: "IV",
+                icon: Icons.person_rounded,
+                isNumeric: true,
+              ),
 
-            CustomTextField(
-              controller: dobiController,
-              label: "Dobi (%)",
-              icon: Icons.person_rounded,
-              isNumeric: true,
-            ),
+              CustomTextField(
+                controller: hasilAnalisaMoistureController,
+                label: "Moisture",
+                icon: Icons.person_rounded,
+                isNumeric: true,
+              ),
 
-            CustomTextField(
-              controller: othersController,
-              label: "Others",
-              icon: Icons.person_rounded,
-              isNumeric: false,
-            ),
+              CustomTextField(
+                controller: hasilAnalisaDobiController,
+                label: "Dobi",
+                icon: Icons.person_rounded,
+                isNumeric: true,
+              ),
 
-            _detailGeneratorSection(),
-            if (detailControllers.isNotEmpty) _detailFormList(),
+              CustomTextField(
+                controller: hasilAnalisaPvController,
+                label: "PV",
+                icon: Icons.person_rounded,
+                isNumeric: true,
+              ),
 
-            const SizedBox(height: 8.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  "Hasil Analisa Komposite Palka",
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
+              CustomTextField(
+                controller: hasilAnalisaAnvController,
+                label: "AnV",
+                icon: Icons.person_rounded,
+                isNumeric: true,
+              ),
 
-            CustomTextField(
-              controller: hasilAnalisaFfaController,
-              label: "FFA",
-              icon: Icons.person_rounded,
-              isNumeric: true,
-            ),
+              CustomRemarkField(controller: remarkController),
+              Consumer<AnalyticalResultIncomingMaterialByVesselProvider>(
+                builder: (
+                  BuildContext context,
+                  AnalyticalResultIncomingMaterialByVesselProvider provider,
+                  Widget? child,
+                ) {
+                  return (provider.isLoadingInput)
+                      ? Center(child: CircularProgressIndicator())
+                      : CustomSaveButton(
+                        onPressed: () async {
+                          // Form validation
+                          if (!_formKey.currentState!.validate()) {
+                            showSnackBar("Mohon lengkapi semua field", context);
+                            return;
+                          }
 
-            CustomTextField(
-              controller: hasilAnalisaIvController,
-              label: "IV",
-              icon: Icons.person_rounded,
-              isNumeric: true,
-            ),
+                          if (selectedOilType == null) {
+                            showSnackBar("Oil Type wajib dipilih", context);
+                            return;
+                          }
 
-            CustomTextField(
-              controller: hasilAnalisaMoistureController,
-              label: "Moisture",
-              icon: Icons.person_rounded,
-              isNumeric: true,
-            ),
+                          if (dateEntryController.text == "") {
+                            showSnackBar("Tanggal Wajib dipilih", context);
+                            return;
+                          }
 
-            CustomTextField(
-              controller: hasilAnalisaDobiController,
-              label: "Dobi",
-              icon: Icons.person_rounded,
-              isNumeric: true,
-            ),
+                          if (numberOfRows == 0 || numberOfRows == null) {
+                            showSnackBar("Wajib Generate Details", context);
+                            return;
+                          }
 
-            CustomTextField(
-              controller: hasilAnalisaPvController,
-              label: "PV",
-              icon: Icons.person_rounded,
-              isNumeric: true,
-            ),
+                          if (!_validateDetailRows(context)) return;
 
-            CustomTextField(
-              controller: hasilAnalisaAnvController,
-              label: "AnV",
-              icon: Icons.person_rounded,
-              isNumeric: true,
-            ),
+                          final bool isSuccess = await _insertData();
 
-            CustomRemarkField(controller: remarkController),
-            Consumer<AnalyticalResultIncomingMaterialByVesselProvider>(
-              builder: (
-                BuildContext context,
-                AnalyticalResultIncomingMaterialByVesselProvider provider,
-                Widget? child,
-              ) {
-                return (provider.isLoadingInput)
-                    ? Center(child: CircularProgressIndicator())
-                    : CustomSaveButton(
-                      onPressed: () async {
-                        final bool isSuccess = await _insertData();
-                        if (isSuccess) {
-                          showSnackBar("Berhasil menyimpan data", context);
-                          Navigator.of(context).pop();
-                        } else {
-                          showSnackBar("Gagal meyimpan data", context);
-                        }
-                      },
-                    );
-              },
-            ),
-          ],
+                          if (isSuccess) {
+                            showSnackBar("Berhasil menyimpan data", context);
+                            Navigator.of(context).pop();
+                          } else {
+                            showSnackBar("Gagal menyimpan data", context);
+                          }
+                        },
+                      );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -470,21 +505,25 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                           controller: row['palka_s_ffa']!,
                           label: "Palka S FFA",
                           icon: Icons.science,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: row['palka_s_iv']!,
                           label: "Palka S IV",
                           icon: Icons.science,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: row['palka_s_dobi']!,
                           label: "Palka S Dobi",
                           icon: Icons.science,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: row['palka_s_mni']!,
                           label: "Palka S MNI",
                           icon: Icons.science,
+                          isNumeric: true,
                         ),
                       ]),
 
@@ -502,21 +541,25 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                           controller: row['palka_c_ffa']!,
                           label: "Palka C FFA",
                           icon: Icons.science,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: row['palka_c_iv']!,
                           label: "Palka C IV",
                           icon: Icons.science,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: row['palka_c_dobi']!,
                           label: "Palka C Dobi",
                           icon: Icons.science,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: row['palka_c_mni']!,
                           label: "Palka C MNI",
                           icon: Icons.science,
+                          isNumeric: true,
                         ),
                       ]),
 
@@ -534,21 +577,25 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                           controller: row['palka_p_ffa']!,
                           label: "Palka P FFA",
                           icon: Icons.science,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: row['palka_p_iv']!,
                           label: "Palka P IV",
                           icon: Icons.science,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: row['palka_p_dobi']!,
                           label: "Palka P Dobi",
                           icon: Icons.science,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: row['palka_p_mni']!,
                           label: "Palka P MNI",
                           icon: Icons.science,
+                          isNumeric: true,
                         ),
                       ]),
                     ],
@@ -581,19 +628,19 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
               id: "",
               idHdr: "",
 
-              palkaSNo: parseDouble(row['palka_s_no']!.text) ?? 0,
+              palkaSNo: row['palka_s_no']!.text,
               palkaSFfa: parseDouble(row['palka_s_ffa']!.text) ?? 0,
               palkaSIv: parseDouble(row['palka_s_iv']!.text) ?? 0,
               palkaSDobi: parseDouble(row['palka_s_dobi']!.text) ?? 0,
               palkaSMni: parseDouble(row['palka_s_mni']!.text) ?? 0,
 
-              palkaCNo: parseDouble(row['palka_c_no']!.text) ?? 0,
+              palkaCNo: row['palka_c_no']!.text,
               palkaCFfa: parseDouble(row['palka_c_ffa']!.text) ?? 0,
               palkaCIv: parseDouble(row['palka_c_iv']!.text) ?? 0,
               palkaCDobi: parseDouble(row['palka_c_dobi']!.text) ?? 0,
               palkaCMni: parseDouble(row['palka_c_mni']!.text) ?? 0,
 
-              palkaPNo: parseDouble(row['palka_p_no']!.text) ?? 0,
+              palkaPNo: row['palka_p_no']!.text,
               palkaPFfa: parseDouble(row['palka_p_ffa']!.text) ?? 0,
               palkaPIv: parseDouble(row['palka_p_iv']!.text) ?? 0,
               palkaPDobi: parseDouble(row['palka_p_dobi']!.text) ?? 0,
@@ -661,6 +708,24 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
       debugPrint("Error inserting Analytical Incoming Material By Vessel: $e");
       return false;
     }
+  }
+
+  bool _validateDetailRows(BuildContext context) {
+    for (int i = 0; i < detailControllers.length; i++) {
+      final row = detailControllers[i];
+
+      for (final entry in row.entries) {
+        if (entry.value.text.trim().isEmpty) {
+          showSnackBar(
+            // "Field ${entry.key} di detail ke-${i + 1} wajib diisi",
+            "Semua Field Detail Wajib Diisi",
+            context,
+          );
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   DateTime? parseDateFormatFromController(String? selectedDate) {

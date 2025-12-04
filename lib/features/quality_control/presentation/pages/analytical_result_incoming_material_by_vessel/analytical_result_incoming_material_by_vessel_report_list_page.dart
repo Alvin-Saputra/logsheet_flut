@@ -2,6 +2,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
+import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_list_detail_page.dart';
@@ -29,37 +31,17 @@ class _AnalyticalResultIncomingMaterialByVesselReportListPageState
   final TextEditingController dateEntryController = TextEditingController();
 
   @override
+  initState() {
+    super.initState();
+    context
+        .read<AnalyticalResultIncomingMaterialByVesselProvider>()
+        .clearReports();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final userRole = context.read<UserProvider>().currentUser?.role;
-    return Scaffold(
-      appBar: _buildAppBar(),
-      body: _buildBody(userRole ?? ''),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (context) =>
-                      AnalyticalResultIncomingMaterialByVesselInputPage(),
-            ),
-          ).then((_) async {
-            if (!mounted) return;
-
-            final plant = context.read<PlantProvider>().currentPlant;
-            final plantId = plant?.code ?? '';
-            await context
-                .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-                .fetchReport(plantId);
-          });
-          ;
-        },
-        label: const Text("Tambah Report"),
-        icon: Icon(Icons.add),
-        backgroundColor: Color(0xFFB91C1C),
-        foregroundColor: Colors.white,
-      ),
-    );
+    return Scaffold(appBar: _buildAppBar(), body: _buildBody(userRole ?? ''));
   }
 
   AppBar _buildAppBar() {
@@ -69,7 +51,8 @@ class _AnalyticalResultIncomingMaterialByVesselReportListPageState
             .dataFormNoList
             .where(
               (form) =>
-                  form.isMenu == "Daily_Quality_Composite_Fractionation_500_mt",
+                  form.isMenu ==
+                  "Analytical_Result_Of_Incoming_Material_By_Vessel",
             )
             .first;
     return AppBar(title: Text("Report List (${formData!.code})"), actions: [
@@ -83,44 +66,42 @@ class _AnalyticalResultIncomingMaterialByVesselReportListPageState
       children: [
         _buildFilterSection(context, role),
         Expanded(
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Builder(
-                builder: (context) {
-                  return Consumer<
-                    AnalyticalResultIncomingMaterialByVesselProvider
-                  >(
-                    builder: (
-                      BuildContext context,
-                      AnalyticalResultIncomingMaterialByVesselProvider provider,
-                      Widget? child,
-                    ) {
-                      return (provider.isLoading)
-                          ? Center(child: CircularProgressIndicator())
-                          : (provider.reportListFromApi.isEmpty)
-                          ? Center(child: Text('No data'))
-                          : ListView.builder(
-                            itemCount: provider.reportListFromApi.length,
-                            itemBuilder: (context, index) {
-                              final item = provider.reportListFromApi[index];
-                              return _cardItem(
-                                id: item.id ?? '',
-                                date: item.transactionDate?.toString() ?? '',
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Builder(
+              builder: (context) {
+                return Consumer<
+                  AnalyticalResultIncomingMaterialByVesselProvider
+                >(
+                  builder: (
+                    BuildContext context,
+                    AnalyticalResultIncomingMaterialByVesselProvider provider,
+                    Widget? child,
+                  ) {
+                    return (provider.isLoading)
+                        ? Center(child: CircularProgressIndicator())
+                        : (provider.reportListFromApi.isEmpty)
+                        ? Center(child: Text('No data'))
+                        : ListView.builder(
+                          itemCount: provider.reportListFromApi.length,
+                          itemBuilder: (context, index) {
+                            final item = provider.reportListFromApi[index];
+                            return _cardItem(
+                              id: item.id ?? '',
+                              date: item.transactionDate?.toString() ?? '',
 
-                                entryBy: item.entryBy ?? '',
-                                tank: item.material,
-                                role: role,
-                                quantity: item.quantity.toString(),
-                                approvedStatus: item.approvedStatus ?? '',
-                                preparedStatus: item.preparedStatus ?? '',
-                              );
-                            },
-                          );
-                    },
-                  );
-                },
-              ),
+                              entryBy: item.entryBy ?? '',
+                              tank: item.material,
+                              role: role,
+                              quantity: item.quantity.toString(),
+                              approvedStatus: item.approvedStatus ?? '',
+                              preparedStatus: item.preparedStatus ?? '',
+                            );
+                          },
+                        );
+                  },
+                );
+              },
             ),
           ),
         ),
@@ -143,23 +124,22 @@ class _AnalyticalResultIncomingMaterialByVesselReportListPageState
           SizedBox(width: 16),
           ElevatedButton.icon(
             onPressed: () async {
-              final formattedDate = parseDateTimeForQuery(
-                dateEntryController.text,
-              );
-              log('Searching for date: $formattedDate');
-              // if (formattedDate != null) {
-              // await context
-              //     .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-              //     .getAllAnalyticalResultIncomingMaterialByVessel(
-              //       formattedDate,
-              //       role,
-              //     );
-              final plant = context.read<PlantProvider>().currentPlant;
-              final plantId = plant?.code ?? '';
-              await context
-                  .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-                  .fetchReport(plantId);
-              // }
+              if (dateEntryController.text != "") {
+                final formattedDate = changeStringDateFormat(
+                  dateEntryController.text,
+                  'dd-MM-yyyy',
+                  'yyyy-MM-dd',
+                );
+                log('Searching for date: $formattedDate');
+
+                final plant = context.read<PlantProvider>().currentPlant;
+                final plantId = plant?.code ?? '';
+                await context
+                    .read<AnalyticalResultIncomingMaterialByVesselProvider>()
+                    .fetchReport(plantId, formattedDate);
+              } else if (dateEntryController.text == "") {
+                showSnackBar("Silahkan Pilih Tanggal", this.context);
+              }
             },
             icon: const Icon(Icons.search),
             label: const Text('Cari'),
@@ -221,9 +201,14 @@ class _AnalyticalResultIncomingMaterialByVesselReportListPageState
           if (!mounted) return;
           final plant = context.read<PlantProvider>().currentPlant;
           final plantId = plant?.code ?? '';
+          final formattedDate = changeStringDateFormat(
+            dateEntryController.text,
+            'dd-MM-yyyy',
+            'yyyy-MM-dd',
+          );
           await context
               .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-              .fetchReport(plantId);
+              .fetchReport(plantId, formattedDate);
         });
       },
       child: Card(
@@ -310,7 +295,7 @@ class _AnalyticalResultIncomingMaterialByVesselReportListPageState
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'Work Center: $quantity',
+                    'Quantity: $quantity',
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                 ],

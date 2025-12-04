@@ -32,10 +32,12 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
     extends State<AnalyticalResultIncomingMaterialByVesselListDetailPage> {
   final TextEditingController remarkController = TextEditingController();
   final PageController detailPageControllers = PageController();
+  late AnalyticalResultIncomingMaterialByVesselHeaderEntity _data;
+  @override
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {});
+    _data = widget.data;
   }
 
   @override
@@ -87,38 +89,33 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                         children: [
                           _buildInfoCard(
                             'Date',
-                            _formatDateString(
-                              widget.data.transactionDate.toString(),
-                            ),
+                            _formatDateString(_data.transactionDate.toString()),
                           ),
                         ],
                       ),
                     ),
 
                     _buildSection('General Information', [
-                      _buildDataRow('ID', widget.data.id ?? ''),
+                      _buildDataRow('ID', _data.id ?? ''),
                     ]),
 
                     _buildSection('Analytical Information', [
-                      _buildDataRow('Material', widget.data.material ?? ''),
-                      _buildDataRow(
-                        'Arrival',
-                        widget.data.arrival.toString() ?? '',
-                      ),
+                      _buildDataRow('Material', _data.material ?? ''),
+                      _buildDataRow('Arrival', _data.arrival.toString() ?? ''),
                       _buildDataRow(
                         'Quantity',
-                        widget.data.quantity.toString() ?? '',
+                        _data.quantity.toString() ?? '',
                       ),
-                      _buildDataRow('Supplier', widget.data.supplier ?? ''),
-                      _buildDataRow("Ship's Name", widget.data.shipName ?? ''),
+                      _buildDataRow('Supplier', _data.supplier ?? ''),
+                      _buildDataRow("Ship's Name", _data.shipName ?? ''),
                       _buildDataRow(
                         'Contract/DO No',
-                        widget.data.contractDoNomor ?? '',
+                        _data.contractDoNomor ?? '',
                       ),
-                      _buildDataRow('FFA', widget.data.ffa.toString() ?? ''),
-                      _buildDataRow('M&I', widget.data.mni.toString() ?? ''),
-                      _buildDataRow('Dobi', widget.data.dobi.toString() ?? ''),
-                      _buildDataRow('Others', widget.data.others ?? ''),
+                      _buildDataRow('FFA', _data.ffa.toString() ?? ''),
+                      _buildDataRow('M&I', _data.mni.toString() ?? ''),
+                      _buildDataRow('Dobi', _data.dobi.toString() ?? ''),
+                      _buildDataRow('Others', _data.others ?? ''),
                     ]),
 
                     SizedBox(height: 12.0),
@@ -127,7 +124,7 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                         child: SmoothPageIndicator(
                           controller:
                               detailPageControllers, // Gunakan satu controller untuk semua
-                          count: widget.data.details.length,
+                          count: _data.details.length,
                           effect: const WormEffect(
                             dotHeight: 8,
                             dotWidth: 8,
@@ -150,7 +147,7 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                       SizedBox(
                         child: ExpandablePageView.builder(
                           controller: detailPageControllers,
-                          itemCount: widget.data.details.length,
+                          itemCount: _data.details.length,
                           itemBuilder: (context, pageIndex) {
                             return Column(
                               children: [
@@ -166,31 +163,31 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                                 _buildSection("Palka S", [
                                   _buildDataRow(
                                     'Palka S No',
-                                    widget.data.details[pageIndex].palkaSNo
+                                    _data.details[pageIndex].palkaSNo
                                             .toString() ??
                                         '',
                                   ),
                                   _buildDataRow(
                                     'Palka S FFA',
-                                    widget.data.details[pageIndex].palkaSFfa
+                                    _data.details[pageIndex].palkaSFfa
                                             .toString() ??
                                         '',
                                   ),
                                   _buildDataRow(
                                     'Palka S IV',
-                                    widget.data.details[pageIndex].palkaSIv
+                                    _data.details[pageIndex].palkaSIv
                                             .toString() ??
                                         '',
                                   ),
                                   _buildDataRow(
                                     'Palka S M&I',
-                                    widget.data.details[pageIndex].palkaSMni
+                                    _data.details[pageIndex].palkaSMni
                                             .toString() ??
                                         '',
                                   ),
                                   _buildDataRow(
                                     'Palka S Dobi',
-                                    widget.data.details[pageIndex].palkaSDobi
+                                    _data.details[pageIndex].palkaSDobi
                                             .toString() ??
                                         '',
                                   ),
@@ -203,31 +200,31 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                                 _buildSection("Palka C", [
                                   _buildDataRow(
                                     'Palka C No',
-                                    widget.data.details[pageIndex].palkaCNo
+                                    _data.details[pageIndex].palkaCNo
                                             .toString() ??
                                         '',
                                   ),
                                   _buildDataRow(
                                     'Palka C FFA',
-                                    widget.data.details[pageIndex].palkaCFfa
+                                    _data.details[pageIndex].palkaCFfa
                                             .toString() ??
                                         '',
                                   ),
                                   _buildDataRow(
                                     'Palka C IV',
-                                    widget.data.details[pageIndex].palkaCIv
+                                    _data.details[pageIndex].palkaCIv
                                             .toString() ??
                                         '',
                                   ),
                                   _buildDataRow(
                                     'Palka C M&I',
-                                    widget.data.details[pageIndex].palkaCMni
+                                    _data.details[pageIndex].palkaCMni
                                             .toString() ??
                                         '',
                                   ),
                                   _buildDataRow(
                                     'Palka C Dobi',
-                                    widget.data.details[pageIndex].palkaCDobi
+                                    _data.details[pageIndex].palkaCDobi
                                             .toString() ??
                                         '',
                                   ),
@@ -240,31 +237,31 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                                 _buildSection("Palka P", [
                                   _buildDataRow(
                                     'Palka P No',
-                                    widget.data.details[pageIndex].palkaPNo
+                                    _data.details[pageIndex].palkaPNo
                                             .toString() ??
                                         '',
                                   ),
                                   _buildDataRow(
                                     'Palka P FFA',
-                                    widget.data.details[pageIndex].palkaPFfa
+                                    _data.details[pageIndex].palkaPFfa
                                             .toString() ??
                                         '',
                                   ),
                                   _buildDataRow(
                                     'Palka P IV',
-                                    widget.data.details[pageIndex].palkaPIv
+                                    _data.details[pageIndex].palkaPIv
                                             .toString() ??
                                         '',
                                   ),
                                   _buildDataRow(
                                     'Palka P M&I',
-                                    widget.data.details[pageIndex].palkaPMni
+                                    _data.details[pageIndex].palkaPMni
                                             .toString() ??
                                         '',
                                   ),
                                   _buildDataRow(
                                     'Palka P Dobi',
-                                    widget.data.details[pageIndex].palkaPDobi
+                                    _data.details[pageIndex].palkaPDobi
                                             .toString() ??
                                         '',
                                   ),
@@ -279,23 +276,28 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                     _buildSection('Palka Component Analysis Result', [
                       _buildDataRow(
                         'FFA (as Palmitic) %',
-                        widget.data.hasilAnalisaFfa.toString() ?? '',
+                        _data.hasilAnalisaFfa.toString() ?? '',
                       ),
                       _buildDataRow(
                         'IV (Wijs), grl2/100gr',
-                        widget.data.hasilAnalisaIv.toString() ?? '',
+                        _data.hasilAnalisaIv.toString() ?? '',
                       ),
                       _buildDataRow(
                         'Moisture %',
-                        widget.data.hasilAnalisaMoisture.toString() ?? '',
+                        _data.hasilAnalisaMoisture.toString() ?? '',
                       ),
                       _buildDataRow(
                         'DOBI',
-                        widget.data.hasilAnalisaDobi.toString() ?? '',
+                        _data.hasilAnalisaDobi.toString() ?? '',
                       ),
                       _buildDataRow(
                         "PV, meqO2/kg",
-                        widget.data.hasilAnalisaAnv.toString() ?? '',
+                        _data.hasilAnalisaPv.toString() ?? '',
+                      ),
+
+                      _buildDataRow(
+                        "AnV",
+                        _data.hasilAnalisaAnv.toString() ?? '',
                       ),
                     ]),
 
@@ -303,10 +305,7 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                       Row(
                         children: [
                           Expanded(
-                            child: Text(
-                              widget.data?.remarks ?? '',
-                              softWrap: true,
-                            ),
+                            child: Text(_data?.remarks ?? '', softWrap: true),
                           ),
                         ],
                       ),
@@ -319,8 +318,8 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                           userProvider.currentUser?.role,
                         )))
                       _buildSection('Approval Actions', [
-                        if (widget.data.preparedStatus == "Approved" &&
-                            widget.data.approvedStatus == "Approved") ...[
+                        if (_data.preparedStatus == "Approved" &&
+                            _data.approvedStatus == "Approved") ...[
                           Text(
                             "Checklist Approved",
                             style: TextStyle(
@@ -328,8 +327,8 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                               color: Colors.green,
                             ),
                           ),
-                        ] else if (widget.data.preparedStatus == "Rejected" ||
-                            widget.data.approvedStatus == "Rejected") ...[
+                        ] else if (_data.preparedStatus == "Rejected" ||
+                            _data.approvedStatus == "Rejected") ...[
                           Text(
                             "Checklist Rejected",
                             style: TextStyle(
@@ -340,7 +339,7 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                         ] else if (AppRoles.leadQC.contains(
                           userProvider.currentUser?.role,
                         )) ...[
-                          if (widget.data.preparedStatus == null) ...[
+                          if (_data.preparedStatus == null) ...[
                             Text('Prepared Status:'),
                             SizedBox(height: 8.0),
                             Row(
@@ -411,10 +410,10 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                                 ),
                               ],
                             ),
-                          ] else if (widget.data.preparedStatus != null &&
-                              widget.data.approvedStatus == null) ...[
+                          ] else if (_data.preparedStatus != null &&
+                              _data.approvedStatus == null) ...[
                             Text(
-                              "Waiting Apprvoal From Manager Productions...",
+                              "Waiting Apprvoal From Manager QC...",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.orange,
@@ -423,7 +422,7 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                           ],
                         ] else if (AppRoles.qualityControlManagerApproval
                             .contains(userProvider.currentUser?.role)) ...[
-                          if (widget.data.approvedStatus == null) ...[
+                          if (_data.approvedStatus == null) ...[
                             Text(
                               "Waiting Apprvoal From Leader QC...",
                               style: TextStyle(
@@ -431,8 +430,8 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                                 color: Colors.orange,
                               ),
                             ),
-                          ] else if (widget.data.preparedStatus == "Approved" ||
-                              widget.data.approvedStatus == "Rejected") ...[
+                          ] else if (_data.preparedStatus == "Approved" ||
+                              _data.approvedStatus == "Rejected") ...[
                             Row(
                               mainAxisSize: MainAxisSize.max,
                               children: [
@@ -543,23 +542,33 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
       centerTitle: true,
       iconTheme: const IconThemeData(color: Colors.black),
       actions: [
-        if (widget.data?.preparedStatus == null)
+        if (_data?.preparedStatus == null)
           IconButton(
             onPressed: () async {
-              Navigator.push(
+              final result = await Navigator.push<
+                AnalyticalResultIncomingMaterialByVesselHeaderEntity
+              >(
                 context,
                 MaterialPageRoute(
                   builder:
                       (context) =>
                           AnalyticalResultIncomingMaterialByVesselEditPage(
-                            data: widget.data,
+                            data: _data!,
                           ),
                 ),
               );
+
+              if (!mounted) return;
+
+              if (result != null) {
+                setState(() {
+                  _data = result;
+                });
+              }
             },
             icon: const Icon(Icons.edit),
           ),
-        if (widget.data?.preparedStatus == null)
+        if (_data?.preparedStatus == null)
           IconButton(
             onPressed: () async {
               return _showDeleteConfirmationDialog(context);
@@ -619,7 +628,7 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                                 >();
 
                         final isSuccess = await provider.deleteReport(
-                          id: widget.data.id ?? '',
+                          id: _data.id ?? '',
                         );
 
                         if (isSuccess) {
@@ -661,10 +670,9 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
     var isSuccess = await context
         .read<AnalyticalResultIncomingMaterialByVesselProvider>()
         .updateApproveRejectReport(
-          id: widget.data.id,
+          id: _data.id,
           userName: user.currentUser!.username,
           status: status,
-          role: user.currentUser!.role,
           remarks: remarkController.text,
         );
     return isSuccess;

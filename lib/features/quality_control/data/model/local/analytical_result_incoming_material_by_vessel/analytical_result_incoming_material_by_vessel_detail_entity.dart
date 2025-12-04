@@ -1,19 +1,19 @@
 class AnalyticalResultIncomingMaterialByVesselDetailEntity {
   final String id;
   final String idHdr;
-  final double? palkaSNo;
+  final String? palkaSNo;
   final double? palkaSFfa;
   final double? palkaSIv;
   final double? palkaSDobi;
   final double? palkaSMni;
 
-  final double? palkaCNo;
+  final String? palkaCNo;
   final double? palkaCFfa;
   final double? palkaCIv;
   final double? palkaCDobi;
   final double? palkaCMni;
 
-  final double? palkaPNo;
+  final String? palkaPNo;
   final double? palkaPFfa;
   final double? palkaPIv;
   final double? palkaPDobi;
@@ -68,19 +68,19 @@ class AnalyticalResultIncomingMaterialByVesselDetailEntity {
   String? id,
   String? idHdr,
 
-  double? palkaSNo,
+  String? palkaSNo,
   double? palkaSFfa,
   double? palkaSIv,
   double? palkaSDobi,
   double? palkaSMni,
 
-  double? palkaCNo,
+  String? palkaCNo,
   double? palkaCFfa,
   double? palkaCIv,
   double? palkaCDobi,
   double? palkaCMni,
 
-  double? palkaPNo,
+  String? palkaPNo,
   double? palkaPFfa,
   double? palkaPIv,
   double? palkaPDobi,

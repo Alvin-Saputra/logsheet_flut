@@ -7,6 +7,8 @@ class CustomTextField extends StatelessWidget {
   final String? hintText;
   final bool isNumeric;
   final bool readOnly;
+  final bool isRequired;
+  final String? Function(String?)? validator;
 
   const CustomTextField({
     super.key,
@@ -16,16 +18,29 @@ class CustomTextField extends StatelessWidget {
     this.hintText,
     this.isNumeric = false,
     this.readOnly = false,
+    this.isRequired = false,
+    this.validator,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
         keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
         readOnly: readOnly,
+        style: const TextStyle(color: Color(0xFF655F5B), fontSize: 16),
+        validator:
+            validator ??
+            (isRequired
+                ? (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return '$label wajib diisi';
+                  }
+                  return null;
+                }
+                : null),
         decoration: InputDecoration(
           labelText: label,
           hintText: hintText,
@@ -34,15 +49,15 @@ class CustomTextField extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
           hintStyle: const TextStyle(color: Colors.grey),
-          prefixIcon: Icon(icon, color: Color(0xFF655F5B)),
+          prefixIcon: Icon(icon, color: const Color(0xFF655F5B)),
           filled: true,
           fillColor: const Color(0xFFF0ECE9),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
+          errorStyle: const TextStyle(fontSize: 12),
         ),
-        style: const TextStyle(color: Color(0xFF655F5B), fontSize: 16),
       ),
     );
   }

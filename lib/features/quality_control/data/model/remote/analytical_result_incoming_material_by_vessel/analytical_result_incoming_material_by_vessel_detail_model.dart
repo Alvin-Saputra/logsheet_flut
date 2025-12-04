@@ -73,9 +73,9 @@ class AnalyticalResultIncomingMaterialByVesselDetailModel
           idHdr: jsonIdHdr,
           
           // 1. Konversi String -> Double
-          palkaSNo: double.tryParse(jsonPalkaSNo ?? ''),
-          palkaCNo: double.tryParse(jsonPalkaCNo ?? ''),
-          palkaPNo: double.tryParse(jsonPalkaPNo ?? ''),
+          palkaSNo: jsonPalkaSNo,
+          palkaCNo: jsonPalkaCNo,
+          palkaPNo: jsonPalkaPNo,
 
           // 2. Konversi Num -> Double
           // .toDouble() aman digunakan pada tipe 'num'

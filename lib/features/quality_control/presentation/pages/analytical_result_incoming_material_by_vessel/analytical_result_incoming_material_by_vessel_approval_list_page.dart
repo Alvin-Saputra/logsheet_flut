@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
+import 'package:logsheet_app/core/widgets/custom_date_field.dart';
+import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_change_product/maintenance_change_product_approval_detail_page.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
@@ -31,52 +33,60 @@ class AnalyticalResultIncomingMaterialByVesselApprovalListPage
 class _AnalyticalResultIncomingMaterialByVesselApprovalListPageState
     extends State<AnalyticalResultIncomingMaterialByVesselApprovalListPage> {
   DataFormNoEntity? formData;
+  final TextEditingController dateEntryController = TextEditingController();
   @override
   initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      final plant = await context.read<PlantProvider>().currentPlant;
-      await context
-          .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-          .fetchReport(plant?.code ?? '');
-    });
+    context
+        .read<AnalyticalResultIncomingMaterialByVesselProvider>()
+        .clearReports();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: Consumer<AnalyticalResultIncomingMaterialByVesselProvider>(
-        builder: (
-          BuildContext context,
-          AnalyticalResultIncomingMaterialByVesselProvider provider,
-          Widget? child,
-        ) {
-          return (provider.isLoadingApproval)
-              ? const Center(child: CircularProgressIndicator())
-              : (provider.reportListFromApi.isEmpty)
-              ? const Center(child: Text("No Data Available"))
-              : Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: ListView.builder(
-                  itemCount: provider.reportListFromApi.length,
-                  itemBuilder: (context, index) {
-                    final item = provider.reportListFromApi[index];
-                    log("item.transactionDate: ${item.transactionDate}");
-                    final formattedDate = DateFormat(
-                      'dd-MM-yyyy',
-                    ).format(item.transactionDate ?? DateTime.now());
-                    return _approvalCardItem(
-                      id: item.id ?? '',
-                      date: formattedDate,
-                      preparedStatus: item.preparedStatus ?? '',
-                      approvedStatus: item.approvedStatus ?? '',
-                      material: item.material,
+      body: Column(
+        children: [
+          _buildFilterSection(context),
+          Expanded(
+            child: Consumer<AnalyticalResultIncomingMaterialByVesselProvider>(
+              builder: (
+                BuildContext context,
+                AnalyticalResultIncomingMaterialByVesselProvider provider,
+                Widget? child,
+              ) {
+                return (provider.isLoading)
+                    ? const Center(child: CircularProgressIndicator())
+                    : (provider.reportListFromApi.isEmpty)
+                    ? const Center(child: Text("No Data Available"))
+                    : Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      child: ListView.builder(
+                        itemCount: provider.reportListFromApi.length,
+                        itemBuilder: (context, index) {
+                          final item = provider.reportListFromApi[index];
+                          log("item.transactionDate: ${item.transactionDate}");
+                          final formattedDate = DateFormat(
+                            'dd-MM-yyyy',
+                          ).format(item.transactionDate ?? DateTime.now());
+                          return _approvalCardItem(
+                            id: item.id ?? '',
+                            date: formattedDate,
+                            preparedStatus: item.preparedStatus ?? '',
+                            approvedStatus: item.approvedStatus ?? '',
+                            material: item.material,
+                          );
+                        },
+                      ),
                     );
-                  },
-                ),
-              );
-        },
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -88,7 +98,8 @@ class _AnalyticalResultIncomingMaterialByVesselApprovalListPageState
             .dataFormNoList
             .where(
               (form) =>
-                  form.isMenu == "Daily_Quality_Composite_Fractionation_500_mt",
+                  form.isMenu ==
+                  "Analytical_Result_Of_Incoming_Material_By_Vessel",
             )
             .first;
     return AppBar(
@@ -106,13 +117,61 @@ class _AnalyticalResultIncomingMaterialByVesselApprovalListPageState
                   onPressed: () async {
                     final plant =
                         await context.read<PlantProvider>().currentPlant;
-                    await provider.fetchReport(plant?.code ?? '');
+                    await provider.fetchReport(plant?.code ?? '', '');
                   },
                   icon: Icon(Icons.replay),
                 );
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildFilterSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: CustomDateField(
+              controller: dateEntryController,
+              label: 'Tanggal',
+              icon: Icons.event,
+            ),
+          ),
+          SizedBox(width: 16),
+          ElevatedButton.icon(
+            onPressed: () async {
+              if (dateEntryController.text != "") {
+                final formattedDate = changeStringDateFormat(
+                  dateEntryController.text,
+                  'dd-MM-yyyy',
+                  'yyyy-MM-dd',
+                );
+                log('Searching for date: $formattedDate');
+
+                final plant = context.read<PlantProvider>().currentPlant;
+                final plantId = plant?.code ?? '';
+                await context
+                    .read<AnalyticalResultIncomingMaterialByVesselProvider>()
+                    .fetchReport(plantId, formattedDate);
+              } else if (dateEntryController.text == "") {
+                showSnackBar("Silahkan Pilih Tanggal", this.context);
+              }
+            },
+            icon: const Icon(Icons.search),
+            label: const Text('Cari'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFAB2F2B),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -176,9 +235,14 @@ class _AnalyticalResultIncomingMaterialByVesselApprovalListPageState
           ).then((_) async {
             if (!mounted) return;
             final plant = await context.read<PlantProvider>().currentPlant;
+            final formattedDate = changeStringDateFormat(
+              dateEntryController.text,
+              'dd-MM-yyyy',
+              'yyyy-MM-dd',
+            );
             await context
                 .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-                .fetchReport(plant?.code ?? '');
+                .fetchReport(plant?.code ?? '', formattedDate);
           });
         },
         child: Padding(

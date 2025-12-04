@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 int? parseInt(dynamic value) {
   if (value == null) return null;
@@ -48,4 +49,22 @@ String? formatTimeOfDay(TimeOfDay? time, {bool showSecond = true}) {
     return '$hour:$minute';
   }
   // We add ':00' for seconds to match the standard TIME format
+}
+
+String formatDatetoString(DateTime date, String format) {
+  return DateFormat(format).format(date);
+}
+
+DateTime formarStringtoDate(String date, String format) {
+  return DateFormat(format).parse(date);
+}
+
+String changeStringDateFormat(
+  String date,
+  String inputFormat,
+  String outputFormat,
+) {
+  final inputDateTime = DateFormat(inputFormat).parse(date);
+
+  return DateFormat(outputFormat).format(inputDateTime);
 }

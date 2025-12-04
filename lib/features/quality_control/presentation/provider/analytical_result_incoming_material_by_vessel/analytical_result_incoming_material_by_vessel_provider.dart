@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
 import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_api_service.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_detail_entity.dart';
@@ -95,19 +96,39 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchReport(String plantId) async {
+  Future<void> fetchReport(
+    String plantId,
+    String? date, {
+    String? role,
+    String? purpose,
+  }) async {
     _setLoading(true);
     _setErrorMessage(null);
 
     try {
       String token = await _storageService.readSessionToken() ?? '';
-      final response = await _apiService.fetchReports('Bearer $token', plantId);
+      final response = await _apiService.fetchReports(
+        'Bearer $token',
+        plantId,
+        date ?? '',
+      );
 
       if (response != null && response.success == true) {
         final data = response.data;
         _reportListFromApi = data;
-        _reportListFromApi =
-            _reportListFromApi.where((item) => item.flag == 'T').toList();
+
+        if (purpose == "list" && AppRoles.leadQC.contains(role)) {
+          _reportListFromApi =
+              _reportListFromApi
+                  .where(
+                    (item) => item.flag == 'T' && item.preparedStatus == null,
+                  )
+                  .toList();
+        } else {
+          _reportListFromApi =
+              _reportListFromApi.where((item) => item.flag == 'T').toList();
+        }
+
         notifyListeners();
       } else {
         _setErrorMessage('Fetch report failed.');
@@ -228,7 +249,7 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
     required AnalyticalResultIncomingMaterialByVesselHeaderEntity headerInput,
     required String menudId,
   }) async {
-    _setLoadingEdit(true);
+    _setLoadingInput(true);
 
     try {
       final body = {
@@ -252,6 +273,7 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
             headerInput.details
                 .map(
                   (detail) => {
+                    "id": detail.id,
                     "palka_s_no": detail.palkaSNo.toString(),
                     "palka_s_ffa": detail.palkaSFfa.toString(),
                     "palka_s_iv": detail.palkaSIv.toString(),
@@ -289,7 +311,7 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
       notifyListeners();
       return false;
     } finally {
-      _setLoadingEdit(false);
+      _setLoadingInput(false);
       notifyListeners();
     }
   }
@@ -297,7 +319,7 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
   Future<bool> updateApproveRejectReport({
     required String id,
     required String userName,
-    required String role,
+    // required String role,
     required String status,
     required String remarks,
   }) async {
@@ -307,7 +329,7 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
       final body = {
         "id": id,
         "username": userName,
-        "role": role,
+        // "role": role,
         "approve_status": status,
         "remark": remarks,
       };
@@ -334,5 +356,9 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
       _setLoadingEdit(false);
       notifyListeners();
     }
+  }
+
+  void clearReports() {
+    reportListFromApi.clear();
   }
 }

@@ -70,6 +70,8 @@ class _AnalyticalResultIncomingMaterialByVesselEditPageState
 
   final PageController palkaPageControllers = PageController();
 
+  late AnalyticalResultIncomingMaterialByVesselHeaderEntity updatedData;
+
   @override
   initState() {
     super.initState();
@@ -91,7 +93,7 @@ class _AnalyticalResultIncomingMaterialByVesselEditPageState
         contractDoController.text = widget.data.contractDoNomor.toString();
         ffaController.text = widget.data.ffa.toString();
         miController.text = widget.data.mni.toString();
-        dobiController.text = widget.data.shipName.toString();
+        dobiController.text = widget.data.dobi.toString();
         othersController.text = widget.data.others.toString();
         hasilAnalisaFfaController.text = widget.data.hasilAnalisaFfa.toString();
         hasilAnalisaIvController.text = widget.data.hasilAnalisaIv.toString();
@@ -154,7 +156,11 @@ class _AnalyticalResultIncomingMaterialByVesselEditPageState
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
-            .where((form) => form.isMenu == "Change_Product_Checklist")
+            .where(
+              (form) =>
+                  form.isMenu ==
+                  "Analytical_Result_Of_Incoming_Material_By_Vessel",
+            )
             .first;
     return AppBar(
       title: Text(
@@ -380,14 +386,14 @@ class _AnalyticalResultIncomingMaterialByVesselEditPageState
                 AnalyticalResultIncomingMaterialByVesselProvider provider,
                 Widget? child,
               ) {
-                return (provider.isLoadingEdit)
+                return (provider.isLoadingInput)
                     ? Center(child: CircularProgressIndicator())
                     : CustomSaveButton(
                       onPressed: () async {
-                        final bool isSuccess = await _insertData();
+                        final bool isSuccess = await _updateReport();
                         if (isSuccess) {
                           showSnackBar("Berhasil menyimpan data", context);
-                          Navigator.of(context).pop();
+                          Navigator.of(context).pop(updatedData);
                         } else {
                           showSnackBar("Gagal meyimpan data", context);
                         }
@@ -492,21 +498,25 @@ class _AnalyticalResultIncomingMaterialByVesselEditPageState
                           controller: row['palka_s_ffa']!,
                           label: "Palka S FFA",
                           icon: Icons.science,
+                           isNumeric: true
                         ),
                         CustomTextField(
                           controller: row['palka_s_iv']!,
                           label: "Palka S IV",
                           icon: Icons.science,
+                           isNumeric: true
                         ),
                         CustomTextField(
                           controller: row['palka_s_dobi']!,
                           label: "Palka S Dobi",
                           icon: Icons.science,
+                           isNumeric: true
                         ),
                         CustomTextField(
                           controller: row['palka_s_mni']!,
                           label: "Palka S MNI",
                           icon: Icons.science,
+                           isNumeric: true
                         ),
                       ]),
 
@@ -524,21 +534,25 @@ class _AnalyticalResultIncomingMaterialByVesselEditPageState
                           controller: row['palka_c_ffa']!,
                           label: "Palka C FFA",
                           icon: Icons.science,
+                           isNumeric: true
                         ),
                         CustomTextField(
                           controller: row['palka_c_iv']!,
                           label: "Palka C IV",
                           icon: Icons.science,
+                           isNumeric: true
                         ),
                         CustomTextField(
                           controller: row['palka_c_dobi']!,
                           label: "Palka C Dobi",
                           icon: Icons.science,
+                           isNumeric: true
                         ),
                         CustomTextField(
                           controller: row['palka_c_mni']!,
                           label: "Palka C MNI",
                           icon: Icons.science,
+                           isNumeric: true
                         ),
                       ]),
 
@@ -556,21 +570,25 @@ class _AnalyticalResultIncomingMaterialByVesselEditPageState
                           controller: row['palka_p_ffa']!,
                           label: "Palka P FFA",
                           icon: Icons.science,
+                           isNumeric: true
                         ),
                         CustomTextField(
                           controller: row['palka_p_iv']!,
                           label: "Palka P IV",
                           icon: Icons.science,
+                           isNumeric: true
                         ),
                         CustomTextField(
                           controller: row['palka_p_dobi']!,
                           label: "Palka P Dobi",
                           icon: Icons.science,
+                           isNumeric: true
                         ),
                         CustomTextField(
                           controller: row['palka_p_mni']!,
                           label: "Palka P MNI",
                           icon: Icons.science,
+                           isNumeric: true
                         ),
                       ]),
                     ],
@@ -586,7 +604,7 @@ class _AnalyticalResultIncomingMaterialByVesselEditPageState
     );
   }
 
-  Future<bool> _insertData() async {
+  Future<bool> _updateReport() async {
     final plant = context.read<PlantProvider>().currentPlant;
     final user = context.read<UserProvider>();
     final businessUnit =
@@ -598,24 +616,28 @@ class _AnalyticalResultIncomingMaterialByVesselEditPageState
 
     try {
       final detail =
-          detailControllers.map((row) {
-            return AnalyticalResultIncomingMaterialByVesselDetailEntity(
-              id: "",
-              idHdr: "",
+          detailControllers.asMap().entries.map((entry) {
+            final index = entry.key;
+            final row = entry.value;
+            final oldDetail = widget.data.details[index];
 
-              palkaSNo: parseDouble(row['palka_s_no']!.text),
+            return AnalyticalResultIncomingMaterialByVesselDetailEntity(
+              id: oldDetail.id,
+              idHdr: oldDetail.idHdr,
+
+              palkaSNo: row['palka_s_no']!.text,
               palkaSFfa: parseDouble(row['palka_s_ffa']!.text),
               palkaSIv: parseDouble(row['palka_s_iv']!.text),
               palkaSDobi: parseDouble(row['palka_s_dobi']!.text),
               palkaSMni: parseDouble(row['palka_s_mni']!.text),
 
-              palkaCNo: parseDouble(row['palka_c_no']!.text),
+              palkaCNo: row['palka_c_no']!.text,
               palkaCFfa: parseDouble(row['palka_c_ffa']!.text),
               palkaCIv: parseDouble(row['palka_c_iv']!.text),
               palkaCDobi: parseDouble(row['palka_c_dobi']!.text),
               palkaCMni: parseDouble(row['palka_c_mni']!.text),
 
-              palkaPNo: parseDouble(row['palka_p_no']!.text),
+              palkaPNo: row['palka_p_no']!.text,
               palkaPFfa: parseDouble(row['palka_p_ffa']!.text),
               palkaPIv: parseDouble(row['palka_p_iv']!.text),
               palkaPDobi: parseDouble(row['palka_p_dobi']!.text),
@@ -624,7 +646,7 @@ class _AnalyticalResultIncomingMaterialByVesselEditPageState
           }).toList();
 
       final header = AnalyticalResultIncomingMaterialByVesselHeaderEntity(
-        id: '',
+        id: widget.data.id,
         company: businessUnit?.buCode ?? '',
         plant: plant?.code ?? '',
         transactionDate: formattedDateEntry,
@@ -668,8 +690,8 @@ class _AnalyticalResultIncomingMaterialByVesselEditPageState
 
       final isSuccess = await context
           .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-          .insertReport(headerInput: header, menudId: formData?.isMenu ?? '');
-
+          .updateReport(headerInput: header, menudId: formData?.isMenu ?? '');
+      updatedData = header;
       return isSuccess;
     } catch (e) {
       debugPrint("Error inserting Analytical Incoming Material By Vessel: $e");

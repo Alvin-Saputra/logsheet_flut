@@ -26,6 +26,7 @@ abstract class AnalyticalResultIncomingMaterialByVesselApiService {
   Future<FetchAnalyticalResultIncomingMaterialByVesselResponse> fetchReports(
     @Header("Authorization") String token,
     @Query("plant") String? plantId,
+    @Query("date") String? date,
   );
 
   @DELETE("/arimvess/{id}")

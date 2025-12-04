@@ -65,9 +65,10 @@ class _AnalyticalResultIncomingMaterialByVesselApiService
   Future<FetchAnalyticalResultIncomingMaterialByVesselResponse> fetchReports(
     String token,
     String? plantId,
+    String? date,
   ) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'plant': plantId};
+    final queryParameters = <String, dynamic>{r'plant': plantId, r'date': date};
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{r'Authorization': token};
     _headers.removeWhere((k, v) => v == null);

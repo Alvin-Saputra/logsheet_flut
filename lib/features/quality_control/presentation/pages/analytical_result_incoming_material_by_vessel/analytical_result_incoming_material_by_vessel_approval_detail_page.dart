@@ -313,7 +313,7 @@ class _AnalyticalResultIncomingMaterialByVesseApprovalDetailPageState
                       ),
                     ]),
 
-                   if ((AppRoles.leadQC.contains(
+                    if ((AppRoles.leadQC.contains(
                           userProvider.currentUser?.role,
                         )) ||
                         (AppRoles.qualityControlManagerApproval.contains(
@@ -330,7 +330,7 @@ class _AnalyticalResultIncomingMaterialByVesseApprovalDetailPageState
                             ),
                           ),
                         ] else if (widget.data.preparedStatus == "Rejected" ||
-                           widget.data.approvedStatus == "Rejected") ...[
+                            widget.data.approvedStatus == "Rejected") ...[
                           Text(
                             "Checklist Rejected",
                             style: TextStyle(
@@ -412,7 +412,7 @@ class _AnalyticalResultIncomingMaterialByVesseApprovalDetailPageState
                             ),
                           ] else if (widget.data.preparedStatus == null) ...[
                             Text(
-                              "Waiting Approval From Leader Productions...",
+                              "Waiting Approval From Leader QC...",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.orange,
@@ -424,7 +424,7 @@ class _AnalyticalResultIncomingMaterialByVesseApprovalDetailPageState
                         )) ...[
                           if (widget.data.approvedStatus == null) ...[
                             Text(
-                              "Waiting Apprvoal From Manager Productions...",
+                              "Waiting Apprvoal From Manager QC...",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.orange,
@@ -530,91 +530,6 @@ class _AnalyticalResultIncomingMaterialByVesseApprovalDetailPageState
     );
   }
 
-  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
-    // Simpan context utama ke variabel
-    final parentContext = context;
-
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          title: const Text(
-            'Delete Report',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: const Text(
-            'Are you sure you want to delete this report? This action cannot be undone.',
-          ),
-          actions: [
-            TextButton(
-              onPressed:
-                  () => Navigator.of(dialogContext).pop(), // tutup dialog
-              child: const Text('Cancel'),
-            ),
-            Consumer<AnalyticalResultIncomingMaterialByVesselProvider>(
-              builder: (
-                BuildContext context,
-                AnalyticalResultIncomingMaterialByVesselProvider provider,
-                Widget? child,
-              ) {
-                return (provider.isLoadingDelete)
-                    ? Center(child: CircularProgressIndicator())
-                    : ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      onPressed: () async {
-                        Navigator.of(dialogContext).pop(); // tutup dialog dulu
-
-                        final provider =
-                            parentContext
-                                .read<
-                                  AnalyticalResultIncomingMaterialByVesselProvider
-                                >();
-
-                        final isSuccess = await provider.deleteReport(
-                          id: widget.data.id ?? '',
-                        );
-
-                        if (isSuccess) {
-                          if (parentContext.mounted) {
-                            ScaffoldMessenger.of(parentContext).showSnackBar(
-                              const SnackBar(
-                                content: Text('Report deleted successfully.'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                            Navigator.of(
-                              parentContext,
-                            ).pop(); // ✅ ini menutup halaman detail
-                          }
-                        } else {
-                          if (parentContext.mounted) {
-                            ScaffoldMessenger.of(parentContext).showSnackBar(
-                              const SnackBar(
-                                content: Text('Failed to delete report.'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        }
-                      },
-                      child: const Text('Delete'),
-                    );
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Future<bool> _approveRejectReport(String status) async {
     final user = context.read<UserProvider>();
 
@@ -624,7 +539,6 @@ class _AnalyticalResultIncomingMaterialByVesseApprovalDetailPageState
           id: widget.data.id,
           userName: user.currentUser!.username,
           status: status,
-          role: user.currentUser!.role,
           remarks: remarkController.text,
         );
     return isSuccess;
