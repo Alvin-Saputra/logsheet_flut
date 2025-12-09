@@ -18,6 +18,7 @@ import 'package:logsheet_app/features/master_data/data/repository/master/data_fo
 import 'package:logsheet_app/features/master_data/data/repository/master/plant_repository.dart';
 import 'package:logsheet_app/features/master_data/data/repository/master/product_repository.dart';
 import 'package:logsheet_app/features/master_data/data/repository/master/user_repository.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_api_service.dart';
 import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_api_service.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_repository.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/daily_quality_composite_fractionation/daily_quality_composite_fractionation_repository.dart';
@@ -57,6 +58,7 @@ import 'package:logsheet_app/features/master_data/presentation/provider/master/b
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/product_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
@@ -78,9 +80,13 @@ void main() async {
 
   final dioClient = DioClient();
   final loginApiService = AuthApiService(dioClient.dio);
+  final storageService = StorageService();
+
   final analyticalResultIncomingMaterialByVesselApiService =
       AnalyticalResultIncomingMaterialByVesselApiService(dioClient.dio);
-  final storageService = StorageService();
+
+  final analyticalResultIncomingMaterialByTruckApiService =
+      AnalyticalResultIncomingMaterialByTruckApiService(dioClient.dio);
 
   runApp(
     MultiProvider(
@@ -408,6 +414,14 @@ void main() async {
                     .read<AnalyticalResultIncomingMaterialByVesselRepository>(),
                 storageService,
                 analyticalResultIncomingMaterialByVesselApiService,
+              ),
+        ),
+
+        ChangeNotifierProvider(
+          create:
+              (context) => AnalyticalResultIncomingMaterialByTruckProvider(
+                analyticalResultIncomingMaterialByTruckApiService,
+                storageService,
               ),
         ),
 

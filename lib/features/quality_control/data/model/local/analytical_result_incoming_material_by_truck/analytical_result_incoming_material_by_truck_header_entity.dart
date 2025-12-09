@@ -10,10 +10,10 @@ class AnalyticalResultIncomingMaterialByTruckHeaderEntity {
   final DateTime? arrival;
   final String? contractDoNomor;
   final String? supplier;
-  final String? vesselVechicle;
-  final double? sFfa;
-  final double? sMni;
-  final String? sOthers;
+  final String? vesselVehicle;
+  final double? ssFfa;
+  final double? ssMni;
+  final String? ssOthers;
 
   final String? flag;
   final String? entryBy;
@@ -44,10 +44,10 @@ class AnalyticalResultIncomingMaterialByTruckHeaderEntity {
     required this.arrival,
     required this.contractDoNomor,
     required this.supplier,
-    required this.vesselVechicle,
-    required this.sFfa,
-    required this.sMni,
-    required this.sOthers,
+    required this.vesselVehicle,
+    required this.ssFfa,
+    required this.ssMni,
+    required this.ssOthers,
     required this.flag,
     required this.entryBy,
     required this.entryDate,

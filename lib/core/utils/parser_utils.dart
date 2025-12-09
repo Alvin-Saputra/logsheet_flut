@@ -55,16 +55,21 @@ String formatDatetoString(DateTime date, String format) {
   return DateFormat(format).format(date);
 }
 
-DateTime formarStringtoDate(String date, String format) {
+DateTime formatStringtoDate(String date, String format) {
   return DateFormat(format).parse(date);
 }
 
-String changeStringDateFormat(
+dynamic changeStringDateFormat(
   String date,
   String inputFormat,
-  String outputFormat,
-) {
+  String outputFormat, {
+  bool returnDateTime = false,
+}) {
   final inputDateTime = DateFormat(inputFormat).parse(date);
 
-  return DateFormat(outputFormat).format(inputDateTime);
+  if (returnDateTime) {
+    return inputDateTime; // return DateTime
+  }
+
+  return DateFormat(outputFormat).format(inputDateTime); // return String
 }

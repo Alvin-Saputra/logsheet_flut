@@ -6,10 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_detail_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_header_entity.dart';
 import 'package:logsheet_app/core/widgets/custom_date_field.dart';
-import 'package:logsheet_app/core/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/core/widgets/custom_save_button.dart';
 import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/core/widgets/custom_text_field.dart';
@@ -18,59 +15,121 @@ import 'package:logsheet_app/features/master_data/presentation/provider/master/d
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_detail_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_header_entity.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class AnalyticalResultIncomingMaterialByVesselInputPage extends StatefulWidget {
-  const AnalyticalResultIncomingMaterialByVesselInputPage({super.key});
+class AnalyticalResultIncomingMaterialByTruckEditPage extends StatefulWidget {
+  const AnalyticalResultIncomingMaterialByTruckEditPage({
+    super.key,
+    required this.data,
+  });
+
+  final AnalyticalResultIncomingMaterialByTruckHeaderEntity data;
 
   @override
-  State<AnalyticalResultIncomingMaterialByVesselInputPage> createState() =>
-      _AnalyticalResultIncomingMaterialByVesselInputPageState();
+  State<AnalyticalResultIncomingMaterialByTruckEditPage> createState() =>
+      _AnalyticalResultIncomingMaterialByTruckEditPageState();
 }
 
-class _AnalyticalResultIncomingMaterialByVesselInputPageState
-    extends State<AnalyticalResultIncomingMaterialByVesselInputPage> {
+class _AnalyticalResultIncomingMaterialByTruckEditPageState
+    extends State<AnalyticalResultIncomingMaterialByTruckEditPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController dateEntryController = TextEditingController();
-  final TextEditingController quantityController = TextEditingController();
   final TextEditingController supplierController = TextEditingController();
-  final TextEditingController shipNameController = TextEditingController();
+  final TextEditingController vesselVehicleController = TextEditingController();
   final TextEditingController contractDoController = TextEditingController();
 
-  final TextEditingController ffaController = TextEditingController();
-  final TextEditingController miController = TextEditingController();
-  final TextEditingController dobiController = TextEditingController();
-  final TextEditingController othersController = TextEditingController();
-
-  final TextEditingController hasilAnalisaFfaController =
-      TextEditingController();
-  final TextEditingController hasilAnalisaIvController =
-      TextEditingController();
-  final TextEditingController hasilAnalisaMoistureController =
-      TextEditingController();
-  final TextEditingController hasilAnalisaDobiController =
-      TextEditingController();
-  final TextEditingController hasilAnalisaPvController =
-      TextEditingController();
-  final TextEditingController hasilAnalisaAnvController =
-      TextEditingController();
-
-  final TextEditingController remarkController = TextEditingController();
+  final TextEditingController ssFfaController = TextEditingController();
+  final TextEditingController ssMniController = TextEditingController();
+  final TextEditingController ssOthersController = TextEditingController();
 
   List<Map<String, TextEditingController>> detailControllers = [];
   DataFormNoEntity? formData;
   String? selectedMaterial;
   int? numberOfRows;
 
-  final PageController palkaPageControllers = PageController();
+  final PageController pageControllers = PageController();
+
+  late AnalyticalResultIncomingMaterialByTruckHeaderEntity updatedData;
 
   @override
   initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await context.read<ValueProvider>().fetchOilTypes();
+
+      setState(() {
+        if (widget.data.material != null && widget.data.material!.isNotEmpty) {
+          selectedMaterial = widget.data.material;
+        } else {
+          selectedMaterial = null;
+        }
+        dateEntryController.text = formatDatetoString(
+          widget.data.arrival!,
+          'dd-MM-yyyy',
+        );
+
+        supplierController.text = widget.data.supplier ?? '';
+        contractDoController.text = widget.data.contractDoNomor ?? '';
+        vesselVehicleController.text = widget.data.vesselVehicle ?? '';
+        ssFfaController.text = widget.data.ssFfa.toString();
+        ssMniController.text = widget.data.ssMni.toString();
+        ssOthersController.text = widget.data.ssOthers ?? '';
+
+        generateDetailRows(widget.data.details.length);
+        print(widget.data.details.length);
+        print(widget.data.details[0]);
+        // print(widget.data.details[1]);
+
+        var detail1 = widget.data.details[0];
+        // var detail2 = widget.data.details[1];
+
+        // log("detail index 1: ${widget.data.details[1]}");
+
+        for (int i = 0; i < widget.data.details.length; i++) {
+          detailControllers[i]['no']?.text =
+              widget.data.details[i].no.toString();
+
+          detailControllers[i]['sampling_date']?.text = formatDatetoString(
+            widget.data.details[i].samplingDate!,
+            'dd-MM-yyyy',
+          );
+
+          detailControllers[i]['police_no']?.text =
+              widget.data.details[i].policeNo.toString();
+
+          detailControllers[i]['p_ffa']?.text =
+              widget.data.details[i].pFfa.toString();
+
+          detailControllers[i]['p_moisture']?.text =
+              widget.data.details[i].pMoisture.toString();
+
+          detailControllers[i]['p_iv']?.text =
+              widget.data.details[i].pIv.toString();
+
+          detailControllers[i]['p_pv']?.text =
+              widget.data.details[i].pPv.toString();
+
+          detailControllers[i]['p_dobi']?.text =
+              widget.data.details[i].pDobi.toString();
+
+          detailControllers[i]['p_color_r']?.text =
+              widget.data.details[i].pColorR.toString();
+
+          detailControllers[i]['p_color_y']?.text =
+              widget.data.details[i].pColorY.toString();
+
+          detailControllers[i]['analis']?.text =
+              widget.data.details[i].analis ?? '';
+
+          detailControllers[i]['remark']?.text =
+              widget.data.details[i].remarks ?? '';
+        }
+      });
     });
   }
 
@@ -87,12 +146,12 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
             .where(
               (form) =>
                   form.isMenu ==
-                  "Analytical_Result_Of_Incoming_Material_By_Vessel",
+                  "Analytical_Result_Of_Incoming_Material_By_Truck",
             )
             .first;
     return AppBar(
       title: Text(
-        "Analytical Result Incoming Material By Vessel Input (${formData!.code})",
+        "Analytical Result Incoming Material By Truck Edit (${formData!.code})",
       ),
       actions: [],
     );
@@ -143,7 +202,7 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
                         ),
-                        hintText: 'Materials Tidak Ditemukan.',
+                        hintText: 'Materials Tidak Ditemukan',
                         prefixIcon: const Padding(
                           padding: EdgeInsets.all(12.0),
                           child: Icon(Icons.warning_amber_rounded),
@@ -181,7 +240,7 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      hintText: 'Pilih Materials',
+                      hintText: 'Pilih Material',
                       prefixIcon: Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: SvgPicture.asset(
@@ -197,31 +256,11 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
               const SizedBox(height: 8),
               CustomDateField(
                 controller: dateEntryController,
-                label: 'Arrival',
+                label: 'Arrival Date',
                 icon: Icons.event,
               ),
               const SizedBox(height: 8),
-              CustomTextField(
-                controller: quantityController,
-                label: 'Quantity',
-                icon: Icons.storage_rounded,
-                isNumeric: true,
-                isRequired: true,
-              ),
-              CustomTextField(
-                controller: supplierController,
-                label: 'Supplier',
-                icon: Icons.person_rounded,
-                isNumeric: false,
-                isRequired: true,
-              ),
-              CustomTextField(
-                controller: shipNameController,
-                label: "Ship's Name",
-                icon: Icons.person_rounded,
-                isNumeric: false,
-                isRequired: true,
-              ),
+
               CustomTextField(
                 controller: contractDoController,
                 label: "Contract/D.O Nomor",
@@ -230,94 +269,50 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
               ),
 
               CustomTextField(
-                controller: ffaController,
+                controller: supplierController,
+                label: 'Supplier',
+                icon: Icons.person_rounded,
+                isNumeric: false,
+                isRequired: true,
+              ),
+
+              CustomTextField(
+                controller: vesselVehicleController,
+                label: "Vessel/Vehicle",
+                icon: Icons.person_rounded,
+                isNumeric: false,
+                isRequired: true,
+              ),
+
+              CustomTextField(
+                controller: ssFfaController,
                 label: "FFA (%)",
                 icon: Icons.person_rounded,
                 isNumeric: true,
               ),
 
               CustomTextField(
-                controller: miController,
+                controller: ssMniController,
                 label: "M&I (%)",
                 icon: Icons.person_rounded,
                 isNumeric: true,
               ),
 
               CustomTextField(
-                controller: dobiController,
-                label: "Dobi (%)",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
-
-              CustomTextField(
-                controller: othersController,
+                controller: ssOthersController,
                 label: "Others",
                 icon: Icons.person_rounded,
                 isNumeric: false,
               ),
 
-              _detailGeneratorSection(),
               if (detailControllers.isNotEmpty) _detailFormList(),
 
               const SizedBox(height: 8.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    "Hasil Analisa Komposite Palka",
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
 
-              CustomTextField(
-                controller: hasilAnalisaFfaController,
-                label: "FFA",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
-
-              CustomTextField(
-                controller: hasilAnalisaIvController,
-                label: "IV",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
-
-              CustomTextField(
-                controller: hasilAnalisaMoistureController,
-                label: "Moisture",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
-
-              CustomTextField(
-                controller: hasilAnalisaDobiController,
-                label: "Dobi",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
-
-              CustomTextField(
-                controller: hasilAnalisaPvController,
-                label: "PV",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
-
-              CustomTextField(
-                controller: hasilAnalisaAnvController,
-                label: "AnV",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
-
-              CustomRemarkField(controller: remarkController),
-              Consumer<AnalyticalResultIncomingMaterialByVesselProvider>(
+              Consumer<AnalyticalResultIncomingMaterialByTruckProvider>(
                 builder: (
                   BuildContext context,
-                  AnalyticalResultIncomingMaterialByVesselProvider provider,
+                  AnalyticalResultIncomingMaterialByTruckProvider provider,
                   Widget? child,
                 ) {
                   return (provider.isLoadingInput)
@@ -340,22 +335,18 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                             return;
                           }
 
-                          if (numberOfRows == 0 || numberOfRows == null) {
-                            showSnackBar("Wajib Generate Details", context);
-                            return;
-                          }
-
                           if (!_validateDetailRows(context)) return;
 
-                          final bool isSuccess = await _insertData();
+                          final bool isSuccess = await _updateData();
 
                           if (isSuccess) {
                             showSnackBar("Berhasil menyimpan data", context);
-                            Navigator.of(context).pop();
+                            Navigator.of(context).pop(updatedData);
                           } else {
                             showSnackBar("Gagal menyimpan data", context);
                           }
                         },
+                        label: "Update Data",
                       );
                 },
               ),
@@ -371,68 +362,22 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
 
     for (int i = 0; i < count; i++) {
       detailControllers.add({
-        'palka_s_no': TextEditingController(),
-        'palka_s_ffa': TextEditingController(),
-        'palka_s_iv': TextEditingController(),
-        'palka_s_dobi': TextEditingController(),
-        'palka_s_mni': TextEditingController(),
-
-        'palka_c_no': TextEditingController(),
-        'palka_c_ffa': TextEditingController(),
-        'palka_c_iv': TextEditingController(),
-        'palka_c_dobi': TextEditingController(),
-        'palka_c_mni': TextEditingController(),
-
-        'palka_p_no': TextEditingController(),
-        'palka_p_ffa': TextEditingController(),
-        'palka_p_iv': TextEditingController(),
-        'palka_p_dobi': TextEditingController(),
-        'palka_p_mni': TextEditingController(),
+        'no': TextEditingController(),
+        'sampling_date': TextEditingController(),
+        'police_no': TextEditingController(),
+        'p_ffa': TextEditingController(),
+        'p_moisture': TextEditingController(),
+        'p_iv': TextEditingController(),
+        'p_pv': TextEditingController(),
+        'p_dobi': TextEditingController(),
+        'p_color_r': TextEditingController(),
+        'p_color_y': TextEditingController(),
+        'analis': TextEditingController(),
+        'remark': TextEditingController(),
       });
     }
 
     setState(() {});
-  }
-
-  Widget _detailGeneratorSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Berapa detail yang ingin diinput?",
-          style: TextStyle(fontSize: 14),
-        ),
-        SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                width: 80,
-                child: TextField(
-                  keyboardType: TextInputType.number,
-                  onChanged: (v) {
-                    numberOfRows = int.tryParse(v);
-                  },
-                  decoration: InputDecoration(
-                    hintText: "0",
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(width: 12),
-            ElevatedButton(
-              onPressed: () {
-                if (numberOfRows == null || numberOfRows! <= 0) return;
-                generateDetailRows(numberOfRows!);
-              },
-              child: Text("Generate"),
-            ),
-          ],
-        ),
-      ],
-    );
   }
 
   Widget _detailFormList() {
@@ -446,7 +391,7 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
             Center(
               child: SmoothPageIndicator(
                 controller:
-                    palkaPageControllers, // Gunakan satu controller untuk semua
+                    pageControllers, // Gunakan satu controller untuk semua
                 count: detailControllers.length,
                 effect: const WormEffect(
                   dotHeight: 8,
@@ -455,7 +400,7 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                   dotColor: Colors.grey,
                 ),
                 onDotClicked: (index) {
-                  palkaPageControllers.animateToPage(
+                  pageControllers.animateToPage(
                     index,
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeInOut,
@@ -463,26 +408,17 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                 },
               ),
             ),
-            // Text(
-            //   "Detail ${index + 1}",
-            //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            // ),
-            // SizedBox(height: 12),
 
-            // // PALKA S
-            // Text("Palka S", style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 6),
 
             ExpandablePageView.builder(
-              controller: palkaPageControllers, // Cukup satu controller utama
+              controller: pageControllers, // Cukup satu controller utama
               itemCount: detailControllers.length,
               itemBuilder: (context, pageIndex) {
                 final row = detailControllers[pageIndex];
 
-                // Bungkus semua form (S, C, P) dalam satu Column scrollable
                 return SingleChildScrollView(
-                  physics:
-                      const NeverScrollableScrollPhysics(), // Biar tidak bentrok scrollnya
+                  physics: const NeverScrollableScrollPhysics(),
                   child: Column(
                     children: [
                       Text(
@@ -494,110 +430,87 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                       ),
                       const SizedBox(height: 12),
 
-                      // --- FORM PALKA S ---
-                      _buildSection("Palka S", [
+                      _buildSection("Analytical Detail Input", [
                         CustomTextField(
-                          controller: row['palka_s_no']!,
-                          label: "Palka S No",
+                          controller: row['no']!,
+                          label: "No",
                           icon: Icons.numbers,
                         ),
+                        CustomDateField(
+                          controller: row['sampling_date']!,
+                          label: 'Sampling Date',
+                          icon: Icons.event,
+                        ),
+                        SizedBox(height: 12.0),
                         CustomTextField(
-                          controller: row['palka_s_ffa']!,
-                          label: "Palka S FFA",
+                          controller: row['police_no']!,
+                          label: "Police No",
                           icon: Icons.science,
                           isNumeric: true,
                         ),
                         CustomTextField(
-                          controller: row['palka_s_iv']!,
-                          label: "Palka S IV",
+                          controller: row['p_ffa']!,
+                          label: "FFA",
+                          icon: Icons.science,
+                          isNumeric: true,
+                        ),
+
+                        CustomTextField(
+                          controller: row['p_moisture']!,
+                          label: "Moisture",
                           icon: Icons.science,
                           isNumeric: true,
                         ),
                         CustomTextField(
-                          controller: row['palka_s_dobi']!,
-                          label: "Palka S Dobi",
+                          controller: row['p_iv']!,
+                          label: "IV",
                           icon: Icons.science,
                           isNumeric: true,
                         ),
+
                         CustomTextField(
-                          controller: row['palka_s_mni']!,
-                          label: "Palka S MNI",
+                          controller: row['p_dobi']!,
+                          label: "DOBI",
                           icon: Icons.science,
                           isNumeric: true,
+                        ),
+
+                        CustomTextField(
+                          controller: row['p_pv']!,
+                          label: "PV",
+                          icon: Icons.science,
+                          isNumeric: true,
+                        ),
+
+                        CustomTextField(
+                          controller: row['p_color_r']!,
+                          label: "Color R",
+                          icon: Icons.science,
+                          isNumeric: true,
+                        ),
+
+                        CustomTextField(
+                          controller: row['p_color_y']!,
+                          label: "Color Y",
+                          icon: Icons.science,
+                          isNumeric: true,
+                        ),
+
+                        CustomTextField(
+                          controller: row['analis']!,
+                          label: "Analis",
+                          icon: Icons.science,
+                          isNumeric: false,
+                        ),
+
+                        CustomTextField(
+                          controller: row['remark']!,
+                          label: "Remarks",
+                          icon: Icons.science,
+                          isNumeric: false,
                         ),
                       ]),
-
-                      const SizedBox(height: 16),
-                      const Divider(),
-
-                      // --- FORM PALKA C ---
-                      _buildSection("Palka C", [
-                        CustomTextField(
-                          controller: row['palka_c_no']!,
-                          label: "Palka C No",
-                          icon: Icons.numbers,
-                        ),
-                        CustomTextField(
-                          controller: row['palka_c_ffa']!,
-                          label: "Palka C FFA",
-                          icon: Icons.science,
-                          isNumeric: true,
-                        ),
-                        CustomTextField(
-                          controller: row['palka_c_iv']!,
-                          label: "Palka C IV",
-                          icon: Icons.science,
-                          isNumeric: true,
-                        ),
-                        CustomTextField(
-                          controller: row['palka_c_dobi']!,
-                          label: "Palka C Dobi",
-                          icon: Icons.science,
-                          isNumeric: true,
-                        ),
-                        CustomTextField(
-                          controller: row['palka_c_mni']!,
-                          label: "Palka C MNI",
-                          icon: Icons.science,
-                          isNumeric: true,
-                        ),
-                      ]),
-
-                      const SizedBox(height: 16),
-                      const Divider(),
-
                       // --- FORM PALKA P (Tambahkan jika diperlukan) ---
-                      _buildSection("Palka P", [
-                        CustomTextField(
-                          controller: row['palka_p_no']!,
-                          label: "Palka P No",
-                          icon: Icons.numbers,
-                        ),
-                        CustomTextField(
-                          controller: row['palka_p_ffa']!,
-                          label: "Palka P FFA",
-                          icon: Icons.science,
-                          isNumeric: true,
-                        ),
-                        CustomTextField(
-                          controller: row['palka_p_iv']!,
-                          label: "Palka P IV",
-                          icon: Icons.science,
-                          isNumeric: true,
-                        ),
-                        CustomTextField(
-                          controller: row['palka_p_dobi']!,
-                          label: "Palka P Dobi",
-                          icon: Icons.science,
-                          isNumeric: true,
-                        ),
-                        CustomTextField(
-                          controller: row['palka_p_mni']!,
-                          label: "Palka P MNI",
-                          icon: Icons.science,
-                          isNumeric: true,
-                        ),
-                      ]),
                     ],
                   ),
                 );
@@ -611,7 +524,7 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
     );
   }
 
-  Future<bool> _insertData() async {
+  Future<bool> _updateData() async {
     final plant = context.read<PlantProvider>().currentPlant;
     final user = context.read<UserProvider>();
     final businessUnit =
@@ -623,33 +536,36 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
 
     try {
       final detail =
-          detailControllers.map((row) {
-            return AnalyticalResultIncomingMaterialByVesselDetailEntity(
-              id: "",
-              idHdr: "",
+          detailControllers.asMap().entries.map((entry) {
+            final index = entry.key;
+            final row = entry.value;
+            final oldDetail = widget.data.details[index];
 
-              palkaSNo: row['palka_s_no']!.text,
-              palkaSFfa: parseDouble(row['palka_s_ffa']!.text) ?? 0,
-              palkaSIv: parseDouble(row['palka_s_iv']!.text) ?? 0,
-              palkaSDobi: parseDouble(row['palka_s_dobi']!.text) ?? 0,
-              palkaSMni: parseDouble(row['palka_s_mni']!.text) ?? 0,
-
-              palkaCNo: row['palka_c_no']!.text,
-              palkaCFfa: parseDouble(row['palka_c_ffa']!.text) ?? 0,
-              palkaCIv: parseDouble(row['palka_c_iv']!.text) ?? 0,
-              palkaCDobi: parseDouble(row['palka_c_dobi']!.text) ?? 0,
-              palkaCMni: parseDouble(row['palka_c_mni']!.text) ?? 0,
-
-              palkaPNo: row['palka_p_no']!.text,
-              palkaPFfa: parseDouble(row['palka_p_ffa']!.text) ?? 0,
-              palkaPIv: parseDouble(row['palka_p_iv']!.text) ?? 0,
-              palkaPDobi: parseDouble(row['palka_p_dobi']!.text) ?? 0,
-              palkaPMni: parseDouble(row['palka_p_mni']!.text) ?? 0,
+            return AnalyticalResultIncomingMaterialByTruckDetailEntity(
+              id: oldDetail.id,
+              idHdr: oldDetail.idHdr,
+              no: row['no']!.text,
+              samplingDate: changeStringDateFormat(
+                row['sampling_date']!.text,
+                'dd-MM-yyyy',
+                'yyyy-MM-dd HH:mm:ss',
+                returnDateTime: true,
+              ),
+              policeNo: row['police_no']!.text,
+              pFfa: parseDouble(row['p_ffa']!.text),
+              pMoisture: parseDouble(row['p_moisture']!.text),
+              pIv: parseDouble(row['p_iv']!.text),
+              pDobi: parseDouble(row['p_dobi']!.text),
+              pPv: parseDouble(row['p_pv']!.text),
+              pColorR: parseDouble(row['p_color_r']!.text),
+              pColorY: parseDouble(row['p_color_y']!.text),
+              analis: row['analis']!.text,
+              remarks: row['remark']!.text,
             );
           }).toList();
 
-      final header = AnalyticalResultIncomingMaterialByVesselHeaderEntity(
-        id: '',
+      final header = AnalyticalResultIncomingMaterialByTruckHeaderEntity(
+        id: widget.data.id,
         company: businessUnit?.buCode ?? '',
         plant: plant?.code ?? '',
         transactionDate: formattedDateEntry,
@@ -660,21 +576,12 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
           'yyyy-MM-dd HH:mm:ss',
           returnDateTime: true,
         ),
-        quantity: parseDouble(quantityController.text),
         supplier: supplierController.text,
-        shipName: shipNameController.text,
+        vesselVehicle: vesselVehicleController.text,
         contractDoNomor: contractDoController.text,
-        ffa: parseDouble(ffaController.text),
-        mni: parseDouble(miController.text),
-        dobi: parseDouble(dobiController.text),
-        others: othersController.text,
-        hasilAnalisaFfa: parseDouble(hasilAnalisaFfaController.text),
-        hasilAnalisaIv: parseDouble(hasilAnalisaIvController.text),
-        hasilAnalisaMoisture: parseDouble(hasilAnalisaMoistureController.text),
-        hasilAnalisaDobi: parseDouble(hasilAnalisaDobiController.text),
-        hasilAnalisaPv: parseDouble(hasilAnalisaPvController.text),
-        hasilAnalisaAnv: parseDouble(hasilAnalisaAnvController.text),
-        remarks: remarkController.text,
+        ssFfa: parseDouble(ssFfaController.text),
+        ssMni: parseDouble(ssMniController.text),
+        ssOthers: ssOthersController.text,
 
         flag: 'T',
         entryBy: user.currentUser?.username ?? '',
@@ -696,18 +603,10 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
         details: detail,
       );
 
-      // final isSuccess = await context
-      //     .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-      //     .insertAnalyticalResultIncomingMaterialByVessel(
-      //       headerInput: header,
-      //       detailInput: detail,
-      //       plantCode: plant?.code ?? '',
-      //     );
-
       final isSuccess = await context
-          .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-          .insertReport(headerInput: header, menudId: formData?.isMenu ?? '');
-
+          .read<AnalyticalResultIncomingMaterialByTruckProvider>()
+          .updateReport(headerInput: header, menuId: formData?.isMenu ?? '');
+      updatedData = header;
       return isSuccess;
     } catch (e) {
       debugPrint("Error inserting Analytical Incoming Material By Vessel: $e");

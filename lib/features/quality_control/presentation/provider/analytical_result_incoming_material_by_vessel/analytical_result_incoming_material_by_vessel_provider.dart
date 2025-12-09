@@ -54,11 +54,6 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
   List<AnalyticalResultIncomingMaterialByVesselReportEntity> get reportList =>
       _reportList;
 
-  List<AnalyticalResultIncomingMaterialByVesselReportEntity> _uniqueReportList =
-      [];
-  List<AnalyticalResultIncomingMaterialByVesselReportEntity>
-  get uniqueReportList => _uniqueReportList;
-
   List<AnalyticalResultIncomingMaterialByVesselHeaderEntity>
   _reportListFromApi = [];
   List<AnalyticalResultIncomingMaterialByVesselHeaderEntity>
@@ -359,6 +354,6 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
   }
 
   void clearReports() {
-    reportListFromApi.clear();
+    _reportListFromApi.clear();
   }
 }

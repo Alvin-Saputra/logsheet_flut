@@ -651,7 +651,12 @@ class _AnalyticalResultIncomingMaterialByVesselEditPageState
         plant: plant?.code ?? '',
         transactionDate: formattedDateEntry,
         material: selectedOilType ?? '',
-        arrival: formattedDateEntry,
+        arrival: changeStringDateFormat(
+          dateEntryController.text,
+          'dd-MM-yyyy',
+          'yyyy-MM-dd HH:mm:ss',
+          returnDateTime: true,
+        ),
         quantity: parseDouble(quantityController.text),
         supplier: supplierController.text,
         shipName: shipNameController.text,

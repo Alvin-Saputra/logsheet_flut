@@ -31,6 +31,10 @@ import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_startup_production/maintenance_startup_production_approval_list_page.dart';
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_startup_production/maintenance_startup_production_list_page.dart';
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_startup_production/maintenance_startup_production_report_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_approval_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_input_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_report_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_report_list_page.dart';
@@ -77,7 +81,8 @@ class _UserHomePageState extends State<UserHomePage> {
       formStartupProductChecklist,
       formDailyStorageTankAnalytical,
       formDailyQualityCompositeFractionation,
-      formAnalyticalResultIncomingMaterialByVessel;
+      formAnalyticalResultIncomingMaterialByVessel,
+      formAnalyticalResultIncomingMaterialByTruck;
 
   Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
@@ -354,6 +359,18 @@ class _UserHomePageState extends State<UserHomePage> {
               (form) =>
                   form.isMenu ==
                       "Analytical_Result_Of_Incoming_Material_By_Vessel" &&
+                  form.isActive == "T",
+            )
+            .first;
+
+    formAnalyticalResultIncomingMaterialByTruck =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu ==
+                      "Analytical_Result_Of_Incoming_Material_By_Truck" &&
                   form.isActive == "T",
             )
             .first;
@@ -753,7 +770,8 @@ class _UserHomePageState extends State<UserHomePage> {
               children: [
                 _buildDrawerItem(
                   icon: Icons.list_alt,
-                  title: 'List\n(${formAnalyticalResultIncomingMaterialByVessel?.code})',
+                  title:
+                      'List\n(${formAnalyticalResultIncomingMaterialByVessel?.code})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -768,7 +786,8 @@ class _UserHomePageState extends State<UserHomePage> {
 
                 _buildDrawerItem(
                   icon: Icons.list_alt,
-                  title: 'Report\n(${formAnalyticalResultIncomingMaterialByVessel?.code})',
+                  title:
+                      'Report\n(${formAnalyticalResultIncomingMaterialByVessel?.code})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -791,6 +810,69 @@ class _UserHomePageState extends State<UserHomePage> {
                         builder:
                             (_) =>
                                 AnalyticalResultIncomingMaterialByVesselApprovalListPage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+
+            ExpansionTile(
+              leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
+              title: Text(
+                'Analytical Result Of Incoming Material By Truck\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title:
+                      'List\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                AnalyticalResultIncomingMaterialByTruckListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title:
+                      'Report\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                AnalyticalResultIncomingMaterialByTruckReportListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title:
+                      'Approval\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                AnalyticalResultIncomingMaterialByTruckApprovalListPage(),
                       ),
                     );
                   },
