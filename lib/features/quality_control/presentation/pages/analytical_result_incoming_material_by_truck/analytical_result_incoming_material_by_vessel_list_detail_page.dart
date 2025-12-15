@@ -38,7 +38,6 @@ class _AnalyticalResultIncomingMaterialByTruckListDetailPageState
   final PageController detailPageControllers = PageController();
   late AnalyticalResultIncomingMaterialByTruckHeaderEntity _data;
   @override
-  @override
   void initState() {
     super.initState();
     _data = widget.data;

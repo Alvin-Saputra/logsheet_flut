@@ -38,6 +38,9 @@ import 'package:logsheet_app/features/quality_control/presentation/pages/analyti
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_report_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_input_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/certificate_of_analysis/certificate_of_analysis_incoming_plant_chemical_ingredient_input_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/certificate_of_analysis/certificate_of_analysis_incoming_plant_chemical_ingredient_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_report_list_page.dart';
@@ -444,7 +447,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.20"), Text("Build 2025-12-04")],
+              children: [Text("Version 1.0.21"), Text("Build 2025-12-10")],
             ),
           ],
         ),
@@ -702,6 +705,7 @@ class _UserHomePageState extends State<UserHomePage> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+
               childrenPadding: const EdgeInsets.only(left: 20.0),
               iconColor: const Color(0xFFAB2F2B),
               collapsedIconColor: Colors.grey,
@@ -873,6 +877,55 @@ class _UserHomePageState extends State<UserHomePage> {
                         builder:
                             (_) =>
                                 AnalyticalResultIncomingMaterialByTruckApprovalListPage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+
+            ExpansionTile(
+              leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
+              title: Text(
+                'Analytical Result Of Incoming Plant Chemical/Ingredient\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title:
+                      'List\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                CertificateOfAnalysisIncomingPlantChemicalIngredientListPage(),
+                      ),
+                    );
+                  },
+                ),
+                _buildDrawerSubheader(
+                  "Certificate Of Analysis Of Incoming Plant Chemical/Ingredient",
+                ),
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title:
+                      'List\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                CertificateOfAnalysisIncomingPlantChemicalIngredientListPage(),
                       ),
                     );
                   },

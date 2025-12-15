@@ -51,12 +51,30 @@ String? formatTimeOfDay(TimeOfDay? time, {bool showSecond = true}) {
   // We add ':00' for seconds to match the standard TIME format
 }
 
-String formatDatetoString(DateTime date, String format) {
-  return DateFormat(format).format(date);
+String? formatDatetoString(DateTime? date, String format) {
+  if (date == null) {
+    return "";
+  }
+  try {
+    return DateFormat(format).format(date);
+  } catch (e) {
+    print("Error parsing date: $date");
+    return null; // Return null jika format tanggal dari API aneh
+  }
 }
 
-DateTime formatStringtoDate(String date, String format) {
-  return DateFormat(format).parse(date);
+DateTime? formatStringtoDate(String? date, String format) {
+  // 1. Cek Safety: Jika null atau string kosong, langsung return null
+  if (date == null || date.trim().isEmpty) {
+    return null;
+  }
+
+  try {
+    return DateFormat(format).parse(date);
+  } catch (e) {
+    print("Error parsing date: $date");
+    return null; // Return null jika format tanggal dari API aneh
+  }
 }
 
 dynamic changeStringDateFormat(

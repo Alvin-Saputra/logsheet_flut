@@ -69,9 +69,9 @@ class _AnalyticalResultIncomingMaterialByTruckEditPageState
           selectedMaterial = null;
         }
         dateEntryController.text = formatDatetoString(
-          widget.data.arrival!,
+          widget.data.arrival,
           'dd-MM-yyyy',
-        );
+        )??'';
 
         supplierController.text = widget.data.supplier ?? '';
         contractDoController.text = widget.data.contractDoNomor ?? '';
@@ -97,7 +97,7 @@ class _AnalyticalResultIncomingMaterialByTruckEditPageState
           detailControllers[i]['sampling_date']?.text = formatDatetoString(
             widget.data.details[i].samplingDate!,
             'dd-MM-yyyy',
-          );
+          )??'';
 
           detailControllers[i]['police_no']?.text =
               widget.data.details[i].policeNo.toString();
