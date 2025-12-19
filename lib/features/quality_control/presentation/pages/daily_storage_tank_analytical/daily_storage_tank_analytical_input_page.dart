@@ -34,6 +34,8 @@ class _DailyStorageTankAnalyticalInputPageState
   String? selectedTank;
   String? selectedOilType;
 
+  final _formKey = GlobalKey<FormState>();
+
   final TextEditingController dateEntryController = TextEditingController();
   final TextEditingController kapasitasTankiController =
       TextEditingController();
@@ -91,96 +93,15 @@ class _DailyStorageTankAnalyticalInputPageState
   Widget _buildBody() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Text('Ini Adalah Halaman List'),
-            Consumer<ValueProvider>(
-              builder: (context, provider, child) {
-                if (provider.isTankSourceLoading) {
-                  return DropdownButtonFormField<String>(
-                    value: null,
-                    items: [],
-                    onChanged: null, // Disable the dropdown
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFFF0ECE9),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      hintText: 'Loading Tanks...',
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                if (provider.tankSourceList.isEmpty) {
-                  return TextFormField(
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFFF0ECE9),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      hintText: 'Tank List tidak ditemukan.',
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: Icon(Icons.warning_amber_rounded),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.refresh),
-                        onPressed: () async {
-                          await context
-                              .read<ValueProvider>()
-                              .fetchTankSourceLists();
-                        },
-                      ),
-                    ),
-                  );
-                }
-                return DropdownButtonFormField(
-                  value: selectedTank,
-                  items:
-                      provider.tankSourceList.map((tank) {
-                        return DropdownMenuItem(
-                          value: tank.code,
-                          child: Text("${tank.code} | ${tank.name}"),
-                        );
-                      }).toList(),
-                  onChanged: (value) => setState(() => selectedTank = value),
-                  decoration: InputDecoration(
-                    hintText: 'Pilih Tank',
-                    prefixIcon: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Icon(Icons.storage_rounded), // 🛢 Tank icon
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    filled: true,
-                    fillColor: const Color(0xFFF0ECE9),
-                  ),
-                );
-              },
-            ),
-            SizedBox(height: 16.0),
-            Consumer<ProductProvider>(
-              builder: (
-                BuildContext context,
-                ProductProvider provider,
-                Widget? child,
-              ) {
-                if (provider.isLoading)
-                  if (provider.isLoading) {
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Text('Ini Adalah Halaman List'),
+              Consumer<ValueProvider>(
+                builder: (context, provider, child) {
+                  if (provider.isTankSourceLoading) {
                     return DropdownButtonFormField<String>(
                       value: null,
                       items: [],
@@ -204,232 +125,354 @@ class _DailyStorageTankAnalyticalInputPageState
                       ),
                     );
                   }
-                return DropdownButtonFormField<String>(
-                  value: selectedOilType,
-                  items:
-                      [
-                            ...provider.productFractionationList,
-                            ...provider.productRefineryList,
-                          ]
-                          .map((e) => e.rawMaterial)
-                          .toSet() // Ensures unique rawMaterial values
-                          .map((rawMaterial) {
-                            return DropdownMenuItem<String>(
-                              value: rawMaterial,
-                              child: Text(rawMaterial ?? ''),
-                            );
-                          })
-                          .toList(),
-                  onChanged: (value) => setState(() => selectedOilType = value),
-                  decoration: InputDecoration(
-                    hintText: 'Pilih Oil Type',
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: SvgPicture.asset(
-                        'assets/icons/oil-refinery-tanks.svg',
-                        height: 24,
-                        width: 24,
+                  if (provider.tankSourceList.isEmpty) {
+                    return TextFormField(
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Tank List tidak ditemukan.',
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Icon(Icons.warning_amber_rounded),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.refresh),
+                          onPressed: () async {
+                            await context
+                                .read<ValueProvider>()
+                                .fetchTankSourceLists();
+                          },
+                        ),
                       ),
+                    );
+                  }
+                  return DropdownButtonFormField(
+                    value: selectedTank,
+                    items:
+                        provider.tankSourceList.map((tank) {
+                          return DropdownMenuItem(
+                            value: tank.code,
+                            child: Text("${tank.code} | ${tank.name}"),
+                          );
+                        }).toList(),
+                    onChanged: (value) => setState(() => selectedTank = value),
+                    decoration: InputDecoration(
+                      hintText: 'Pilih Tank',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12.0),
+                        child: Icon(Icons.storage_rounded), // 🛢 Tank icon
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  );
+                },
+              ),
+              SizedBox(height: 16.0),
+              Consumer<ProductProvider>(
+                builder: (
+                  BuildContext context,
+                  ProductProvider provider,
+                  Widget? child,
+                ) {
+                  if (provider.isLoading)
+                    if (provider.isLoading) {
+                      return DropdownButtonFormField<String>(
+                        value: null,
+                        items: [],
+                        onChanged: null, // Disable the dropdown
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: const Color(0xFFF0ECE9),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          hintText: 'Loading Tanks...',
+                          prefixIcon: const Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                  return DropdownButtonFormField<String>(
+                    value: selectedOilType,
+                    items:
+                        [
+                              ...provider.productFractionationList,
+                              ...provider.productRefineryList,
+                            ]
+                            .map((e) => e.rawMaterial)
+                            .toSet() // Ensures unique rawMaterial values
+                            .map((rawMaterial) {
+                              return DropdownMenuItem<String>(
+                                value: rawMaterial,
+                                child: Text(rawMaterial ?? ''),
+                              );
+                            })
+                            .toList(),
+                    onChanged:
+                        (value) => setState(() => selectedOilType = value),
+                    decoration: InputDecoration(
+                      hintText: 'Pilih Oil Type',
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: SvgPicture.asset(
+                          'assets/icons/oil-refinery-tanks.svg',
+                          height: 24,
+                          width: 24,
+                        ),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
                     ),
-                    filled: true,
-                    fillColor: const Color(0xFFF0ECE9),
+                  );
+                },
+              ),
+              SizedBox(height: 16.0),
+              CustomDateField(
+                controller: dateEntryController,
+                label: 'Tanggal',
+                icon: Icons.event,
+              ),
+              SizedBox(height: 16.0),
+              CustomTextField(
+                controller: kapasitasTankiController,
+                label: 'Kapasistas Tanki (Kg)',
+                icon: Icons.scale,
+                isNumeric: true,
+                isRequired: true,
+              ),
+              CustomTextField(
+                controller: quantityController,
+                label: 'Quantity (Kg)',
+                icon: Icons.storage_rounded,
+                isNumeric: true,
+                isRequired: true,
+              ),
+              CustomTextField(
+                controller: emptySpaceController,
+                label: 'Empty Space (Kg)',
+                icon: Icons.add_box,
+                isNumeric: true,
+                isRequired: true,
+              ),
+
+              CustomTextField(
+                controller: suhuController,
+                label: 'Suhu (°C)',
+                icon: Icons.thermostat,
+                isNumeric: true,
+                 isRequired: true
+              ),
+              SizedBox(height: 8.0),
+              Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                    vertical: 16.0,
                   ),
-                );
-              },
-            ),
-            SizedBox(height: 16.0),
-            CustomDateField(
-              controller: dateEntryController,
-              label: 'Tanggal',
-              icon: Icons.event,
-            ),
-            SizedBox(height: 16.0),
-            CustomTextField(
-              controller: kapasitasTankiController,
-              label: 'Kapasistas Tanki (Kg)',
-              icon: Icons.scale,
-              isNumeric: true,
-            ),
-            CustomTextField(
-              controller: quantityController,
-              label: 'Quantity (Kg)',
-              icon: Icons.storage_rounded,
-              isNumeric: true,
-            ),
-            CustomTextField(
-              controller: emptySpaceController,
-              label: 'Empty Space (Kg)',
-              icon: Icons.add_box,
-              isNumeric: true,
-            ),
-
-            CustomTextField(
-              controller: suhuController,
-              label: 'Suhu (°C)',
-              icon: Icons.thermostat,
-              isNumeric: true,
-            ),
-            SizedBox(height: 8.0),
-            Card(
-              margin: EdgeInsets.zero,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24.0,
-                  vertical: 16.0,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Quality Parameter',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Quality Parameter',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 16.0),
-                    CustomTextField(
-                      controller: ffaController,
-                      label: 'FFA (%)',
-                      icon: Icons.bubble_chart,
-                      isNumeric: true,
-                    ),
-                    CustomTextField(
-                      controller: moistureController,
-                      label: 'Moisture (%)',
-                      icon: Icons.water_drop,
-                      isNumeric: true,
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: CustomTextField(
-                              controller: loviBondRController,
-                              label: 'LoviBond (R)',
-                              icon: Icons.color_lens_rounded,
-                              isNumeric: true,
+                      SizedBox(height: 16.0),
+                      CustomTextField(
+                        controller: ffaController,
+                        label: 'FFA (%)',
+                        icon: Icons.bubble_chart,
+                        isNumeric: true,
+                         isRequired: true
+                      ),
+                      CustomTextField(
+                        controller: moistureController,
+                        label: 'Moisture (%)',
+                        icon: Icons.water_drop,
+                        isNumeric: true,
+                         isRequired: true
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: CustomTextField(
+                                controller: loviBondRController,
+                                label: 'LoviBond (R)',
+                                icon: Icons.color_lens_rounded,
+                                isNumeric: true,
+                                isRequired: true,
+                              ),
                             ),
                           ),
-                        ),
 
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: CustomTextField(
-                              controller: loviBondYController,
-                              label: 'LoviBond (Y)',
-                              icon: Icons.color_lens_rounded,
-                              isNumeric: true,
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: CustomTextField(
+                                controller: loviBondYController,
+                                label: 'LoviBond (Y)',
+                                icon: Icons.color_lens_rounded,
+                                isNumeric: true,
+                                isRequired: true,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    CustomTextField(
-                      controller: ivController,
-                      label: 'IV (gt2/100g)',
-                      icon: Icons.scale,
-                      isNumeric: true,
-                    ),
+                        ],
+                      ),
+                      CustomTextField(
+                        controller: ivController,
+                        label: 'IV (gt2/100g)',
+                        icon: Icons.scale,
+                        isNumeric: true,
+                         isRequired: true
+                      ),
 
-                    CustomTextField(
-                      controller: pvController,
-                      label: 'PV (meqO2/kg)',
-                      icon: Icons.energy_savings_leaf,
-                      isNumeric: true,
-                    ),
+                      CustomTextField(
+                        controller: pvController,
+                        label: 'PV (meqO2/kg)',
+                        icon: Icons.energy_savings_leaf,
+                        isNumeric: true,
+                         isRequired: true
+                      ),
 
-                    CustomTextField(
-                      controller: slipMeltingPointController,
-                      label: 'Slip Melting Point (oC)',
-                      icon: Icons.fireplace,
-                      isNumeric: true,
-                    ),
+                      CustomTextField(
+                        controller: slipMeltingPointController,
+                        label: 'Slip Melting Point (oC)',
+                        icon: Icons.fireplace,
+                        isNumeric: true,
+                         isRequired: true
+                      ),
 
-                    CustomTextField(
-                      controller: cloudPointController,
-                      label: 'Cloud Point (°C)',
-                      icon: Icons.wb_cloudy,
-                      isNumeric: true,
-                    ),
+                      CustomTextField(
+                        controller: cloudPointController,
+                        label: 'Cloud Point (°C)',
+                        icon: Icons.wb_cloudy,
+                        isNumeric: true,
+                        isRequired: true,
+                      ),
 
-                    CustomTextField(
-                      controller: anvController,
-                      label: 'Anv (°C)',
-                      icon: Icons.fact_check,
-                      isNumeric: true,
-                    ),
+                      CustomTextField(
+                        controller: anvController,
+                        label: 'Anv (°C)',
+                        icon: Icons.fact_check,
+                        isNumeric: true,
+                        isRequired: true,
+                      ),
 
-                    CustomTextField(
-                      controller: bCaroteneController,
-                      label: 'B-Carotene (ppm)',
-                      icon: Icons.color_lens,
-                      isNumeric: true,
-                    ),
+                      CustomTextField(
+                        controller: bCaroteneController,
+                        label: 'B-Carotene (ppm)',
+                        icon: Icons.color_lens,
+                        isNumeric: true,
+                         isRequired: true
+                      ),
 
-                     CustomTextField(
-                      controller: pController,
-                      label: 'P (ppm)',
-                      icon: Icons.bubble_chart,
-                      isNumeric: true,
-                    ),
+                      CustomTextField(
+                        controller: pController,
+                        label: 'P (ppm)',
+                        icon: Icons.bubble_chart,
+                        isNumeric: true,
+                         isRequired: true
+                      ),
 
-                    CustomTextField(
-                      controller: dobiController,
-                      label: 'DOBI',
-                      icon: Icons.opacity,
-                      isNumeric: true,
-                    ),
+                      CustomTextField(
+                        controller: dobiController,
+                        label: 'DOBI',
+                        icon: Icons.opacity,
+                        isNumeric: true,
+                         isRequired: true
+                      ),
 
-                    CustomTextField(
-                      controller: totoxController,
-                      label: 'Totox',
-                      icon: Icons.bubble_chart,
-                      isNumeric: true,
-                    ),
-                    // SizedBox(height: 8),
-                    CustomCheckboxField(
-                      label: 'Odor',
-                      icon: Icons.check_circle_outline,
-                      onChanged: (value) {
-                        // Do something when checked
-                        setState(() => odorChecked = value ?? false);
-                      },
-                    ),
-                  ],
+                      CustomTextField(
+                        controller: totoxController,
+                        label: 'Totox',
+                        icon: Icons.bubble_chart,
+                        isNumeric: true,
+                         isRequired: true
+                      ),
+                      // SizedBox(height: 8),
+                      CustomCheckboxField(
+                        label: 'Odor',
+                        icon: Icons.check_circle_outline,
+                        onChanged: (value) {
+                          // Do something when checked
+                          setState(() => odorChecked = value ?? false);
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 16.0),
-            CustomRemarkField(controller: remarkController),
-            SizedBox(height: 32.0),
-            Consumer<DailyStorageTankAnalyticalProvider>(
-              builder: (context, provider, child) {
-                return (provider.isLoadingInput)
-                    ? Center(child: CircularProgressIndicator())
-                    : CustomSaveButton(
-                      onPressed: () async {
-                        final bool isSuccess =
-                            await _insertDailyStorageTankAnalyticalReport();
-                        if (isSuccess) {
-                          showSnackBar("Berhasil menyimpan data", context);
-                          Navigator.of(context).pop();
-                        } else {
-                          showSnackBar("Gagal meyimpan data", context);
-                        }
-                      },
-                    );
-              },
-            ),
+              SizedBox(height: 16.0),
+              CustomRemarkField(controller: remarkController),
+              SizedBox(height: 32.0),
+              Consumer<DailyStorageTankAnalyticalProvider>(
+                builder: (context, provider, child) {
+                  return (provider.isLoadingInput)
+                      ? Center(child: CircularProgressIndicator())
+                      : CustomSaveButton(
+                        onPressed: () async {
+                          if (!_formKey.currentState!.validate()) {
+                            showSnackBar("Mohon lengkapi semua field", context);
+                            return;
+                          }
 
-            SizedBox(height: 16.0),
-          ],
+                            if (selectedOilType == null) {
+                            showSnackBar("Oil Type wajib dipilih", context);
+                            return;
+                          }
+
+                           if (selectedTank == null) {
+                            showSnackBar("Tank wajib dipilih", context);
+                            return;
+                          }
+
+                          if (dateEntryController.text == "") {
+                            showSnackBar("Tanggal Wajib dipilih", context);
+                            return;
+                          }
+
+                          final bool isSuccess =
+                              await _insertDailyStorageTankAnalyticalReport();
+                          if (isSuccess) {
+                            showSnackBar("Berhasil menyimpan data", context);
+                            Navigator.of(context).pop();
+                          } else {
+                            showSnackBar("Gagal meyimpan data", context);
+                          }
+                        },
+                      );
+                },
+              ),
+
+              SizedBox(height: 16.0),
+            ],
+          ),
         ),
       ),
     );
@@ -470,7 +513,7 @@ class _DailyStorageTankAnalyticalInputPageState
         qpCloudPoint: double.tryParse(cloudPointController.text) ?? 0.0,
         qpANV: double.tryParse(anvController.text) ?? 0.0,
         betaCarotene: double.tryParse(bCaroteneController.text) ?? 0.0,
-        qpP: double.tryParse(pController.text) ?? 0.0, 
+        qpP: double.tryParse(pController.text) ?? 0.0,
         qpDobi: double.tryParse(dobiController.text) ?? 0.0,
         qpTotox: double.tryParse(totoxController.text) ?? 0.0,
         qpOdor: odorChecked ? "T" : "F",

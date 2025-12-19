@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:logsheet_app/core/config/app_env.dart';
 import 'package:logsheet_app/core/network/api_config.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
 import 'package:logsheet_app/features/auth/data/datasources/remote/auth_api_service.dart';
@@ -20,6 +21,7 @@ import 'package:logsheet_app/features/master_data/data/repository/master/product
 import 'package:logsheet_app/features/master_data/data/repository/master/user_repository.dart';
 import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_api_service.dart';
 import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_api_service.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_api_service.dart';
 import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_plant_chemical_ingredient/certificate_of_analysis/certificate_of_analysis_incoming_plant_chemical_ingredient_api_service.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_repository.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/daily_quality_composite_fractionation/daily_quality_composite_fractionation_repository.dart';
@@ -61,6 +63,7 @@ import 'package:logsheet_app/features/master_data/presentation/provider/master/p
 import 'package:logsheet_app/features/master_data/presentation/provider/master/product_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_chemical_ingredient/certificate_of_analysis/certificate_of_analysis_incoming_plant_chemical_ingredient_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
@@ -78,7 +81,13 @@ import 'features/master_data/presentation/provider/master/user_provider.dart';
 void main() async {
   db =
       AppDatabase(); // ✅ inisialisasi instance ke variabel global di database_instance.dart
-  await dotenv.load(fileName: ".env");
+  // await dotenv.load(fileName: ".env");
+
+  if (AppEnv.isProd) {
+    await dotenv.load(fileName: "production.env");
+  } else {
+    await dotenv.load(fileName: "development.env");
+  }
 
   final dioClient = DioClient();
   final loginApiService = AuthApiService(dioClient.dio);
@@ -94,6 +103,9 @@ void main() async {
       CertificateOfAnalysisIncomingPlantChemicalIngredientApiService(
         dioClient.dio,
       );
+
+  final analyticalResultIncomingPlantChemicalIngredientApiService =
+      AnalyticalResultIncomingPlantChemicalIngredientApiService(dioClient.dio);
 
   runApp(
     MultiProvider(
@@ -440,6 +452,15 @@ void main() async {
                 certificateOfAnalysisIncomingPlantChemicalIngredientApiService,
                 storageService,
               ),
+        ),
+
+        ChangeNotifierProvider(
+          create:
+              (context) =>
+                  AnalyticalResultIncomingPlantChemicalIngredientProvider(
+                    analyticalResultIncomingPlantChemicalIngredientApiService,
+                    storageService,
+                  ),
         ),
 
         //Provide Business Unit DAO

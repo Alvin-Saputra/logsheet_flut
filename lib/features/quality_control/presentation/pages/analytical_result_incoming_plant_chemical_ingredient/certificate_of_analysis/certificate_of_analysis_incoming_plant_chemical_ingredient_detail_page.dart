@@ -1,18 +1,10 @@
-import 'dart:developer';
-
 import 'package:expandable_page_view/expandable_page_view.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_header_entity.dart';
-import 'package:logsheet_app/core/widgets/custom_remark_field.dart';
-import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_chemical_ingredient/certificate_of_analysis/certificate_of_analysis_incoming_plant_chemical_ingredient_header_entity.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/certificate_of_analysis/certificate_of_analysis_incoming_plant_chemical_ingredient_edit_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_chemical_ingredient/certificate_of_analysis/certificate_of_analysis_incoming_plant_chemical_ingredient_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -37,6 +29,8 @@ class _CertificateOfAnalysisIncomingPlantChemicalIngredientDetailPageState
         State<CertificateOfAnalysisIncomingPlantChemicalIngredientDetailPage> {
   final PageController detailPageControllers = PageController();
   late CertificateOfAnalysisIncomingPlantChemicalIngredientHeaderEntity _data;
+  final PageController mainPageController = PageController();
+  int currentMainPage = 0;
   @override
   void initState() {
     super.initState();
@@ -62,6 +56,7 @@ class _CertificateOfAnalysisIncomingPlantChemicalIngredientDetailPageState
   }
 
   Widget _buildBody(BuildContext context) {
+    
     final userProvider = context.read<UserProvider>();
     return Consumer<AnalyticalResultIncomingMaterialByTruckProvider>(
       builder: (
@@ -291,6 +286,7 @@ class _CertificateOfAnalysisIncomingPlantChemicalIngredientDetailPageState
   }
 
   AppBar _buildAppBar(BuildContext context) {
+    
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 1,

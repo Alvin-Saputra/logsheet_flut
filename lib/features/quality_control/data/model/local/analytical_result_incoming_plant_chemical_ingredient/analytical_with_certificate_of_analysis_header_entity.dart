@@ -1,0 +1,12 @@
+import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_header_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_chemical_ingredient/certificate_of_analysis/certificate_of_analysis_incoming_plant_chemical_ingredient_header_entity.dart';
+
+class AnalyticalWithCertificateOfAnalysisHeaderEntity {
+  final AnalyticalResultIncomingPlantChemicalIngredientHeaderEntity analytical;
+  final CertificateOfAnalysisIncomingPlantChemicalIngredientHeaderEntity coa;
+
+  AnalyticalWithCertificateOfAnalysisHeaderEntity({
+    required this.analytical,
+    required this.coa,
+  });
+}

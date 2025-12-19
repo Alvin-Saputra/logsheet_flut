@@ -1,70 +1,48 @@
 import 'package:flutter/material.dart';
 
-enum SingingCharacter { lafayette, jefferson }
+class CustomRadioButton extends StatelessWidget {
+  final List<String> options;
+  final String? value;
+  final ValueChanged<String?> onChanged;
+  final String? title;
 
-class CustomRadioButton extends StatefulWidget {
-  const CustomRadioButton({super.key});
-
-  @override
-  State<CustomRadioButton> createState() => _CustomRadioButtonState();
-}
-
-class _CustomRadioButtonState extends State<CustomRadioButton> {
-  SingingCharacter? _character;
+  const CustomRadioButton({
+    super.key,
+    required this.options,
+    required this.value,
+    required this.onChanged,
+    this.title,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.transparent, width: 2),
         borderRadius: BorderRadius.circular(8),
-        color: Color(0xFFF0ECE9),
+        color: const Color(0xFFF0ECE9),
       ),
-      child: SizedBox(
-        width: double.infinity,
-        child: Wrap(
-          direction: Axis.horizontal,
-          alignment: WrapAlignment.start,
-          spacing: 16,
-          runSpacing: 8,
-          children: <Widget>[
-            Padding(
-              padding:  const EdgeInsets.all(12.0),
-              child: Icon(
-                Icons.info,
-                size: 20,
-                color: Colors.black54,
-              ),
-            ),
-            Row(
+      padding: const EdgeInsets.all(12),
+      child: Wrap(
+        spacing: 16,
+        runSpacing: 8,
+        children: [
+          if (title != null)
+            Text(title!, style: const TextStyle(fontWeight: FontWeight.bold)),
+
+          ...options.map((option) {
+            return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("Status"),
-                Radio<SingingCharacter>(
-                  value: SingingCharacter.lafayette,
-                  groupValue: _character,
-                  onChanged: (value) {
-                    setState(() => _character = value);
-                  },
+                Radio<String>(
+                  value: option,
+                  groupValue: value,
+                  onChanged: onChanged,
                 ),
-                const Text('A'),
+                Text(option),
               ],
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Radio<SingingCharacter>(
-                  value: SingingCharacter.jefferson,
-                  groupValue: _character,
-                  onChanged: (value) {
-                    setState(() => _character = value);
-                  },
-                ),
-                const Text('B'),
-              ],
-            ),
-          ],
-        ),
+            );
+          }),
+        ],
       ),
     );
   }

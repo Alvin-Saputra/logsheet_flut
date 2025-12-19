@@ -11,14 +11,20 @@ import 'package:logsheet_app/features/quality_control/presentation/pages/analyti
 import 'package:logsheet_app/core/widgets/custom_date_field.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_detail_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_input_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/parent_analytical_result_incoming_plant_chemical_ingredient.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_provider.dart';
 import 'package:provider/provider.dart';
 
-class AnalyticalResultIncomingPlantChemicalIngredientListPage extends StatefulWidget {
+class AnalyticalResultIncomingPlantChemicalIngredientListPage
+    extends StatefulWidget {
   const AnalyticalResultIncomingPlantChemicalIngredientListPage({super.key});
 
   @override
-  State<AnalyticalResultIncomingPlantChemicalIngredientListPage> createState() =>
+  State<AnalyticalResultIncomingPlantChemicalIngredientListPage>
+  createState() =>
       _AnalyticalResultIncomingPlantChemicalIngredientListPageState();
 }
 
@@ -31,7 +37,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
   initState() {
     super.initState();
     context
-        .read<AnalyticalResultIncomingMaterialByTruckProvider>()
+        .read<AnalyticalResultIncomingPlantChemicalIngredientProvider>()
         .clearReports();
   }
 
@@ -48,7 +54,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
             MaterialPageRoute(
               builder:
                   (context) =>
-                      AnalyticalResultIncomingMaterialByTruckInputPage(),
+                      AnalyticalResultIncomingPlantChemicalIngredientInputPage(),
             ),
           ).then((_) async {
             if (!mounted) return;
@@ -61,7 +67,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
               'yyyy-MM-dd',
             );
             await context
-                .read<AnalyticalResultIncomingMaterialByTruckProvider>()
+                .read<AnalyticalResultIncomingPlantChemicalIngredientProvider>()
                 .fetchReport(
                   plantId,
                   formattedDate,
@@ -105,11 +111,12 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
             child: Builder(
               builder: (context) {
                 return Consumer<
-                  AnalyticalResultIncomingMaterialByTruckProvider
+                  AnalyticalResultIncomingPlantChemicalIngredientProvider
                 >(
                   builder: (
                     BuildContext context,
-                    AnalyticalResultIncomingMaterialByTruckProvider provider,
+                    AnalyticalResultIncomingPlantChemicalIngredientProvider
+                    provider,
                     Widget? child,
                   ) {
                     return (provider.isLoading)
@@ -119,14 +126,13 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
                         : ListView.builder(
                           itemCount: provider.reportList.length,
                           itemBuilder: (context, index) {
-                            final item = provider.reportList[index];
+                            final item = provider.reportList[index].analytical;
                             return _cardItem(
                               id: item.id ?? '',
-                              date: item.transactionDate?.toString() ?? '',
+                              date: item.date?.toString() ?? '',
                               entryBy: item.entryBy ?? '',
                               tank: item.material,
                               role: role,
-                              vesselVehicle: item.vesselVehicle,
                             );
                           },
                         );
@@ -166,7 +172,9 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
                 final plant = context.read<PlantProvider>().currentPlant;
                 final plantId = plant?.code ?? '';
                 await context
-                    .read<AnalyticalResultIncomingMaterialByTruckProvider>()
+                    .read<
+                      AnalyticalResultIncomingPlantChemicalIngredientProvider
+                    >()
                     .fetchReport(
                       plantId,
                       formattedDate,
@@ -201,9 +209,9 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
     required String? tank,
     required String? entryBy,
     required String? role,
-    required String? vesselVehicle,
   }) {
     return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: () {
         Navigator.push(
           context,
@@ -211,17 +219,18 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
             builder:
                 (
                   context,
-                ) => AnalyticalResultIncomingMaterialByTruckListDetailPage(
+                ) => AnalyticalResultIncomingPlantChemicalIngredientDetailPage(
                   data: context
-                      .read<AnalyticalResultIncomingMaterialByTruckProvider>()
+                      .read<
+                        AnalyticalResultIncomingPlantChemicalIngredientProvider
+                      >()
                       .reportList
-                      .firstWhere((element) => element.id == id),
+                      .firstWhere((element) => element.analytical.id == id),
                 ),
           ),
         ).then((_) async {
           if (!mounted) return;
-          final plant = context.read<PlantProvider>().currentPlant;
-          final plantId = plant?.code ?? '';
+          final plant = await context.read<PlantProvider>().currentPlant;
           final formattedDate = changeStringDateFormat(
             dateEntryController.text,
             'dd-MM-yyyy',
@@ -229,7 +238,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
           );
           await context
               .read<AnalyticalResultIncomingMaterialByTruckProvider>()
-              .fetchReport(plantId, formattedDate, purpose: "list", role: role);
+              .fetchReport(plant?.code ?? '', formattedDate);
         });
       },
       child: Card(
@@ -296,20 +305,20 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
                   ),
                 ],
               ),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.car_repair_outlined,
-                    size: 18,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Vessel/Vechicle: $vesselVehicle',
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
-                  ),
-                ],
-              ),
+              // Row(
+              //   children: [
+              //     const Icon(
+              //       Icons.car_repair_outlined,
+              //       size: 18,
+              //       color: Colors.grey,
+              //     ),
+              //     SizedBox(width: 8),
+              //     Text(
+              //       'Vessel/Vechicle: $vesselVehicle',
+              //       style: const TextStyle(fontSize: 14, color: Colors.black87),
+              //     ),
+              //   ],
+              // ),
             ],
           ),
         ),

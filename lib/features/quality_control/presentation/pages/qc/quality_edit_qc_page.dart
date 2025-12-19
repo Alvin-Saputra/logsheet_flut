@@ -293,7 +293,7 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
         wasteMNI: parseDouble(wasteMNIController),
         remarks: remarkController.text.trim(),
 
-        flag: widget.report.flag,
+        flag: 'T',
         entryBy: widget.report.entryBy,
         entryDate: widget.report.entryDate,
         preparedBy: widget.report.preparedBy,

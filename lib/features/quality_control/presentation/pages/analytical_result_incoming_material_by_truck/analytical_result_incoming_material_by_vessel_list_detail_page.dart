@@ -243,7 +243,8 @@ class _AnalyticalResultIncomingMaterialByTruckListDetailPageState
                       ),
                     ]),
 
-                    if ((AppRoles.leadQC.contains(
+                    if (
+                      (AppRoles.leadQC.contains(
                           userProvider.currentUser?.role,
                         )) ||
                         (AppRoles.qualityControlManagerApproval.contains(

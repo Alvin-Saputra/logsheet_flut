@@ -38,9 +38,12 @@ import 'package:logsheet_app/features/quality_control/presentation/pages/analyti
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_report_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_input_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/certificate_of_analysis/certificate_of_analysis_incoming_plant_chemical_ingredient_input_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/certificate_of_analysis/certificate_of_analysis_incoming_plant_chemical_ingredient_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/parent_analytical_result_incoming_plant_chemical_ingredient.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_report_list_page.dart';
@@ -447,7 +450,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.21"), Text("Build 2025-12-10")],
+              children: [Text("Version 1.0.21"), Text("Build 2025-12-19")],
             ),
           ],
         ),
@@ -887,7 +890,8 @@ class _UserHomePageState extends State<UserHomePage> {
             ExpansionTile(
               leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
               title: Text(
-                'Analytical Result Of Incoming Plant Chemical/Ingredient\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
+                // 'Analytical Result Of Incoming Plant Chemical/Ingredient (F/QCO-010)\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
+                'Analytical Result Of Incoming Plant Chemical/Ingredient (F/QCO-011)',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -897,6 +901,24 @@ class _UserHomePageState extends State<UserHomePage> {
               iconColor: const Color(0xFFAB2F2B),
               collapsedIconColor: Colors.grey,
               children: [
+                // _buildDrawerItem(
+                //   icon: Icons.list_alt,
+                //   title:
+                //       'List\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
+                //   onTap: () {
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //         builder:
+                //             (_) =>
+                //                 CertificateOfAnalysisIncomingPlantChemicalIngredientListPage(),
+                //       ),
+                //     );
+                //   },
+                // ),
+                // _buildDrawerSubheader(
+                //   "Certificate Of Analysis Of Incoming Plant Chemical/Ingredient",
+                // ),
                 _buildDrawerItem(
                   icon: Icons.list_alt,
                   title:
@@ -907,25 +929,25 @@ class _UserHomePageState extends State<UserHomePage> {
                       MaterialPageRoute(
                         builder:
                             (_) =>
-                                CertificateOfAnalysisIncomingPlantChemicalIngredientListPage(),
+                            // ParentAnalyticalResultIncomingPlantChemicalIngredient()
+                                AnalyticalResultIncomingPlantChemicalIngredientListPage(),
                       ),
                     );
                   },
                 ),
-                _buildDrawerSubheader(
-                  "Certificate Of Analysis Of Incoming Plant Chemical/Ingredient",
-                ),
+
                 _buildDrawerItem(
                   icon: Icons.list_alt,
                   title:
-                      'List\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
+                      'Approval\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder:
                             (_) =>
-                                CertificateOfAnalysisIncomingPlantChemicalIngredientListPage(),
+                            // ParentAnalyticalResultIncomingPlantChemicalIngredient()
+                                AnalyticalResultIncomingPlantChemicalIngredientApprovalListPage(),
                       ),
                     );
                   },

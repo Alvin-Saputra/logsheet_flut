@@ -28,7 +28,13 @@ class CertificateOfAnalysisIncomingPlantChemicalIngredientInputPage
     extends StatefulWidget {
   const CertificateOfAnalysisIncomingPlantChemicalIngredientInputPage({
     super.key,
+    required this.onFinished,
   });
+
+  final void Function(
+    CertificateOfAnalysisIncomingPlantChemicalIngredientHeaderEntity data,
+  )
+  onFinished;
 
   @override
   State<CertificateOfAnalysisIncomingPlantChemicalIngredientInputPage>
@@ -94,7 +100,7 @@ class _CertificateOfAnalysisIncomingPlantChemicalIngredientInputPageState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildAppBar(), body: _buildBody(context));
+    return Scaffold(body: _buildBody(context));
   }
 
   AppBar _buildAppBar() {
@@ -371,15 +377,16 @@ class _CertificateOfAnalysisIncomingPlantChemicalIngredientInputPageState
                             return;
                           }
 
-                          final bool isSuccess = await _insertData();
+                          await _insertData();
 
-                          if (isSuccess) {
-                            showSnackBar("Berhasil menyimpan data", context);
-                            Navigator.of(context).pop();
-                          } else {
-                            showSnackBar("Gagal menyimpan data", context);
-                          }
+                          // if (isSuccess) {
+                          //   showSnackBar("Berhasil menyimpan data", context);
+                          //   Navigator.of(context).pop();
+                          // } else {
+                          //   showSnackBar("Gagal menyimpan data", context);
+                          // }
                         },
+                        label: "Form Selanjutnya",
                       );
                 },
               ),
@@ -390,7 +397,7 @@ class _CertificateOfAnalysisIncomingPlantChemicalIngredientInputPageState
     );
   }
 
-  Future<bool> _insertData() async {
+  Future<void> _insertData() async {
     final plant = context.read<PlantProvider>().currentPlant;
     final user = context.read<UserProvider>();
     final businessUnit =
@@ -435,14 +442,18 @@ class _CertificateOfAnalysisIncomingPlantChemicalIngredientInputPageState
             details: details,
           );
 
-      final isSuccess = await context
-          .read<CertificateOfAnalysisIncomingPlantChemicalIngredientProvider>()
-          .insertReport(headerInput: header, menuId: formData?.isMenu ?? '');
+      // final isSuccess = await context
+      //     .read<CertificateOfAnalysisIncomingPlantChemicalIngredientProvider>()
+      //     .insertReport(headerInput: header, menuId: formData?.isMenu ?? '');
 
-      return isSuccess;
+      widget.onFinished(header);
+
+      // return isSuccess;
+
+      
     } catch (e) {
       debugPrint("Error inserting Analytical Incoming Material By Vessel: $e");
-      return false;
+      // return false;
     }
   }
 

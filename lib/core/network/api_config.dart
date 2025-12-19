@@ -1,5 +1,6 @@
 // lib/core/network/dio_client.dart
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class DioClient {
   final Dio _dio;
@@ -7,8 +8,9 @@ class DioClient {
   DioClient()
     : _dio = Dio(
         BaseOptions(
-          baseUrl: 'http://10.0.2.2:8000/api',
+          // baseUrl: 'http://10.0.2.2:8000/api',
           //  baseUrl: 'https://logsheet-dev.gamasap.com/api',
+          baseUrl: dotenv.env['API_URL']!,
           connectTimeout: const Duration(seconds: 60),
           receiveTimeout: const Duration(seconds: 60),
           headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
