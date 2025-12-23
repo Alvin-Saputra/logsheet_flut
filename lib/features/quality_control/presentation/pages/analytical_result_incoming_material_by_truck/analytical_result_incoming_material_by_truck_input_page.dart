@@ -545,8 +545,8 @@ class _AnalyticalResultIncomingMaterialByTruckInputPageState
         supplier: supplierController.text,
         vesselVehicle: vesselVehicleController.text,
         contractDoNomor: contractDoController.text,
-        ssFfa: parseDouble(ssFfaController.text),
-        ssMni: parseDouble(ssMniController.text),
+        ssFfa: parseDouble(ssFfaController.text)??0,
+        ssMni: parseDouble(ssMniController.text)??0,
         ssOthers: ssOthersController.text,
 
         flag: 'T',

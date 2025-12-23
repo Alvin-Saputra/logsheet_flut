@@ -18,9 +18,9 @@ import 'package:logsheet_app/features/quality_control/presentation/provider/dail
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class AnalyticalResultIncomingPlantChemicalIngredientApprovalDetailPage
+class AnalyticalResultIncomingPlantChemicalIngredientReportDetailPage
     extends StatefulWidget {
-  AnalyticalResultIncomingPlantChemicalIngredientApprovalDetailPage({
+  AnalyticalResultIncomingPlantChemicalIngredientReportDetailPage({
     super.key,
     required this.data,
   });
@@ -28,16 +28,14 @@ class AnalyticalResultIncomingPlantChemicalIngredientApprovalDetailPage
   final AnalyticalWithCertificateOfAnalysisHeaderEntity data;
 
   @override
-  State<AnalyticalResultIncomingPlantChemicalIngredientApprovalDetailPage>
+  State<AnalyticalResultIncomingPlantChemicalIngredientReportDetailPage>
   createState() =>
-      _AnalyticalResultIncomingPlantChemicalIngredientApprovalDetailPageState();
+      _AnalyticalResultIncomingPlantChemicalIngredientReportDetailPageState();
 }
 
-class _AnalyticalResultIncomingPlantChemicalIngredientApprovalDetailPageState
+class _AnalyticalResultIncomingPlantChemicalIngredientReportDetailPageState
     extends
-        State<
-          AnalyticalResultIncomingPlantChemicalIngredientApprovalDetailPage
-        > {
+        State<AnalyticalResultIncomingPlantChemicalIngredientReportDetailPage> {
   final PageController detailPageControllers = PageController();
   final TextEditingController remarkController = TextEditingController();
   late AnalyticalWithCertificateOfAnalysisHeaderEntity _data;
@@ -130,136 +128,6 @@ class _AnalyticalResultIncomingPlantChemicalIngredientApprovalDetailPageState
                           _buildCoaPage(context),
                         ],
                       ),
-
-                      if ((AppRoles.leadQC.contains(
-                            userProvider.currentUser?.role,
-                          )) ||
-                          (AppRoles.qualityControlManagerApproval.contains(
-                            userProvider.currentUser?.role,
-                          )))
-                        CustomSectionCard('Approval Actions', [
-                          if (widget.data.analytical.preparedStatus ==
-                                  "Approved" &&
-                              widget.data.analytical.approvedStatus ==
-                                  "Approved") ...[
-                            Text(
-                              "Checklist Approved",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
-                              ),
-                            ),
-                          ] else if (widget.data.analytical.preparedStatus ==
-                                  "Rejected" ||
-                              widget.data.analytical.approvedStatus ==
-                                  "Rejected") ...[
-                            Text(
-                              "Checklist Rejected",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ] else if (AppRoles.qualityControlManagerApproval
-                              .contains(userProvider.currentUser?.role)) ...[
-                            if (widget.data.analytical.preparedStatus ==
-                                    "Approved" &&
-                                widget.data.analytical.approvedStatus ==
-                                    null) ...[
-                              Text('Approved Status:'),
-                              SizedBox(height: 8.0),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0,
-                                        vertical: 8.0,
-                                      ),
-                                      child: ElevatedButton(
-                                        onPressed: () async {
-                                          _showRejectBottomSheet(context);
-                                        },
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          children: const [
-                                            Text('Reject'),
-                                            Icon(Icons.close),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0,
-                                        vertical: 8.0,
-                                      ),
-                                      child: ElevatedButton(
-                                        onPressed: () async {
-                                          bool isSuccess =
-                                              await _approveRejectReport(
-                                                "Approved",
-                                              );
-                                          if (isSuccess) {
-                                            showSnackBar(
-                                              "Berhasil Approve Checklist",
-                                              this.context,
-                                            );
-                                            Navigator.of(this.context).pop();
-                                            log("Sukses Approve");
-                                          } else {
-                                            showSnackBar(
-                                              "Gagal Approve Checklist",
-                                              this.context,
-                                            );
-                                          }
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.green,
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          children: const [
-                                            Text('Approve'),
-                                            Icon(Icons.check),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ] else if (widget.data.analytical.preparedStatus ==
-                                null) ...[
-                              Text(
-                                "Waiting Approval From Leader QC...",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.orange,
-                                ),
-                              ),
-                            ],
-                          ] else if (AppRoles.leadQC.contains(
-                            userProvider.currentUser?.role,
-                          )) ...[
-                            if (widget.data.analytical.approvedStatus ==
-                                null) ...[
-                              Text(
-                                "Waiting Apprvoal From Manager QC...",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.orange,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ]),
                     ],
                   ),
                 ),
@@ -279,66 +147,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientApprovalDetailPageState
       ),
       centerTitle: true,
       iconTheme: const IconThemeData(color: Colors.black),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.delete_rounded, color: Colors.red),
-          onPressed: () {
-            final provider =
-                context
-                    .read<
-                      AnalyticalResultIncomingPlantChemicalIngredientProvider
-                    >();
-
-            customConfirmationDialog(
-              context: context,
-              title: 'Delete Report',
-              message:
-                  'Are you sure you want to delete this report? This action cannot be undone.',
-              onConfirm: () async {
-                final success = await provider.deleteReport(
-                  id: _data.analytical.id ?? '',
-                );
-
-                if (!context.mounted) return false;
-
-                if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Report deleted successfully.'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                  Navigator.of(context).pop(); // tutup halaman detail
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Failed to delete report.'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-                return success;
-              },
-            );
-          },
-        ),
-
-        IconButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (_) =>
-                        AnalyticalResultIncomingPlantChemicalIngredientEditPage(
-                          data: widget.data,
-                        ),
-              ),
-            );
-          },
-          icon: const Icon(Icons.edit_rounded, color: Colors.red),
-        ),
-      ],
+      actions: [],
     );
   }
 
@@ -348,7 +157,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientApprovalDetailPageState
       child: Column(
         children: [
           CustomSectionCard('Analytical Information', [
-             CustomSectionCardData(
+            CustomSectionCardData(
               'Date',
               formatDatetoString(_data.analytical.date, 'yyyy-MM-dd') ?? '',
             ),
@@ -650,7 +459,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientApprovalDetailPageState
                           return;
                         }
                         Navigator.of(context).pop();
-                        bool isSuccess = await _approveRejectReport("Rejected");
+                        bool isSuccess = await _approveRejectReport("rejected");
                         if (isSuccess) {
                           Navigator.of(
                             this.context,

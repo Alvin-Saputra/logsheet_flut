@@ -76,8 +76,11 @@ class DailyQualityCompositeFractionationProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> insertDailyQualityCompositeFractionationReport({
+  Future<Map<String, dynamic>> insertDailyQualityCompositeFractionationReport({
     required DailyQualityCompositeFractionationEntity report,
+    required String date,
+    required String time,
+    required String workCenter,
   }) async {
     _setLoadingInput(true);
 
@@ -86,22 +89,25 @@ class DailyQualityCompositeFractionationProvider with ChangeNotifier {
     try {
       final result = await _repository.insertDailyQualityCompositeFractionation(
         report: report,
+        date: date,
+        time: time,
+        workCenter: workCenter,
       );
 
-      if (result) {
+      if (result['success'] == true) {
         _setLoadingInput(false);
-        return true;
+        return {"success": true, "message": result['message']};
       } else {
         _setErrorMessage(
           'Failed to insert Daily Quality Composite Fractionation.',
         );
         _setLoadingInput(false);
-        return false;
+        return {"success": false, "message": result['message']};
       }
     } catch (e) {
       _setErrorMessage('$e');
       _setLoadingInput(false);
-      return false;
+      return {"success": false, "message": "Try Again Later"};
     }
   }
 
@@ -229,8 +235,9 @@ class DailyQualityCompositeFractionationProvider with ChangeNotifier {
 
   Future<bool> updateDailyQualityCompositeFractionationReport(
     DailyQualityCompositeFractionationEntity report,
-    String id,
-  ) async {
+    String id, {
+    bool? isRevision,
+  }) async {
     _setLoadingEdit(true);
     _setErrorMessage(null);
     try {

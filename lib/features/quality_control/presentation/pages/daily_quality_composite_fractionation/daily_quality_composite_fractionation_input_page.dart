@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
+import 'package:logsheet_app/core/widgets/custom_date_field.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/daily_quality_composite_fractionation/daily_quality_composite_fractionation_entity.dart';
 import 'package:logsheet_app/core/widgets/custom_checkbox_field.dart';
@@ -76,6 +77,8 @@ class _DailyQualityCompositeFractionationInputPageState
   final TextEditingController bpColorWController = TextEditingController();
   final TextEditingController bpColorBController = TextEditingController();
 
+  // final TextEditingController dateEntryController = TextEditingController();
+
   bool breakTestChecked = false;
 
   int currentPage = 1;
@@ -106,8 +109,7 @@ class _DailyQualityCompositeFractionationInputPageState
             .dataFormNoList
             .where(
               (form) =>
-                  form.isMenu ==
-                      "Daily_Quality_Composite_Fractionation" &&
+                  form.isMenu == "Daily_Quality_Composite_Fractionation" &&
                   form.isActive == "T",
             )
             .first;
@@ -138,6 +140,11 @@ class _DailyQualityCompositeFractionationInputPageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // CustomDateField(
+                //   controller: dateEntryController,
+                //   label: 'Arrival Date',
+                //   icon: Icons.event,
+                // ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -377,17 +384,17 @@ class _DailyQualityCompositeFractionationInputPageState
                         ? Center(child: CircularProgressIndicator())
                         : CustomSaveButton(
                           onPressed: () async {
-                            final bool isSuccess;
+                            final Map isSuccess;
                             isSuccess =
                                 await _insertDailyQualityCompositeFractionationReport();
-                            if (isSuccess) {
+                            if (isSuccess['success'] == true) {
                               showSnackBar(
                                 "Berhasil menyimpan data",
                                 this.context,
                               );
                               Navigator.of(this.context).pop();
                             } else {
-                              showSnackBar("Gagal meyimpan data", this.context);
+                              showSnackBar(isSuccess['message'], this.context);
                             }
                           },
                         );
@@ -894,7 +901,7 @@ class _DailyQualityCompositeFractionationInputPageState
     );
   }
 
-  Future<bool> _insertDailyQualityCompositeFractionationReport() async {
+  Future<Map<String, dynamic>> _insertDailyQualityCompositeFractionationReport() async {
     final plant = context.read<PlantProvider>().currentPlant;
     final user = context.read<UserProvider>();
     final id = await context
@@ -902,6 +909,8 @@ class _DailyQualityCompositeFractionationInputPageState
         .generateId(plant?.code ?? "");
     final businessUnit =
         context.read<BusinessUnitProvider>().currentBusinessUnit;
+
+    // final date = formatDatetoString(DateTime.now(), 'yyyy-MM-dd') ?? '';
 
     try {
       final report = DailyQualityCompositeFractionationEntity(
@@ -961,12 +970,18 @@ class _DailyQualityCompositeFractionationInputPageState
 
       final isSuccess = await context
           .read<DailyQualityCompositeFractionationProvider>()
-          .insertDailyQualityCompositeFractionationReport(report: report);
+          .insertDailyQualityCompositeFractionationReport(
+            report: report,
+            workCenter: selectedWorkCenter ?? '',
+            time: formatTimeOfDay(report.time) ?? '',
+            date:
+                formatDatetoString(report.transactionDate, 'yyyy-MM-dd') ?? '',
+          );
 
       return isSuccess;
     } catch (e) {
       debugPrint("Error inserting Daily Quality Composite Fractionation: $e");
-      return false;
+      return {"success": false, "message": "Try Again Later"};
     }
   }
 }

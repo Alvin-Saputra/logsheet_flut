@@ -190,8 +190,8 @@ class _DailyQualityCompositeFractionationReportListPageState
           if (!mounted) return;
           final formatted = parseDateTimeForQuery(dateEntryController.text);
           context
-              .read<ChangeProductChecklistProvider>()
-              .getAllChangeProductFromDate(formatted ?? '', role ?? '');
+              .read<DailyQualityCompositeFractionationProvider>()
+              .getAllDailyCompositeFractionationReport(formatted ?? '', role ?? '');
         });
       },
       child: Card(

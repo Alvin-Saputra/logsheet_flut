@@ -33,6 +33,7 @@ class AnalyticalResultIncomingMaterialByVesselInputPage extends StatefulWidget {
 class _AnalyticalResultIncomingMaterialByVesselInputPageState
     extends State<AnalyticalResultIncomingMaterialByVesselInputPage> {
   final _formKey = GlobalKey<FormState>();
+  final _formKeyDetails = GlobalKey<FormState>();
   final TextEditingController dateEntryController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController supplierController = TextEditingController();
@@ -340,6 +341,8 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                             return;
                           }
 
+                      
+
                           if (numberOfRows == 0 || numberOfRows == null) {
                             showSnackBar("Wajib Generate Details", context);
                             return;
@@ -493,19 +496,21 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                         ),
                       ),
                       const SizedBox(height: 12),
-
+                  
                       // --- FORM PALKA S ---
                       _buildSection("Palka S", [
                         CustomTextField(
                           controller: row['palka_s_no']!,
                           label: "Palka S No",
                           icon: Icons.numbers,
+                          isRequired: true,
                         ),
                         CustomTextField(
                           controller: row['palka_s_ffa']!,
                           label: "Palka S FFA",
                           icon: Icons.science,
                           isNumeric: true,
+                          isRequired: true,
                         ),
                         CustomTextField(
                           controller: row['palka_s_iv']!,
@@ -524,24 +529,27 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                           label: "Palka S MNI",
                           icon: Icons.science,
                           isNumeric: true,
+                          isRequired: true,
                         ),
                       ]),
-
+                  
                       const SizedBox(height: 16),
                       const Divider(),
-
+                  
                       // --- FORM PALKA C ---
                       _buildSection("Palka C", [
                         CustomTextField(
                           controller: row['palka_c_no']!,
                           label: "Palka C No",
                           icon: Icons.numbers,
+                          isRequired: true,
                         ),
                         CustomTextField(
                           controller: row['palka_c_ffa']!,
                           label: "Palka C FFA",
                           icon: Icons.science,
                           isNumeric: true,
+                          isRequired: true,
                         ),
                         CustomTextField(
                           controller: row['palka_c_iv']!,
@@ -560,24 +568,27 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                           label: "Palka C MNI",
                           icon: Icons.science,
                           isNumeric: true,
+                          isRequired: true,
                         ),
                       ]),
-
+                  
                       const SizedBox(height: 16),
                       const Divider(),
-
+                  
                       // --- FORM PALKA P (Tambahkan jika diperlukan) ---
                       _buildSection("Palka P", [
                         CustomTextField(
                           controller: row['palka_p_no']!,
                           label: "Palka P No",
                           icon: Icons.numbers,
+                          isRequired: true,
                         ),
                         CustomTextField(
                           controller: row['palka_p_ffa']!,
                           label: "Palka P FFA",
                           icon: Icons.science,
                           isNumeric: true,
+                          isRequired: true,
                         ),
                         CustomTextField(
                           controller: row['palka_p_iv']!,
@@ -596,6 +607,7 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                           label: "Palka P MNI",
                           icon: Icons.science,
                           isNumeric: true,
+                          isRequired: true,
                         ),
                       ]),
                     ],
@@ -660,20 +672,20 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
           'yyyy-MM-dd HH:mm:ss',
           returnDateTime: true,
         ),
-        quantity: parseDouble(quantityController.text),
+        quantity: parseDouble(quantityController.text)??0,
         supplier: supplierController.text,
         shipName: shipNameController.text,
         contractDoNomor: contractDoController.text,
-        ffa: parseDouble(ffaController.text),
-        mni: parseDouble(miController.text),
-        dobi: parseDouble(dobiController.text),
+        ffa: parseDouble(ffaController.text)??0,
+        mni: parseDouble(miController.text)??0,
+        dobi: parseDouble(dobiController.text)??0,
         others: othersController.text,
-        hasilAnalisaFfa: parseDouble(hasilAnalisaFfaController.text),
-        hasilAnalisaIv: parseDouble(hasilAnalisaIvController.text),
-        hasilAnalisaMoisture: parseDouble(hasilAnalisaMoistureController.text),
-        hasilAnalisaDobi: parseDouble(hasilAnalisaDobiController.text),
-        hasilAnalisaPv: parseDouble(hasilAnalisaPvController.text),
-        hasilAnalisaAnv: parseDouble(hasilAnalisaAnvController.text),
+        hasilAnalisaFfa: parseDouble(hasilAnalisaFfaController.text)??0,
+        hasilAnalisaIv: parseDouble(hasilAnalisaIvController.text)??0,
+        hasilAnalisaMoisture: parseDouble(hasilAnalisaMoistureController.text)??0,
+        hasilAnalisaDobi: parseDouble(hasilAnalisaDobiController.text)??0,
+        hasilAnalisaPv: parseDouble(hasilAnalisaPvController.text)??0,
+        hasilAnalisaAnv: parseDouble(hasilAnalisaAnvController.text)??0,
         remarks: remarkController.text,
 
         flag: 'T',
@@ -716,21 +728,48 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
   }
 
   bool _validateDetailRows(BuildContext context) {
+    // Tentukan key mana saja yang WAJIB diisi
+    // Sesuaikan string ini dengan key yang Anda buat di function generateDetailRows
+    final List<String> mandatoryKeys = [
+      'palka_s_ffa',
+      'palka_s_mni', 
+      'palka_c_ffa',
+      'palka_c_mni',
+      'palka_p_ffa',
+      'palka_p_mni',
+    ];
+
     for (int i = 0; i < detailControllers.length; i++) {
       final row = detailControllers[i];
+      bool isPageValid = true;
 
-      for (final entry in row.entries) {
-        if (entry.value.text.trim().isEmpty) {
-          showSnackBar(
-            // "Field ${entry.key} di detail ke-${i + 1} wajib diisi",
-            "Semua Field Detail Wajib Diisi",
-            context,
-          );
-          return false;
+      // Cek hanya key yang ada di list mandatoryKeys
+      for (final key in mandatoryKeys) {
+        // Pastikan key ada di map dan text-nya kosong
+        if (row[key] != null && row[key]!.text.trim().isEmpty) {
+          isPageValid = false;
+          break; // Stop loop, halaman ini sudah invalid
         }
       }
+
+      if (!isPageValid) {
+        // 1. Pindahkan PageView ke halaman yang error
+        palkaPageControllers.animateToPage(
+          i,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeIn,
+        );
+
+        // 2. Tampilkan pesan
+        showSnackBar(
+          "Detail ke-${i + 1} belum lengkap. FFA dan MNI wajib diisi.",
+          context,
+        );
+        
+        return false; // Validasi gagal
+      }
     }
-    return true;
+    return true; // Validasi sukses
   }
 
   DateTime? parseDateFormatFromController(String? selectedDate) {

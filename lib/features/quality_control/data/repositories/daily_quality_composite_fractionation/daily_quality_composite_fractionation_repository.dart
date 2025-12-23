@@ -8,11 +8,17 @@ class DailyQualityCompositeFractionationRepository {
 
   DailyQualityCompositeFractionationRepository(this._mySQLService);
 
-  Future<bool> insertDailyQualityCompositeFractionation({
+  Future<Map<String, dynamic>> insertDailyQualityCompositeFractionation({
     required DailyQualityCompositeFractionationEntity report,
+    required String date,
+    required String time,
+    required String workCenter,
   }) async {
     return await _mySQLService.insertDailyQualityCompositeFractionationReport(
       report: report,
+      date: date,
+      time: time,
+      workCenter: workCenter,
     );
   }
 

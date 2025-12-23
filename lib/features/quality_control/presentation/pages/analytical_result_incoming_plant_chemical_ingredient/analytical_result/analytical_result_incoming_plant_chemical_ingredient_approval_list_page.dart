@@ -95,7 +95,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientApprovalListPageState
             .where(
               (form) =>
                   form.isMenu ==
-                  "Analytical_Result_Of_Incoming_Material_By_Vessel",
+                  "Analytical_Result_of_Incoming_Plant_Chemical_Ingredient",
             )
             .first;
     return AppBar(

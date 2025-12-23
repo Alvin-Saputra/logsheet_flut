@@ -92,7 +92,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
             .where(
               (form) =>
                   form.isMenu ==
-                  "Analytical_Result_Of_Incoming_Material_By_Truck",
+                  "Analytical_Result_of_Incoming_Plant_Chemical_Ingredient",
             )
             .first;
     return AppBar(title: Text("List (${formData!.code})"), actions: [
@@ -129,9 +129,9 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
                             final item = provider.reportList[index].analytical;
                             return _cardItem(
                               id: item.id ?? '',
-                              date: item.date?.toString() ?? '',
+                              date: item.entryDate?.toString() ?? '',
                               entryBy: item.entryBy ?? '',
-                              tank: item.material,
+                              material: item.material,
                               role: role,
                             );
                           },
@@ -206,7 +206,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
   Widget _cardItem({
     required String id,
     required String date,
-    required String? tank,
+    required String? material,
     required String? entryBy,
     required String? role,
   }) {
@@ -230,15 +230,17 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
           ),
         ).then((_) async {
           if (!mounted) return;
-          final plant = await context.read<PlantProvider>().currentPlant;
+
+          final plant = context.read<PlantProvider>().currentPlant;
+          final plantId = plant?.code ?? '';
           final formattedDate = changeStringDateFormat(
             dateEntryController.text,
             'dd-MM-yyyy',
             'yyyy-MM-dd',
           );
           await context
-              .read<AnalyticalResultIncomingMaterialByTruckProvider>()
-              .fetchReport(plant?.code ?? '', formattedDate);
+              .read<AnalyticalResultIncomingPlantChemicalIngredientProvider>()
+              .fetchReport(plantId, formattedDate, purpose: "list");
         });
       },
       child: Card(
@@ -288,7 +290,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
                   const Icon(Icons.storage, size: 18, color: Colors.grey),
                   SizedBox(width: 8),
                   Text(
-                    "$tank",
+                    "$material",
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                   SizedBox(width: 16),

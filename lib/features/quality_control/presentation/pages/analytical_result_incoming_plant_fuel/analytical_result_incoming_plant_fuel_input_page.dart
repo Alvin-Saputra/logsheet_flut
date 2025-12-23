@@ -20,85 +20,68 @@ import 'package:logsheet_app/features/master_data/presentation/provider/master/u
 import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_detail_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_header_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_chemical_ingredient/certificate_of_analysis/certificate_of_analysis_incoming_plant_chemical_ingredient_detail_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_chemical_ingredient/certificate_of_analysis/certificate_of_analysis_incoming_plant_chemical_ingredient_header_entity.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class AnalyticalResultIncomingPlantChemicalIngredientInputPage
-    extends StatefulWidget {
-  AnalyticalResultIncomingPlantChemicalIngredientInputPage({
-    super.key,
-    // required this.coaHeader,
-    // required this.onBack,
-  });
-
-  // CertificateOfAnalysisIncomingPlantChemicalIngredientHeaderEntity coaHeader;
-  // final VoidCallback onBack;
+class AnalyticalResultIncomingPlantFuelInputPage extends StatefulWidget {
+  AnalyticalResultIncomingPlantFuelInputPage({super.key});
 
   @override
-  State<AnalyticalResultIncomingPlantChemicalIngredientInputPage>
-  createState() =>
-      _AnalyticalResultIncomingPlantChemicalIngredientInputPageState();
+  State<AnalyticalResultIncomingPlantFuelInputPage> createState() =>
+      _AnalyticalResultIncomingPlantFuelInputPageState();
 }
 
-class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
-    extends State<AnalyticalResultIncomingPlantChemicalIngredientInputPage> {
+class _AnalyticalResultIncomingPlantFuelInputPageState
+    extends State<AnalyticalResultIncomingPlantFuelInputPage> {
   final _formKey = GlobalKey<FormState>();
-  // --- Controllers for Material Info ---
+  DataFormNoEntity? formData;
+
   final TextEditingController dateController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController noRefCoaController = TextEditingController();
   final TextEditingController analystController = TextEditingController();
   final TextEditingController supplierController = TextEditingController();
   final TextEditingController policeNumberController = TextEditingController();
-  final TextEditingController batchController = TextEditingController();
-  final TextEditingController expDateController = TextEditingController();
 
-  DataFormNoEntity? formData;
   String? analyticalSelectedMaterial;
-  String? analyticalSelectedStatusValue;
 
   List<Map<String, dynamic>> analyticalDetailControllers = [];
   List<String> analyticalParameters = [
-    'M&I, %',
-    'Bleach Power, R',
-    'Bulk Density, Kg/m2',
-    'pH',
+    'Moisture Atas %',
+    'Moisture Tengah %',
+    'Moisture Bawah %',
+    'Burn Test, minutes',
   ];
 
   final PageController analyticalPageControllers = PageController();
 
-  final TextEditingController gradeController = TextEditingController();
-  final TextEditingController packingController = TextEditingController();
-  final TextEditingController coaQuantityController = TextEditingController();
-  final TextEditingController noDocController = TextEditingController();
+  // final TextEditingController gradeController = TextEditingController();
+  // final TextEditingController packingController = TextEditingController();
+  // final TextEditingController coaQuantityController = TextEditingController();
+  // final TextEditingController noDocController = TextEditingController();
 
-  // --- Controllers for Vehicle Info ---
-  final TextEditingController vehicleController = TextEditingController();
-  final TextEditingController lotNoController = TextEditingController();
+  // final TextEditingController vehicleController = TextEditingController();
+  // final TextEditingController lotNoController = TextEditingController();
 
-  // --- Date Controllers ---
-  final TextEditingController tanggalPengirimanController =
-      TextEditingController();
-  final TextEditingController productionDateController =
-      TextEditingController();
-  final TextEditingController expiredDateController = TextEditingController();
+  // final TextEditingController tanggalPengirimanController =
+  //     TextEditingController();
+  // final TextEditingController productionDateController =
+  //     TextEditingController();
+  // final TextEditingController expiredDateController = TextEditingController();
 
-  String? coaSelectedMaterial;
-  List<Map<String, dynamic>> coaDetailControllers = [];
-  final PageController coaPageControllers = PageController();
-  List<String> coaParameters = [
-    'Moisture',
-    'pH',
-    'Bulk Density',
-    'ACIDITY',
-    'PASSING MESH',
-    'SURFACE AREA',
-    'PORE VOLUME',
-  ];
+  // String? coaSelectedMaterial;
+  // List<Map<String, dynamic>> coaDetailControllers = [];
+  // final PageController coaPageControllers = PageController();
+  // List<String> coaParameters = [
+  //   'Moisture',
+  //   'pH',
+  //   'Bulk Density',
+  //   'ACIDITY',
+  //   'PASSING MESH',
+  //   'SURFACE AREA',
+  //   'PORE VOLUME',
+  // ];
 
   @override
   initState() {
@@ -119,16 +102,17 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
       });
     }
 
-    for (int i = 0; i < coaParameters.length; i++) {
-      coaDetailControllers.add({
-        'parameter_name': coaParameters[i],
-        'actual_min': TextEditingController(),
-        'actual_max': TextEditingController(),
-        'standard_min': TextEditingController(),
-        'standard_max': TextEditingController(),
-        'method': TextEditingController(),
-      });
-    }
+    //   for (int i = 0; i < coaParameters.length; i++) {
+    //     coaDetailControllers.add({
+    //       'parameter_name': coaParameters[i],
+    //       'actual_min': TextEditingController(),
+    //       'actual_max': TextEditingController(),
+    //       'standard_min': TextEditingController(),
+    //       'standard_max': TextEditingController(),
+    //       'method': TextEditingController(),
+    //     });
+    //   }
+    // }
   }
 
   @override
@@ -144,7 +128,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
             .where(
               (form) =>
                   form.isMenu ==
-                  "Analytical_Result_of_Incoming_Plant_Chemical_Ingredient",
+                  "Analytical_Result_Of_Incoming_Material_By_Truck",
             )
             .first;
     return AppBar(
@@ -166,13 +150,13 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
               Row(
                 children: [
                   Text(
-                    'Certificate of Analysis (COA)',
+                    'Report of Analysis (ROA)',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
               SizedBox(height: 16.0),
-              _buildCoaInput(),
+              // _buildCoaInput(),
               SizedBox(height: 24.0),
               Divider(height: 2.0),
               SizedBox(height: 24.0),
@@ -214,7 +198,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
                           //   return;
                           // }
 
-                          final bool isSuccess = await _insertData();
+                          final bool isSuccess = true;
 
                           if (isSuccess) {
                             showSnackBar("Berhasil menyimpan data", context);
@@ -363,13 +347,6 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
           isNumeric: false,
         ),
 
-        CustomTextField(
-          controller: noDocController,
-          label: "No Ref COA",
-          icon: Icons.person_rounded,
-          isNumeric: false,
-        ),
-
         SizedBox(height: 12.0),
         CustomTextField(
           controller: supplierController,
@@ -385,30 +362,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
           isNumeric: false,
         ),
 
-        CustomTextField(
-          controller: batchController,
-          label: "Batch/Lot",
-          icon: Icons.person_rounded,
-          isNumeric: false,
-        ),
-        CustomDateField(
-          controller: expDateController,
-          label: 'Exp Date',
-          icon: Icons.event,
-        ),
         SizedBox(height: 12),
-        CustomRadioButton(
-          title: 'Status',
-          options: const ['Release', 'Hold', 'Reject'],
-          value: analyticalSelectedStatusValue,
-          onChanged: (val) {
-            setState(() {
-              analyticalSelectedStatusValue = val;
-            });
-          },
-        ),
-
-        SizedBox(height: 8),
 
         ExpandablePageView.builder(
           controller: analyticalPageControllers,
@@ -497,281 +451,281 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
     );
   }
 
-  Widget _buildCoaInput() {
-    return Column(
-      children: [
-        // Di dalam _buildCoaInput()
-        _materialDropdown(
-          context: context,
-          selectedValue: coaSelectedMaterial,
-          onChanged: (value) {
-            setState(() {
-              coaSelectedMaterial = value;
-            });
-          },
-        ),
-        const SizedBox(height: 12.0),
-        CustomTextField(
-          controller: gradeController,
-          label: "Grade",
-          icon: Icons.person_rounded,
-          isNumeric: false,
-        ),
+  // Widget _buildCoaInput() {
+  //   return Column(
+  //     children: [
+  //       // Di dalam _buildCoaInput()
+  //       _materialDropdown(
+  //         context: context,
+  //         selectedValue: coaSelectedMaterial,
+  //         onChanged: (value) {
+  //           setState(() {
+  //             coaSelectedMaterial = value;
+  //           });
+  //         },
+  //       ),
+  //       const SizedBox(height: 12.0),
+  //       CustomTextField(
+  //         controller: gradeController,
+  //         label: "Grade",
+  //         icon: Icons.person_rounded,
+  //         isNumeric: false,
+  //       ),
 
-        CustomTextField(
-          controller: packingController,
-          label: "Packing",
-          icon: Icons.person_rounded,
-          // isNumeric: true,
-        ),
-        CustomTextField(
-          controller: coaQuantityController,
-          label: "Quantity",
-          icon: Icons.person_rounded,
-          isNumeric: true,
-        ),
+  //       CustomTextField(
+  //         controller: packingController,
+  //         label: "Packing",
+  //         icon: Icons.person_rounded,
+  //         // isNumeric: true,
+  //       ),
+  //       CustomTextField(
+  //         controller: coaQuantityController,
+  //         label: "Quantity",
+  //         icon: Icons.person_rounded,
+  //         isNumeric: true,
+  //       ),
 
-        CustomTextField(
-          controller: noDocController,
-          label: "No Doc",
-          icon: Icons.person_rounded,
-          isNumeric: false,
-        ),
+  //       CustomTextField(
+  //         controller: noDocController,
+  //         label: "No Doc",
+  //         icon: Icons.person_rounded,
+  //         isNumeric: false,
+  //       ),
 
-        CustomDateField(
-          controller: tanggalPengirimanController,
-          label: 'Tanggal Pengiriman',
-          icon: Icons.event,
-        ),
-        const SizedBox(height: 8),
+  //       CustomDateField(
+  //         controller: tanggalPengirimanController,
+  //         label: 'Tanggal Pengiriman',
+  //         icon: Icons.event,
+  //       ),
+  //       const SizedBox(height: 8),
 
-        CustomTextField(
-          controller: vehicleController,
-          label: "Vehicle",
-          icon: Icons.person_rounded,
-          isNumeric: false,
-        ),
+  //       CustomTextField(
+  //         controller: vehicleController,
+  //         label: "Vehicle",
+  //         icon: Icons.person_rounded,
+  //         isNumeric: false,
+  //       ),
 
-        CustomTextField(
-          controller: lotNoController,
-          label: "Lot No",
-          icon: Icons.person_rounded,
-          isNumeric: false,
-        ),
+  //       CustomTextField(
+  //         controller: lotNoController,
+  //         label: "Lot No",
+  //         icon: Icons.person_rounded,
+  //         isNumeric: false,
+  //       ),
 
-        CustomDateField(
-          controller: productionDateController,
-          label: 'Production Date',
-          icon: Icons.event,
-        ),
-        const SizedBox(height: 16),
+  //       CustomDateField(
+  //         controller: productionDateController,
+  //         label: 'Production Date',
+  //         icon: Icons.event,
+  //       ),
+  //       const SizedBox(height: 16),
 
-        CustomDateField(
-          controller: expiredDateController,
-          label: 'Expired Date',
-          icon: Icons.event,
-        ),
-        const SizedBox(height: 8),
+  //       CustomDateField(
+  //         controller: expiredDateController,
+  //         label: 'Expired Date',
+  //         icon: Icons.event,
+  //       ),
+  //       const SizedBox(height: 8),
 
-        ExpandablePageView.builder(
-          controller: coaPageControllers,
-          itemCount: coaParameters.length,
-          itemBuilder: (context, pageIndex) {
-            final row = coaDetailControllers[pageIndex];
+  //       ExpandablePageView.builder(
+  //         controller: coaPageControllers,
+  //         itemCount: coaParameters.length,
+  //         itemBuilder: (context, pageIndex) {
+  //           final row = coaDetailControllers[pageIndex];
 
-            return SectionCard(
-              title: coaParameters[pageIndex],
-              children: [
-                CustomTextField(
-                  controller: row['actual_min']!,
-                  label: "Actual min",
-                  icon: Icons.person_rounded,
-                  isNumeric: true,
-                ),
+  //           return SectionCard(
+  //             title: coaParameters[pageIndex],
+  //             children: [
+  //               CustomTextField(
+  //                 controller: row['actual_min']!,
+  //                 label: "Actual min",
+  //                 icon: Icons.person_rounded,
+  //                 isNumeric: true,
+  //               ),
 
-                CustomTextField(
-                  controller: row['actual_max']!,
-                  label: "Actual max",
-                  icon: Icons.person_rounded,
-                  isNumeric: true,
-                ),
+  //               CustomTextField(
+  //                 controller: row['actual_max']!,
+  //                 label: "Actual max",
+  //                 icon: Icons.person_rounded,
+  //                 isNumeric: true,
+  //               ),
 
-                CustomTextField(
-                  controller: row['standard_max']!,
-                  label: "Standard min",
-                  icon: Icons.person_rounded,
-                  isNumeric: true,
-                ),
+  //               CustomTextField(
+  //                 controller: row['standard_max']!,
+  //                 label: "Standard min",
+  //                 icon: Icons.person_rounded,
+  //                 isNumeric: true,
+  //               ),
 
-                CustomTextField(
-                  controller: row['standard_min']!,
-                  label: "Standard max",
-                  icon: Icons.person_rounded,
-                  isNumeric: true,
-                ),
-                CustomTextField(
-                  controller: row['method']!,
-                  label: "Method",
-                  icon: Icons.person_rounded,
-                  isNumeric: false,
-                ),
-              ],
-            );
-          },
-        ),
-        SizedBox(height: 24.0),
-        Center(
-          child: SmoothPageIndicator(
-            controller:
-                coaPageControllers, // Gunakan satu controller untuk semua
-            count: coaDetailControllers.length,
-            effect: const WormEffect(
-              dotHeight: 8,
-              dotWidth: 8,
-              activeDotColor: Colors.blue, // Sesuaikan warna tema Anda
-              dotColor: Colors.grey,
-            ),
-            onDotClicked: (index) {
-              coaPageControllers.animateToPage(
-                index,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
+  //               CustomTextField(
+  //                 controller: row['standard_min']!,
+  //                 label: "Standard max",
+  //                 icon: Icons.person_rounded,
+  //                 isNumeric: true,
+  //               ),
+  //               CustomTextField(
+  //                 controller: row['method']!,
+  //                 label: "Method",
+  //                 icon: Icons.person_rounded,
+  //                 isNumeric: false,
+  //               ),
+  //             ],
+  //           );
+  //         },
+  //       ),
+  //       SizedBox(height: 24.0),
+  //       Center(
+  //         child: SmoothPageIndicator(
+  //           controller:
+  //               coaPageControllers, // Gunakan satu controller untuk semua
+  //           count: coaDetailControllers.length,
+  //           effect: const WormEffect(
+  //             dotHeight: 8,
+  //             dotWidth: 8,
+  //             activeDotColor: Colors.blue, // Sesuaikan warna tema Anda
+  //             dotColor: Colors.grey,
+  //           ),
+  //           onDotClicked: (index) {
+  //             coaPageControllers.animateToPage(
+  //               index,
+  //               duration: const Duration(milliseconds: 300),
+  //               curve: Curves.easeInOut,
+  //             );
+  //           },
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
-  Future<bool> _insertData() async {
-    final plant = context.read<PlantProvider>().currentPlant;
-    final user = context.read<UserProvider>();
-    final businessUnit =
-        context.read<BusinessUnitProvider>().currentBusinessUnit;
+  // Future<bool> _insertData() async {
+  //   final plant = context.read<PlantProvider>().currentPlant;
+  //   final user = context.read<UserProvider>();
+  //   final businessUnit =
+  //       context.read<BusinessUnitProvider>().currentBusinessUnit;
 
-    try {
-      final analyticalDetails =
-          analyticalDetailControllers.map((item) {
-            return AnalyticalResultIncomingPlantChemicalIngredientDetailEntity(
-              id: '',
-              idHdr: '',
-              specificationMin: parseDouble(item['specification_min'].text),
-              specificationMax: parseDouble(item['specification_max'].text),
-              statusOk: item['status'] == true ? 'Y' : 'N',
-              parameter: item['parameter_name'],
-              resultMin: parseDouble(item['result_min'].text),
-              resultMax: parseDouble(item['result_max'].text),
-              remark: item['remark'].text,
-              deletedAt: null,
-            );
-          }).toList();
+  //   try {
+  //     final analyticalDetails =
+  //         analyticalDetailControllers.map((item) {
+  //           return AnalyticalResultIncomingPlantChemicalIngredientDetailEntity(
+  //             id: '',
+  //             idHdr: '',
+  //             specificationMin: parseDouble(item['specification_min'].text),
+  //             specificationMax: parseDouble(item['specification_max'].text),
+  //             statusOk: item['status'] == true ? 'Y' : 'N',
+  //             parameter: item['parameter_name'],
+  //             resultMin: parseDouble(item['result_min'].text),
+  //             resultMax: parseDouble(item['result_max'].text),
+  //             remark: item['remark'].text,
+  //             deletedAt: null,
+  //           );
+  //         }).toList();
 
-      final coaDetails =
-          coaDetailControllers.map((item) {
-            return CertificateOfAnalysisIncomingPlantChemicalIngredientDetailEntity(
-              id: "",
-              idHdr: "",
-              parameter: item['parameter_name'],
-              actualMin: parseDouble(item['actual_min'].text),
-              actualMax: parseDouble(item['actual_max'].text),
-              standardMin: parseDouble(item['standard_min'].text),
-              standardMax: parseDouble(item['standard_max'].text),
-              method: item['method'].text,
-            );
-          }).toList();
+  //     final coaDetails =
+  //         coaDetailControllers.map((item) {
+  //           return CertificateOfAnalysisIncomingPlantChemicalIngredientDetailEntity(
+  //             id: "",
+  //             idHdr: "",
+  //             parameter: item['parameter_name'],
+  //             actualMin: parseDouble(item['actual_min'].text),
+  //             actualMax: parseDouble(item['actual_max'].text),
+  //             standardMin: parseDouble(item['standard_min'].text),
+  //             standardMax: parseDouble(item['standard_max'].text),
+  //             method: item['method'].text,
+  //           );
+  //         }).toList();
 
-      final analyticalHeader =
-          AnalyticalResultIncomingPlantChemicalIngredientHeaderEntity(
-            id: '',
-            idCoa: '',
-            noRefCoa: noDocController.text,
-            material: analyticalSelectedMaterial,
-            quantity: parseDouble(quantityController.text),
-            analyst: analystController.text,
-            supplier: supplierController.text,
-            policeNo: policeNumberController.text,
-            batchLot: batchController.text,
-            status: analyticalSelectedStatusValue,
-            flag: 'T',
-            entryBy: user.currentUser?.username ?? '',
-            entryDate: DateTime.now(),
-            preparedBy: '',
-            preparedDate: null,
-            preparedStatus: '',
-            preparedStatusRemarks: '',
-            approvedBy: '',
-            approvedDate: null,
-            approvedStatus: '',
-            approvedStatusRemarks: '',
-            updatedBy: '',
-            updatedDate: null,
-            formNo: '',
-            dateIssued: null,
-            revisionNo: '',
-            revisionDate: null,
-            details: analyticalDetails,
-            date: changeStringDateFormat(
-              dateController.text,
-              'dd-MM-yyyy',
-              'yyyy-MM-dd HH:mm:ss',
-              returnDateTime: true,
-            ),
-            expDate: changeStringDateFormat(
-              expDateController.text,
-              'dd-MM-yyyy',
-              'yyyy-MM-dd HH:mm:ss',
-              returnDateTime: true,
-            ),
-          );
+  //     final analyticalHeader =
+  //         AnalyticalResultIncomingPlantChemicalIngredientHeaderEntity(
+  //           id: '',
+  //           idCoa: '',
+  //           noRefCoa: noDocController.text,
+  //           material: analyticalSelectedMaterial,
+  //           quantity: parseDouble(quantityController.text),
+  //           analyst: analystController.text,
+  //           supplier: supplierController.text,
+  //           policeNo: policeNumberController.text,
+  //           batchLot: batchController.text,
+  //           status: analyticalSelectedStatusValue,
+  //           flag: 'T',
+  //           entryBy: user.currentUser?.username ?? '',
+  //           entryDate: DateTime.now(),
+  //           preparedBy: '',
+  //           preparedDate: null,
+  //           preparedStatus: '',
+  //           preparedStatusRemarks: '',
+  //           approvedBy: '',
+  //           approvedDate: null,
+  //           approvedStatus: '',
+  //           approvedStatusRemarks: '',
+  //           updatedBy: '',
+  //           updatedDate: null,
+  //           formNo: '',
+  //           dateIssued: null,
+  //           revisionNo: '',
+  //           revisionDate: null,
+  //           details: analyticalDetails,
+  //           date: changeStringDateFormat(
+  //             dateController.text,
+  //             'dd-MM-yyyy',
+  //             'yyyy-MM-dd HH:mm:ss',
+  //             returnDateTime: true,
+  //           ),
+  //           expDate: changeStringDateFormat(
+  //             expDateController.text,
+  //             'dd-MM-yyyy',
+  //             'yyyy-MM-dd HH:mm:ss',
+  //             returnDateTime: true,
+  //           ),
+  //         );
 
-      final coaHeader =
-          CertificateOfAnalysisIncomingPlantChemicalIngredientHeaderEntity(
-            id: '',
-            noDoc: noDocController.text,
-            product: coaSelectedMaterial,
-            grade: gradeController.text,
-            packing: packingController.text,
-            quantity: parseDouble(quantityController.text) ?? 0,
-            tanggalPengiriman: changeStringDateFormat(
-              tanggalPengirimanController.text,
-              'dd-MM-yyyy',
-              'yyyy-MM-dd HH:mm:ss',
-              returnDateTime: true,
-            ),
+  //     final coaHeader =
+  //         CertificateOfAnalysisIncomingPlantChemicalIngredientHeaderEntity(
+  //           id: '',
+  //           noDoc: noDocController.text,
+  //           product: coaSelectedMaterial,
+  //           grade: gradeController.text,
+  //           packing: packingController.text,
+  //           quantity: parseDouble(quantityController.text) ?? 0,
+  //           tanggalPengiriman: changeStringDateFormat(
+  //             tanggalPengirimanController.text,
+  //             'dd-MM-yyyy',
+  //             'yyyy-MM-dd HH:mm:ss',
+  //             returnDateTime: true,
+  //           ),
 
-            vehicle: vehicleController.text,
-            lotNo: lotNoController.text,
-            productionDate: changeStringDateFormat(
-              productionDateController.text,
-              'dd-MM-yyyy',
-              'yyyy-MM-dd HH:mm:ss',
-              returnDateTime: true,
-            ),
-            expiredDate: changeStringDateFormat(
-              expiredDateController.text,
-              'dd-MM-yyyy',
-              'yyyy-MM-dd HH:mm:ss',
-              returnDateTime: true,
-            ),
-            issueBy: null,
-            issueDate: null,
-            details: coaDetails,
-          );
+  //           vehicle: vehicleController.text,
+  //           lotNo: lotNoController.text,
+  //           productionDate: changeStringDateFormat(
+  //             productionDateController.text,
+  //             'dd-MM-yyyy',
+  //             'yyyy-MM-dd HH:mm:ss',
+  //             returnDateTime: true,
+  //           ),
+  //           expiredDate: changeStringDateFormat(
+  //             expiredDateController.text,
+  //             'dd-MM-yyyy',
+  //             'yyyy-MM-dd HH:mm:ss',
+  //             returnDateTime: true,
+  //           ),
+  //           issueBy: null,
+  //           issueDate: null,
+  //           details: coaDetails,
+  //         );
 
-      final isSuccess = await context
-          .read<AnalyticalResultIncomingPlantChemicalIngredientProvider>()
-          .insertReport(
-            certificateOfAnalysisHeaderInput: coaHeader,
-            analyticalResultHeaderInput: analyticalHeader,
-          );
+  //     final isSuccess = await context
+  //         .read<AnalyticalResultIncomingPlantChemicalIngredientProvider>()
+  //         .insertReport(
+  //           certificateOfAnalysisHeaderInput: coaHeader,
+  //           analyticalResultHeaderInput: analyticalHeader,
+  //         );
 
-      return isSuccess;
+  //     return isSuccess;
 
-      // return true;
-    } catch (e) {
-      debugPrint("Error inserting Analytical Incoming Material By Vessel: $e");
-      return false;
-    }
-  }
+  //     // return true;
+  //   } catch (e) {
+  //     debugPrint("Error inserting Analytical Incoming Material By Vessel: $e");
+  //     return false;
+  //   }
+  // }
 }

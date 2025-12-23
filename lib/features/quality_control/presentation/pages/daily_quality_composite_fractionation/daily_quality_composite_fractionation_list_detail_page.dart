@@ -4,22 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
-import 'package:logsheet_app/features/maintenance/data/model/change_product_checklist/maintenance_change_product_checklist_report_entity.dart';
-import 'package:logsheet_app/features/master_data/data/model/master/user_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/daily_quality_composite_fractionation/daily_quality_composite_fractionation_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/daily_storage_tank_analytical/daily_storage_tank_analytical_from_db_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/daily_storage_tank_analytical/daily_storage_tank_analytical_to_db_entity.dart';
-import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_change_product/maintenance_change_product_edit_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_edit_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_edit_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_report_detail_page.dart';
 import 'package:logsheet_app/core/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
-import 'package:logsheet_app/core/widgets/custom_stateless_checklist_item_row.dart';
-import 'package:logsheet_app/features/maintenance/presentation/provider/change_product_checklist/maintenance_change_product_checklist_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
 import 'package:provider/provider.dart';
 
 class DailyQualityCompositeFractionationListDetailPage extends StatefulWidget {
@@ -446,7 +436,7 @@ class _DailyQualityCompositeFractionationListDetailPageState
       centerTitle: true,
       iconTheme: const IconThemeData(color: Colors.black),
       actions: [
-        if (reportItem?.preparedStatus == null)
+        if (canEditReport(reportItem))
           IconButton(
             onPressed: () async {
               Navigator.push(
@@ -461,7 +451,7 @@ class _DailyQualityCompositeFractionationListDetailPageState
             },
             icon: const Icon(Icons.edit),
           ),
-        if (reportItem?.preparedStatus == null)
+        if (canEditReport(reportItem))
           IconButton(
             onPressed: () async {
               return _showDeleteConfirmationDialog(context);
@@ -645,6 +635,20 @@ class _DailyQualityCompositeFractionationListDetailPageState
         );
       },
     );
+  }
+
+  bool canEditReport(DailyQualityCompositeFractionationEntity? report) {
+    if (report == null) return false;
+
+    // FINAL LOCK: sudah disetujui manager
+    if (report.preparedStatus == "Rejected" ||
+        report.checkedStatus == "Rejected" || report.preparedStatus == null) {
+      return true;
+    }
+
+    // Selain itu SEMUA BOLEH edit:
+
+    return false;
   }
 
   String _formatDateString(String? s) {

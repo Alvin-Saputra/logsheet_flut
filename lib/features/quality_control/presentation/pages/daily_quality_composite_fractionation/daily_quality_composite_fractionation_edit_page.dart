@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/daily_quality_composite_fractionation/daily_quality_composite_fractionation_entity.dart';
-import 'package:logsheet_app/core/widgets/custom_checkbox_field.dart';
 import 'package:logsheet_app/core/widgets/custom_hour_picker.dart';
 import 'package:logsheet_app/core/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/core/widgets/custom_save_button.dart';
@@ -16,11 +15,9 @@ import 'package:logsheet_app/core/widgets/custom_text_field.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/business_unit_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/product_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
 import 'package:provider/provider.dart';
 
 class DailyQualityCompositeFractionationEditPage extends StatefulWidget {
@@ -156,8 +153,7 @@ class _DailyQualityCompositeFractionationEditPageState
             .dataFormNoList
             .where(
               (form) =>
-                  form.isMenu ==
-                      "Daily_Quality_Composite_Fractionation" &&
+                  form.isMenu == "Daily_Quality_Composite_Fractionation" &&
                   form.isActive == "T",
             )
             .first;
@@ -896,6 +892,7 @@ class _DailyQualityCompositeFractionationEditPageState
         flag: 'T',
         entryBy: user.currentUser?.username ?? '',
         entryDate: DateTime.now(),
+
         preparedBy: null,
         preparedDate: null,
         preparedStatus: null,
@@ -904,8 +901,9 @@ class _DailyQualityCompositeFractionationEditPageState
         checkedDate: null,
         checkedStatus: null,
         checkedStatusRemarks: null,
-        updatedBy: null,
-        updatedDate: null,
+
+        updatedBy: user.currentUser?.username ?? '',
+        updatedDate: DateTime.now(),
         formNo: formData?.code,
         dateIssued: formData?.dateIssued,
         revisionNo: formData?.revisionNo.toString(),
@@ -915,6 +913,8 @@ class _DailyQualityCompositeFractionationEditPageState
       final isSuccess = await context
           .read<DailyQualityCompositeFractionationProvider>()
           .updateDailyQualityCompositeFractionationReport(report, widget.id);
+
+      // if()
 
       return isSuccess;
     } catch (e) {

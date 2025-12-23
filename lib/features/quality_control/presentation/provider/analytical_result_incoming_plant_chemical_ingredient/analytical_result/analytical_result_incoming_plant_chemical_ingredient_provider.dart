@@ -259,48 +259,12 @@ class AnalyticalResultIncomingPlantChemicalIngredientProvider
 
     try {
       final body = {
-        // "analytical": {
-        "material": analyticalResultHeaderInput.material,
-        "no_ref_coa": analyticalResultHeaderInput.noRefCoa,
-        "received_quantity": analyticalResultHeaderInput.quantity,
-        "analyst": analyticalResultHeaderInput.analyst,
-        "supplier": analyticalResultHeaderInput.supplier,
-        "police_no": analyticalResultHeaderInput.policeNo,
-        "batch_lot": analyticalResultHeaderInput.batchLot,
-        "status": analyticalResultHeaderInput.status,
-        "date": formatDatetoString(
-          analyticalResultHeaderInput.date ?? DateTime.now(),
-          'yyyy-MM-dd HH:mm:ss',
-        ),
-        "exp_date": formatDatetoString(
-          analyticalResultHeaderInput.expDate ?? DateTime.now(),
-          'yyyy-MM-dd HH:mm:ss',
-        ),
-
-        "details":
-            analyticalResultHeaderInput.details
-                .map(
-                  (detail) => {
-                    "id": detail.id,
-                    "id_hdr": detail.idHdr,
-                    "parameter": detail.parameter,
-                    "specification_min": detail.specificationMin,
-                    "specification_max": detail.specificationMax,
-                    "result_min": detail.resultMin,
-                    "result_max": detail.resultMax,
-                    "status_ok": detail.statusOk,
-                    "remark": detail.remark,
-                  },
-                )
-                .toList(),
-
-        // },
         "coa": {
           "no_doc": certificateOfAnalysisHeaderInput.noDoc,
           "product": certificateOfAnalysisHeaderInput.product,
           "grade": certificateOfAnalysisHeaderInput.grade,
           "packing": certificateOfAnalysisHeaderInput.packing,
-          "quantity": certificateOfAnalysisHeaderInput.quantity.toString(),
+          "quantity": certificateOfAnalysisHeaderInput.quantity,
           "tanggal_pengiriman": formatDatetoString(
             certificateOfAnalysisHeaderInput.tanggalPengiriman ??
                 DateTime.now(),
@@ -322,11 +286,47 @@ class AnalyticalResultIncomingPlantChemicalIngredientProvider
                     (detail) => {
                       "id": detail.id,
                       "parameter": detail.parameter,
-                      "actual_min": detail.actualMin.toString(),
-                      "actual_max": detail.actualMax.toString(),
-                      "standard_min": detail.standardMin.toString(),
-                      "standard_max": detail.standardMax.toString(),
+                      "actual_min": detail.actualMin,
+                      "actual_max": detail.actualMax,
+                      "standard_min": detail.standardMin,
+                      "standard_max": detail.standardMax,
                       "method": detail.method,
+                    },
+                  )
+                  .toList(),
+        },
+        "analytical": {
+          "no_ref_coa": analyticalResultHeaderInput.noRefCoa,
+          "date": formatDatetoString(
+            analyticalResultHeaderInput.date ?? DateTime.now(),
+            'yyyy-MM-dd HH:mm:ss',
+          ),
+          "exp_date": formatDatetoString(
+            analyticalResultHeaderInput.expDate ?? DateTime.now(),
+            'yyyy-MM-dd HH:mm:ss',
+          ),
+          "material": analyticalResultHeaderInput.material,
+
+          "received_quantity": analyticalResultHeaderInput.quantity,
+          "analyst": analyticalResultHeaderInput.analyst,
+          "supplier": analyticalResultHeaderInput.supplier,
+          "police_no": analyticalResultHeaderInput.policeNo,
+          "batch_lot": analyticalResultHeaderInput.batchLot,
+          "status": analyticalResultHeaderInput.status,
+
+          "details":
+              analyticalResultHeaderInput.details
+                  .map(
+                    (detail) => {
+                      "id": detail.id,
+                      // "id_hdr": detail.idHdr,
+                      "parameter": detail.parameter,
+                      "specification_min": detail.specificationMin,
+                      "specification_max": detail.specificationMax,
+                      "result_min": detail.resultMin,
+                      "result_max": detail.resultMax,
+                      "status_ok": detail.statusOk,
+                      "remark": detail.remark,
                     },
                   )
                   .toList(),

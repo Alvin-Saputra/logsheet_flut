@@ -256,12 +256,12 @@ class _AnalyticalResultIncomingPlantChemicalIngredientEditPageState
             .where(
               (form) =>
                   form.isMenu ==
-                  "Analytical_Result_Of_Incoming_Material_By_Truck",
+                  "Analytical_Result_of_Incoming_Plant_Chemical_Ingredient",
             )
             .first;
     return AppBar(
       title: Text(
-        "Analytical Result Incoming Material By Truck Input (${formData!.code})",
+        "Analytical Result Incoming Material Plant_Chemical_Ingredient (${formData!.code})",
       ),
       actions: [],
     );
@@ -275,12 +275,24 @@ class _AnalyticalResultIncomingPlantChemicalIngredientEditPageState
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Text('COA'),
+              Text(
+                'Certificate of Analysis (COA)',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
               _buildCoaInput(),
 
+              SizedBox(height: 24.0),
               Divider(height: 2.0),
-              SizedBox(height: 16.0),
-              Text('Analytical'),
+              SizedBox(height: 24.0),
+              Row(
+                children: [
+                  Text(
+                    'Analytical',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              SizedBox(height: 24.0),
               _buildAnalyticalInput(),
 
               Consumer<AnalyticalResultIncomingPlantChemicalIngredientProvider>(
@@ -457,14 +469,14 @@ class _AnalyticalResultIncomingPlantChemicalIngredientEditPageState
           controller: analystController,
           label: "Analyst",
           icon: Icons.person_rounded,
-          isNumeric: true,
+          isNumeric: false,
         ),
 
         CustomTextField(
-          controller: noRefCoaController,
+          controller: noDocController,
           label: "No Ref COA",
           icon: Icons.person_rounded,
-          isNumeric: true,
+          isNumeric: false,
         ),
 
         SizedBox(height: 12.0),
@@ -472,21 +484,21 @@ class _AnalyticalResultIncomingPlantChemicalIngredientEditPageState
           controller: supplierController,
           label: "Supplier",
           icon: Icons.person_rounded,
-          isNumeric: true,
+          isNumeric: false,
         ),
 
         CustomTextField(
           controller: policeNumberController,
           label: "Police Number",
           icon: Icons.person_rounded,
-          isNumeric: true,
+          isNumeric: false,
         ),
 
         CustomTextField(
           controller: batchController,
           label: "Batch/Lot",
           icon: Icons.person_rounded,
-          isNumeric: true,
+          isNumeric: false,
         ),
         CustomDateField(
           controller: expDateController,
@@ -684,30 +696,30 @@ class _AnalyticalResultIncomingPlantChemicalIngredientEditPageState
               children: [
                 CustomTextField(
                   controller: row['actual_min']!,
-                  label: "actual min",
+                  label: "Actual min",
                   icon: Icons.person_rounded,
-                  isNumeric: false,
+                  isNumeric: true,
                 ),
 
                 CustomTextField(
                   controller: row['actual_max']!,
-                  label: "actual max",
+                  label: "Actual max",
                   icon: Icons.person_rounded,
-                  isNumeric: false,
+                  isNumeric: true,
                 ),
 
                 CustomTextField(
                   controller: row['standard_max']!,
-                  label: "standard min",
+                  label: "Standard min",
                   icon: Icons.person_rounded,
-                  isNumeric: false,
+                  isNumeric: true,
                 ),
 
                 CustomTextField(
                   controller: row['standard_min']!,
-                  label: "standard max",
+                  label: "Standard max",
                   icon: Icons.person_rounded,
-                  isNumeric: false,
+                  isNumeric: true,
                 ),
                 CustomTextField(
                   controller: row['method']!,
@@ -812,7 +824,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientEditPageState
           AnalyticalResultIncomingPlantChemicalIngredientHeaderEntity(
             id: widget.data.analytical.id,
             idCoa: widget.data.analytical.idCoa,
-            noRefCoa: noRefCoaController.text,
+            noRefCoa: noDocController.text,
             material: analyticalSelectedMaterial,
             quantity: parseDouble(quantityController.text),
             analyst: analystController.text,

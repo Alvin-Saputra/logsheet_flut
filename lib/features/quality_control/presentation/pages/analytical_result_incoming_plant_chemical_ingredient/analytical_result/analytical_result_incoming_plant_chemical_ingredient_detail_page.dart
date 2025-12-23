@@ -89,7 +89,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
                           CustomInfoCard(
                             'Date',
                             formatDatetoString(
-                                  _data.analytical.date,
+                                  _data.analytical.entryDate,
                                   'dd MMMM yyyy',
                                 ) ??
                                 '',
@@ -196,7 +196,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
                                         onPressed: () async {
                                           bool isSuccess =
                                               await _approveRejectReport(
-                                                "approved",
+                                                "Approved",
                                               );
                                           if (isSuccess) {
                                             showSnackBar(
@@ -252,9 +252,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
                                 ),
                               ),
                             ] else if (_data.analytical.preparedStatus ==
-                                    "Approved" ||
-                                _data.analytical.approvedStatus ==
-                                    "Rejected") ...[
+                                "Approved") ...[
                               Row(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
@@ -358,8 +356,28 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
       child: Column(
         children: [
           CustomSectionCard('Analytical Information', [
+            CustomSectionCardData(
+              'Date',
+              formatDatetoString(_data.analytical.date, 'yyyy-MM-dd') ?? '',
+            ),
             CustomSectionCardData('Material', _data.analytical.material ?? ''),
             CustomSectionCardData('Supplier', _data.analytical.supplier ?? ''),
+            CustomSectionCardData(
+              'Quantity',
+              (parseDouble(_data.analytical.quantity) ?? 0).toString(),
+            ),
+            CustomSectionCardData('Analyst', _data.analytical.analyst ?? ''),
+            CustomSectionCardData(
+              'No Ref COA',
+              _data.analytical.noRefCoa ?? '',
+            ),
+            CustomSectionCardData('Supplier', _data.analytical.supplier ?? ''),
+            CustomSectionCardData('Police No', _data.analytical.policeNo ?? ''),
+            CustomSectionCardData('Batch/Lot', _data.analytical.batchLot ?? ''),
+            CustomSectionCardData(
+              'Exp Date',
+              formatDatetoString(_data.analytical.expDate, 'yyyy-MM-dd') ?? '',
+            ),
           ]),
 
           _buildAnalyticalDetailPager(),
@@ -374,10 +392,26 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
       child: Column(
         children: [
           CustomSectionCard('COA Information', [
-            CustomSectionCardData('Material', _data.coa.product ?? ''),
-            CustomSectionCardData('Supplier', _data.coa.lotNo ?? ''),
+            CustomSectionCardData('Product', _data.coa.product ?? ''),
+            CustomSectionCardData('Grade', _data.coa.grade ?? ''),
+            CustomSectionCardData('Packing', _data.coa.packing ?? ''),
+            CustomSectionCardData(
+              'Quantity',
+              (parseDouble(_data.coa.quantity) ?? 0).toString(),
+            ),
+            CustomSectionCardData('No Doc', _data.coa.noDoc ?? ''),
+            CustomSectionCardData(
+              'Tanggal Pengiriman',
+              formatDatetoString(_data.coa.tanggalPengiriman, 'yyyy-MM-dd') ??
+                  '',
+            ),
+            CustomSectionCardData('Vehicle', _data.coa.vehicle ?? ''),
+            CustomSectionCardData('Lot No', _data.coa.lotNo ?? ''),
+            CustomSectionCardData('Production date',  formatDatetoString(_data.coa.productionDate, 'yyyy-MM-dd') ??
+                  '',),
+            CustomSectionCardData('Expired date',  formatDatetoString(_data.coa.expiredDate, 'yyyy-MM-dd') ??
+                  '',),
           ]),
-
           _buildCOADetailPager(),
         ],
       ),
@@ -620,7 +654,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
                           return;
                         }
                         Navigator.of(context).pop();
-                        bool isSuccess = await _approveRejectReport("rejected");
+                        bool isSuccess = await _approveRejectReport("Rejected");
                         if (isSuccess) {
                           Navigator.of(
                             this.context,
