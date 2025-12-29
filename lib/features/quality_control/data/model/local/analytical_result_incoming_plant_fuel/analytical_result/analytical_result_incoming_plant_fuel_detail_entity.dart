@@ -1,26 +1,22 @@
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_chemical_ingredient/certificate_of_analysis/certificate_of_analysis_incoming_plant_chemical_ingredient_detail_entity.dart';
 
-class AnalyticalResultIncomingPlantChemicalIngredientDetailEntity {
+class AnalyticalResultIncomingPlantFuelDetailEntity {
   final String id;
   final String idHdr;
-  final double? specificationMin;
-  final double? specificationMax;
+  final double? specification;
   final String? statusOk;
   final String? parameter;
-  final double? resultMin;
-  final double? resultMax;
+  final double? result;
   final String? remark;
   final DateTime? deletedAt;
 
-  AnalyticalResultIncomingPlantChemicalIngredientDetailEntity({
+  AnalyticalResultIncomingPlantFuelDetailEntity({
     required this.id,
     required this.idHdr,
-    required this.specificationMin,
-    required this.specificationMax,
+    required this.specification,
     required this.statusOk,
     required this.parameter,
-    required this.resultMin,
-    required this.resultMax,
+    required this.result,
     required this.remark,
     required this.deletedAt,
   });

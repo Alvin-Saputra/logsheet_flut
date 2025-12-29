@@ -11,34 +11,28 @@ import 'package:logsheet_app/core/widgets/custom_section_card.dart';
 import 'package:logsheet_app/core/widgets/custom_section_card_data.dart';
 import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_chemical_ingredient/analytical_with_certificate_of_analysis_header_entity.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_edit_page.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_fuel/analytical_with_report_of_analysis_header_entity.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_edit_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class AnalyticalResultIncomingPlantChemicalIngredientDetailPage
-    extends StatefulWidget {
-  AnalyticalResultIncomingPlantChemicalIngredientDetailPage({
-    super.key,
-    required this.data,
-  });
+class AnalyticalResultIncomingPlantFuelDetailPage extends StatefulWidget {
+  AnalyticalResultIncomingPlantFuelDetailPage({super.key, required this.data});
 
-  final AnalyticalWithCertificateOfAnalysisHeaderEntity data;
+  final AnalyticalWithReportOfAnalysisHeaderEntity data;
 
   @override
-  State<AnalyticalResultIncomingPlantChemicalIngredientDetailPage>
-  createState() =>
-      _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState();
+  State<AnalyticalResultIncomingPlantFuelDetailPage> createState() =>
+      _AnalyticalResultIncomingPlantFuelDetailPageState();
 }
 
-class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
-    extends State<AnalyticalResultIncomingPlantChemicalIngredientDetailPage> {
+class _AnalyticalResultIncomingPlantFuelDetailPageState
+    extends State<AnalyticalResultIncomingPlantFuelDetailPage> {
   final PageController detailPageControllers = PageController();
   final TextEditingController remarkController = TextEditingController();
-  late AnalyticalWithCertificateOfAnalysisHeaderEntity _data;
+  late AnalyticalWithReportOfAnalysisHeaderEntity _data;
 
   final PageController mainPageController = PageController();
   int currentMainPage = 0;
@@ -68,10 +62,10 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
 
   Widget _buildBody(BuildContext context) {
     final userProvider = context.read<UserProvider>();
-    return Consumer<AnalyticalResultIncomingPlantChemicalIngredientProvider>(
+    return Consumer<AnalyticalResultIncomingPlantFuelProvider>(
       builder: (
         BuildContext context,
-        AnalyticalResultIncomingPlantChemicalIngredientProvider provider,
+        AnalyticalResultIncomingPlantFuelProvider provider,
         Widget? child,
       ) {
         return (provider.isLoadingEdit)
@@ -125,7 +119,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
                         },
                         children: [
                           _buildAnalyticalPage(context),
-                          _buildCoaPage(context),
+                          _buildRoaPage(context),
                         ],
                       ),
 
@@ -137,7 +131,8 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
                           )))
                         CustomSectionCard('Approval Actions', [
                           if (_data.analytical.preparedStatus == "Approved" &&
-                              _data.analytical == "Approved") ...[
+                              _data.analytical.approvedStatus ==
+                                  "Approved") ...[
                             Text(
                               "Checklist Approved",
                               style: TextStyle(
@@ -253,7 +248,9 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
                                 ),
                               ),
                             ] else if (_data.analytical.preparedStatus ==
-                                "Approved") ...[
+                                    "Approved" ||
+                                _data.analytical.approvedStatus ==
+                                    "Rejected") ...[
                               Row(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
@@ -293,10 +290,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
           icon: const Icon(Icons.delete_rounded, color: Colors.red),
           onPressed: () {
             final provider =
-                context
-                    .read<
-                      AnalyticalResultIncomingPlantChemicalIngredientProvider
-                    >();
+                context.read<AnalyticalResultIncomingPlantFuelProvider>();
 
             customConfirmationDialog(
               context: context,
@@ -333,17 +327,25 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
         ),
 
         IconButton(
-          onPressed: () {
-            Navigator.push(
+          onPressed: () async {
+            final result = await Navigator.push<
+              AnalyticalWithReportOfAnalysisHeaderEntity
+            >(
               context,
               MaterialPageRoute(
                 builder:
-                    (_) =>
-                        AnalyticalResultIncomingPlantChemicalIngredientEditPage(
-                          data: widget.data,
-                        ),
+                    (context) =>
+                        AnalyticalResultIncomingPlantFuelEditPage(data: _data),
               ),
             );
+
+            if (!mounted) return;
+
+            if (result != null) {
+              setState(() {
+                _data = result;
+              });
+            }
           },
           icon: const Icon(Icons.edit_rounded, color: Colors.red),
         ),
@@ -368,17 +370,9 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
               (parseDouble(_data.analytical.quantity) ?? 0).toString(),
             ),
             CustomSectionCardData('Analyst', _data.analytical.analyst ?? ''),
-            CustomSectionCardData(
-              'No Ref COA',
-              _data.analytical.noRefCoa ?? '',
-            ),
+
             CustomSectionCardData('Supplier', _data.analytical.supplier ?? ''),
             CustomSectionCardData('Police No', _data.analytical.policeNo ?? ''),
-            CustomSectionCardData('Batch/Lot', _data.analytical.batchLot ?? ''),
-            CustomSectionCardData(
-              'Exp Date',
-              formatDatetoString(_data.analytical.expDate, 'yyyy-MM-dd') ?? '',
-            ),
           ]),
 
           _buildAnalyticalDetailPager(),
@@ -387,45 +381,41 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
     );
   }
 
-  Widget _buildCoaPage(BuildContext context) {
+  Widget _buildRoaPage(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 36),
       child: Column(
         children: [
-          CustomSectionCard('COA Information', [
-            CustomSectionCardData('Product', _data.coa.product ?? ''),
-            CustomSectionCardData('Grade', _data.coa.grade ?? ''),
-            CustomSectionCardData('Packing', _data.coa.packing ?? ''),
+          CustomSectionCard('ROA Information', [
+            CustomSectionCardData('Shipper', _data.roa.shipper ?? ''),
+            CustomSectionCardData('Buyer', _data.roa.buyer ?? ''),
+            CustomSectionCardData('Date Received', formatDatetoString(_data.roa.dateReceived, 'yyyy-MM-dd') ?? ''),
+            CustomSectionCardData('Date Analyzed Start', formatDatetoString(_data.roa.dateAnalyzedStart, 'yyyy-MM-dd') ?? ''),
+            CustomSectionCardData('Date Analyzed End', formatDatetoString(_data.roa.dateAnalyzedEnd, 'yyyy-MM-dd') ?? ''),
+            CustomSectionCardData('Date Reported', formatDatetoString(_data.roa.dateReported, 'yyyy-MM-dd') ?? ''),
+            CustomSectionCardData('Lab Sample ID', _data.roa.labSampleId ?? ''),
+            CustomSectionCardData('Customer Sample ID', _data.roa.customerSampleId ?? ''),
+            CustomSectionCardData('Seal No', _data.roa.sealNo ?? ''),
+            CustomSectionCardData('Weight of Received Sample', _data.roa.weightofReceivedSample.toString() ?? ''),
+            CustomSectionCardData('Top Size of Received Sample', _data.roa.topSizeofReceivedSample.toString() ?? ''),
             CustomSectionCardData(
-              'Quantity',
-              (parseDouble(_data.coa.quantity) ?? 0).toString(),
+              'HardGrove Grindability Index',
+              _data.roa.hardGrooveGrindabilityIndex.toString() ?? '',
             ),
-            CustomSectionCardData('No Doc', _data.coa.noDoc ?? ''),
-            CustomSectionCardData(
-              'Tanggal Pengiriman',
-              formatDatetoString(_data.coa.tanggalPengiriman, 'yyyy-MM-dd') ??
-                  '',
-            ),
-            CustomSectionCardData('Vehicle', _data.coa.vehicle ?? ''),
-            CustomSectionCardData('Lot No', _data.coa.lotNo ?? ''),
-            CustomSectionCardData('Production date',  formatDatetoString(_data.coa.productionDate, 'yyyy-MM-dd') ??
-                  '',),
-            CustomSectionCardData('Expired date',  formatDatetoString(_data.coa.expiredDate, 'yyyy-MM-dd') ??
-                  '',),
           ]),
-          _buildCOADetailPager(),
+          _buildROADetailPager(),
         ],
       ),
     );
   }
 
-  Widget _buildCOADetailPager() {
+  Widget _buildROADetailPager() {
     return CustomSectionCard("COA Details", [
       Center(
         child: SmoothPageIndicator(
           controller:
               detailPageControllers, // Gunakan satu controller untuk semua
-          count: widget.data.coa.details.length,
+          count: _data.roa.details.length,
           effect: const WormEffect(
             dotHeight: 8,
             dotWidth: 8,
@@ -447,7 +437,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
       SizedBox(
         child: ExpandablePageView.builder(
           controller: detailPageControllers,
-          itemCount: widget.data.coa.details.length,
+          itemCount: _data.roa.details.length,
           itemBuilder: (context, pageIndex) {
             return Column(
               children: [
@@ -462,32 +452,19 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
                 CustomSectionCard("Details", [
                   CustomSectionCardData(
                     'Parameters',
-                    widget.data.coa.details[pageIndex].parameter.toString() ??
-                        '',
+                    _data.roa.details[pageIndex].parameter.toString() ?? '',
                   ),
                   CustomSectionCardData(
-                    'Actual Min',
-                    widget.data.coa.details[pageIndex].actualMin.toString() ??
-                        '',
+                    'Unit',
+                    _data.roa.details[pageIndex].unit ?? '',
                   ),
                   CustomSectionCardData(
-                    'Actual Max',
-                    widget.data.coa.details[pageIndex].actualMax.toString() ??
-                        '',
+                    'Basis',
+                    _data.roa.details[pageIndex].basis ?? '',
                   ),
                   CustomSectionCardData(
-                    'Standard Min',
-                    widget.data.coa.details[pageIndex].standardMin.toString() ??
-                        '',
-                  ),
-                  CustomSectionCardData(
-                    'Standard Max',
-                    widget.data.coa.details[pageIndex].standardMax.toString() ??
-                        '',
-                  ),
-                  CustomSectionCardData(
-                    'Method',
-                    widget.data.coa.details[pageIndex].method.toString() ?? '',
+                    'Result',
+                    _data.roa.details[pageIndex].result.toString() ?? '',
                   ),
                 ]),
               ],
@@ -504,7 +481,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
         child: SmoothPageIndicator(
           controller:
               detailPageControllers, // Gunakan satu controller untuk semua
-          count: widget.data.analytical.details.length,
+          count: _data.analytical.details.length,
           effect: const WormEffect(
             dotHeight: 8,
             dotWidth: 8,
@@ -526,7 +503,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
       SizedBox(
         child: ExpandablePageView.builder(
           controller: detailPageControllers,
-          itemCount: widget.data.analytical.details.length,
+          itemCount: _data.analytical.details.length,
           itemBuilder: (context, pageIndex) {
             return Column(
               children: [
@@ -541,45 +518,30 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
                 CustomSectionCard("Details", [
                   CustomSectionCardData(
                     'Parameter',
-                    widget.data.analytical.details[pageIndex].parameter
-                            .toString() ??
+                    _data.analytical.details[pageIndex].parameter.toString() ??
                         '',
                   ),
                   CustomSectionCardData(
-                    'Result Min',
-                    widget.data.analytical.details[pageIndex].resultMin
-                            .toString() ??
-                        '',
+                    'Result',
+                    _data.analytical.details[pageIndex].result.toString() ?? '',
                   ),
+
                   CustomSectionCardData(
-                    'Result Max',
-                    widget.data.analytical.details[pageIndex].resultMax
+                    'Specification',
+                    _data.analytical.details[pageIndex].specification
                             .toString() ??
                         '',
                   ),
-                  CustomSectionCardData(
-                    'Specification Min',
-                    widget.data.analytical.details[pageIndex].specificationMin
-                            .toString() ??
-                        '',
-                  ),
-                  CustomSectionCardData(
-                    'Specification Max',
-                    widget.data.analytical.details[pageIndex].specificationMax
-                            .toString() ??
-                        '',
-                  ),
+
                   CustomSectionCardData(
                     'Status',
-                    (widget.data.analytical.details[pageIndex].statusOk) == 'y'
+                    (_data.analytical.details[pageIndex].statusOk) == 'y'
                         ? 'OK'
                         : 'Not OK',
                   ),
                   CustomSectionCardData(
                     'Remark',
-                    widget.data.analytical.details[pageIndex].remark
-                            .toString() ??
-                        '',
+                    _data.analytical.details[pageIndex].remark.toString() ?? '',
                   ),
                 ]),
               ],
@@ -592,7 +554,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
 
   Future<bool> _approveRejectReport(String status) async {
     var isSuccess = await context
-        .read<AnalyticalResultIncomingPlantChemicalIngredientProvider>()
+        .read<AnalyticalResultIncomingPlantFuelProvider>()
         .updateApproveRejectReport(
           id: _data.analytical.id,
           status: status,

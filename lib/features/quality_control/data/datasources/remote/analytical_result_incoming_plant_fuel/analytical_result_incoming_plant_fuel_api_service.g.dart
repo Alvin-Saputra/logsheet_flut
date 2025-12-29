@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'analytical_result_incoming_material_by_vessel_api_service.dart';
+part of 'analytical_result_incoming_plant_fuel_api_service.dart';
 
 // dart format off
 
@@ -10,9 +10,9 @@ part of 'analytical_result_incoming_material_by_vessel_api_service.dart';
 
 // ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers,unused_element,unnecessary_string_interpolations,unused_element_parameter,avoid_unused_constructor_parameters,unreachable_from_main
 
-class _AnalyticalResultIncomingMaterialByVesselApiService
-    implements AnalyticalResultIncomingMaterialByVesselApiService {
-  _AnalyticalResultIncomingMaterialByVesselApiService(
+class _AnalyticalResultIncomingPlantFuelApiService
+    implements AnalyticalResultIncomingPlantFuelApiService {
+  _AnalyticalResultIncomingPlantFuelApiService(
     this._dio, {
     this.baseUrl,
     this.errorLogger,
@@ -25,7 +25,7 @@ class _AnalyticalResultIncomingMaterialByVesselApiService
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<CreateAnalyticalResultIncomingMaterialByVesselResponse> insertReport(
+  Future<CreateAnalyticalResultIncomingPlantFuelResponse> insertReport(
     Map<String, dynamic> body,
     String token,
   ) async {
@@ -36,11 +36,11 @@ class _AnalyticalResultIncomingMaterialByVesselApiService
     final _data = <String, dynamic>{};
     _data.addAll(body);
     final _options =
-        _setStreamType<CreateAnalyticalResultIncomingMaterialByVesselResponse>(
+        _setStreamType<CreateAnalyticalResultIncomingPlantFuelResponse>(
           Options(method: 'POST', headers: _headers, extra: _extra)
               .compose(
                 _dio.options,
-                '/arimvess',
+                '/aroipfuel',
                 queryParameters: queryParameters,
                 data: _data,
               )
@@ -49,9 +49,9 @@ class _AnalyticalResultIncomingMaterialByVesselApiService
               ),
         );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late CreateAnalyticalResultIncomingMaterialByVesselResponse _value;
+    late CreateAnalyticalResultIncomingPlantFuelResponse _value;
     try {
-      _value = CreateAnalyticalResultIncomingMaterialByVesselResponse.fromJson(
+      _value = CreateAnalyticalResultIncomingPlantFuelResponse.fromJson(
         _result.data!,
       );
     } on Object catch (e, s) {
@@ -62,23 +62,22 @@ class _AnalyticalResultIncomingMaterialByVesselApiService
   }
 
   @override
-  Future<FetchAnalyticalResultIncomingMaterialByVesselResponse> fetchReports(
+  Future<FetchAnalyticalResultIncomingPlantFuelResponse> fetchReports(
     String token,
-    String? plantId,
     String? date,
   ) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'plant': plantId, r'date': date};
+    final queryParameters = <String, dynamic>{r'entry_date': date};
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{r'Authorization': token};
     _headers.removeWhere((k, v) => v == null);
     const Map<String, dynamic>? _data = null;
     final _options =
-        _setStreamType<FetchAnalyticalResultIncomingMaterialByVesselResponse>(
+        _setStreamType<FetchAnalyticalResultIncomingPlantFuelResponse>(
           Options(method: 'GET', headers: _headers, extra: _extra)
               .compose(
                 _dio.options,
-                '/arimvess',
+                '/aroipfuel',
                 queryParameters: queryParameters,
                 data: _data,
               )
@@ -87,9 +86,9 @@ class _AnalyticalResultIncomingMaterialByVesselApiService
               ),
         );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late FetchAnalyticalResultIncomingMaterialByVesselResponse _value;
+    late FetchAnalyticalResultIncomingPlantFuelResponse _value;
     try {
-      _value = FetchAnalyticalResultIncomingMaterialByVesselResponse.fromJson(
+      _value = FetchAnalyticalResultIncomingPlantFuelResponse.fromJson(
         _result.data!,
       );
     } on Object catch (e, s) {
@@ -100,7 +99,7 @@ class _AnalyticalResultIncomingMaterialByVesselApiService
   }
 
   @override
-  Future<DeleteAnalyticalResultIncomingMaterialByVesselResponse> deleteReport(
+  Future<DeleteAnalyticalResultIncomingPlantFuelResponse> deleteReport(
     String token,
     String id,
   ) async {
@@ -110,21 +109,21 @@ class _AnalyticalResultIncomingMaterialByVesselApiService
     _headers.removeWhere((k, v) => v == null);
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<
-      DeleteAnalyticalResultIncomingMaterialByVesselResponse
+      DeleteAnalyticalResultIncomingPlantFuelResponse
     >(
       Options(method: 'DELETE', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/arimvess/${id}',
+            '/aroipfuel/${id}',
             queryParameters: queryParameters,
             data: _data,
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late DeleteAnalyticalResultIncomingMaterialByVesselResponse _value;
+    late DeleteAnalyticalResultIncomingPlantFuelResponse _value;
     try {
-      _value = DeleteAnalyticalResultIncomingMaterialByVesselResponse.fromJson(
+      _value = DeleteAnalyticalResultIncomingPlantFuelResponse.fromJson(
         _result.data!,
       );
     } on Object catch (e, s) {
@@ -135,8 +134,9 @@ class _AnalyticalResultIncomingMaterialByVesselApiService
   }
 
   @override
-  Future<UpdateAnalyticalResultIncomingMaterialByVesselResponse> updateReport(
+  Future<UpdateAnalyticalResultIncomingPlantFuelResponse> updateReport(
     String token,
+    String id,
     Map<String, dynamic> body,
   ) async {
     final _extra = <String, dynamic>{};
@@ -145,23 +145,22 @@ class _AnalyticalResultIncomingMaterialByVesselApiService
     _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
     _data.addAll(body);
-    final _options =
-        _setStreamType<UpdateAnalyticalResultIncomingMaterialByVesselResponse>(
-          Options(method: 'PUT', headers: _headers, extra: _extra)
-              .compose(
-                _dio.options,
-                '/arimvess',
-                queryParameters: queryParameters,
-                data: _data,
-              )
-              .copyWith(
-                baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl),
-              ),
-        );
+    final _options = _setStreamType<
+      UpdateAnalyticalResultIncomingPlantFuelResponse
+    >(
+      Options(method: 'PUT', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/aroipfuel/${id}',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late UpdateAnalyticalResultIncomingMaterialByVesselResponse _value;
+    late UpdateAnalyticalResultIncomingPlantFuelResponse _value;
     try {
-      _value = UpdateAnalyticalResultIncomingMaterialByVesselResponse.fromJson(
+      _value = UpdateAnalyticalResultIncomingPlantFuelResponse.fromJson(
         _result.data!,
       );
     } on Object catch (e, s) {
@@ -172,8 +171,12 @@ class _AnalyticalResultIncomingMaterialByVesselApiService
   }
 
   @override
-  Future<UpdateApproveRejectAnalyticalResultIncomingMaterialByVesselResponse>
-  updateApproveRejectReport(String token, Map<String, dynamic> body) async {
+  Future<UpdateApproveRejectAnalyticalResultIncomingPlantFuelResponse>
+  updateApprovalReport(
+    String token,
+    String id,
+    Map<String, dynamic> body,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{r'Authorization': token};
@@ -181,23 +184,22 @@ class _AnalyticalResultIncomingMaterialByVesselApiService
     final _data = <String, dynamic>{};
     _data.addAll(body);
     final _options = _setStreamType<
-      UpdateApproveRejectAnalyticalResultIncomingMaterialByVesselResponse
+      UpdateApproveRejectAnalyticalResultIncomingPlantFuelResponse
     >(
       Options(method: 'PUT', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/arimvess/approve-reject',
+            '/aroipfuel/${id}/approve',
             queryParameters: queryParameters,
             data: _data,
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late UpdateApproveRejectAnalyticalResultIncomingMaterialByVesselResponse
-    _value;
+    late UpdateApproveRejectAnalyticalResultIncomingPlantFuelResponse _value;
     try {
       _value =
-          UpdateApproveRejectAnalyticalResultIncomingMaterialByVesselResponse.fromJson(
+          UpdateApproveRejectAnalyticalResultIncomingPlantFuelResponse.fromJson(
             _result.data!,
           );
     } on Object catch (e, s) {

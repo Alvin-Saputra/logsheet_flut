@@ -11,34 +11,32 @@ import 'package:logsheet_app/core/widgets/custom_section_card.dart';
 import 'package:logsheet_app/core/widgets/custom_section_card_data.dart';
 import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_chemical_ingredient/analytical_with_certificate_of_analysis_header_entity.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_edit_page.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_fuel/analytical_with_report_of_analysis_header_entity.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_edit_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class AnalyticalResultIncomingPlantChemicalIngredientDetailPage
+class AnalyticalResultIncomingPlantFuelApprovalDetailPage
     extends StatefulWidget {
-  AnalyticalResultIncomingPlantChemicalIngredientDetailPage({
+  AnalyticalResultIncomingPlantFuelApprovalDetailPage({
     super.key,
     required this.data,
   });
 
-  final AnalyticalWithCertificateOfAnalysisHeaderEntity data;
+  final AnalyticalWithReportOfAnalysisHeaderEntity data;
 
   @override
-  State<AnalyticalResultIncomingPlantChemicalIngredientDetailPage>
-  createState() =>
-      _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState();
+  State<AnalyticalResultIncomingPlantFuelApprovalDetailPage> createState() =>
+      _AnalyticalResultIncomingPlantFuelApprovalDetailPageState();
 }
 
-class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
-    extends State<AnalyticalResultIncomingPlantChemicalIngredientDetailPage> {
+class _AnalyticalResultIncomingPlantFuelApprovalDetailPageState
+    extends State<AnalyticalResultIncomingPlantFuelApprovalDetailPage> {
   final PageController detailPageControllers = PageController();
   final TextEditingController remarkController = TextEditingController();
-  late AnalyticalWithCertificateOfAnalysisHeaderEntity _data;
+  late AnalyticalWithReportOfAnalysisHeaderEntity _data;
 
   final PageController mainPageController = PageController();
   int currentMainPage = 0;
@@ -68,10 +66,10 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
 
   Widget _buildBody(BuildContext context) {
     final userProvider = context.read<UserProvider>();
-    return Consumer<AnalyticalResultIncomingPlantChemicalIngredientProvider>(
+    return Consumer<AnalyticalResultIncomingPlantFuelProvider>(
       builder: (
         BuildContext context,
-        AnalyticalResultIncomingPlantChemicalIngredientProvider provider,
+        AnalyticalResultIncomingPlantFuelProvider provider,
         Widget? child,
       ) {
         return (provider.isLoadingEdit)
@@ -136,8 +134,10 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
                             userProvider.currentUser?.role,
                           )))
                         CustomSectionCard('Approval Actions', [
-                          if (_data.analytical.preparedStatus == "Approved" &&
-                              _data.analytical == "Approved") ...[
+                          if (widget.data.analytical.preparedStatus ==
+                                  "Approved" &&
+                              widget.data.analytical.approvedStatus ==
+                                  "Approved") ...[
                             Text(
                               "Checklist Approved",
                               style: TextStyle(
@@ -145,9 +145,9 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
                                 color: Colors.green,
                               ),
                             ),
-                          ] else if (_data.analytical.preparedStatus ==
+                          ] else if (widget.data.analytical.preparedStatus ==
                                   "Rejected" ||
-                              _data.analytical.approvedStatus ==
+                              widget.data.analytical.approvedStatus ==
                                   "Rejected") ...[
                             Text(
                               "Checklist Rejected",
@@ -156,11 +156,13 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
                                 color: Colors.red,
                               ),
                             ),
-                          ] else if (AppRoles.leadQC.contains(
-                            userProvider.currentUser?.role,
-                          )) ...[
-                            if (_data.analytical.preparedStatus == null) ...[
-                              Text('Prepared Status:'),
+                          ] else if (AppRoles.qualityControlManagerApproval
+                              .contains(userProvider.currentUser?.role)) ...[
+                            if (widget.data.analytical.preparedStatus ==
+                                    "Approved" &&
+                                widget.data.analytical.approvedStatus ==
+                                    null) ...[
+                              Text('Approved Status:'),
                               SizedBox(height: 8.0),
                               Row(
                                 mainAxisAlignment:
@@ -202,16 +204,14 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
                                           if (isSuccess) {
                                             showSnackBar(
                                               "Berhasil Approve Checklist",
-                                              context,
+                                              this.context,
                                             );
-
-                                            log("Sukses Approve");
-                                            if (!mounted) return;
                                             Navigator.of(this.context).pop();
+                                            log("Sukses Approve");
                                           } else {
                                             showSnackBar(
                                               "Gagal Approve Checklist",
-                                              context,
+                                              this.context,
                                             );
                                           }
                                         },
@@ -231,40 +231,27 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
                                   ),
                                 ],
                               ),
-                            ] else if (_data.analytical.preparedStatus !=
-                                    null &&
-                                _data.analytical.approvedStatus == null) ...[
+                            ] else if (widget.data.analytical.preparedStatus ==
+                                null) ...[
                               Text(
-                                "Waiting Apprvoal From Manager QC...",
+                                "Waiting Approval From Leader QC...",
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.orange,
                                 ),
                               ),
                             ],
-                          ] else if (AppRoles.qualityControlManagerApproval
-                              .contains(userProvider.currentUser?.role)) ...[
-                            if (_data.analytical.approvedStatus == null) ...[
+                          ] else if (AppRoles.leadQC.contains(
+                            userProvider.currentUser?.role,
+                          )) ...[
+                            if (widget.data.analytical.approvedStatus ==
+                                null) ...[
                               Text(
-                                "Waiting Apprvoal From Leader QC...",
+                                "Waiting Apprvoal From Manager QC...",
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.orange,
                                 ),
-                              ),
-                            ] else if (_data.analytical.preparedStatus ==
-                                "Approved") ...[
-                              Row(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Text(
-                                    "Checklist Prepared",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.amber,
-                                    ),
-                                  ),
-                                ],
                               ),
                             ],
                           ],
@@ -293,10 +280,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
           icon: const Icon(Icons.delete_rounded, color: Colors.red),
           onPressed: () {
             final provider =
-                context
-                    .read<
-                      AnalyticalResultIncomingPlantChemicalIngredientProvider
-                    >();
+                context.read<AnalyticalResultIncomingPlantFuelProvider>();
 
             customConfirmationDialog(
               context: context,
@@ -338,10 +322,9 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
               context,
               MaterialPageRoute(
                 builder:
-                    (_) =>
-                        AnalyticalResultIncomingPlantChemicalIngredientEditPage(
-                          data: widget.data,
-                        ),
+                    (_) => AnalyticalResultIncomingPlantFuelEditPage(
+                      data: widget.data,
+                    ),
               ),
             );
           },
@@ -368,17 +351,9 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
               (parseDouble(_data.analytical.quantity) ?? 0).toString(),
             ),
             CustomSectionCardData('Analyst', _data.analytical.analyst ?? ''),
-            CustomSectionCardData(
-              'No Ref COA',
-              _data.analytical.noRefCoa ?? '',
-            ),
+
             CustomSectionCardData('Supplier', _data.analytical.supplier ?? ''),
             CustomSectionCardData('Police No', _data.analytical.policeNo ?? ''),
-            CustomSectionCardData('Batch/Lot', _data.analytical.batchLot ?? ''),
-            CustomSectionCardData(
-              'Exp Date',
-              formatDatetoString(_data.analytical.expDate, 'yyyy-MM-dd') ?? '',
-            ),
           ]),
 
           _buildAnalyticalDetailPager(),
@@ -393,25 +368,8 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
       child: Column(
         children: [
           CustomSectionCard('COA Information', [
-            CustomSectionCardData('Product', _data.coa.product ?? ''),
-            CustomSectionCardData('Grade', _data.coa.grade ?? ''),
-            CustomSectionCardData('Packing', _data.coa.packing ?? ''),
-            CustomSectionCardData(
-              'Quantity',
-              (parseDouble(_data.coa.quantity) ?? 0).toString(),
-            ),
-            CustomSectionCardData('No Doc', _data.coa.noDoc ?? ''),
-            CustomSectionCardData(
-              'Tanggal Pengiriman',
-              formatDatetoString(_data.coa.tanggalPengiriman, 'yyyy-MM-dd') ??
-                  '',
-            ),
-            CustomSectionCardData('Vehicle', _data.coa.vehicle ?? ''),
-            CustomSectionCardData('Lot No', _data.coa.lotNo ?? ''),
-            CustomSectionCardData('Production date',  formatDatetoString(_data.coa.productionDate, 'yyyy-MM-dd') ??
-                  '',),
-            CustomSectionCardData('Expired date',  formatDatetoString(_data.coa.expiredDate, 'yyyy-MM-dd') ??
-                  '',),
+            CustomSectionCardData('Shipper', _data.roa.shipper ?? ''),
+            CustomSectionCardData('Buyer', _data.roa.buyer ?? ''),
           ]),
           _buildCOADetailPager(),
         ],
@@ -425,7 +383,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
         child: SmoothPageIndicator(
           controller:
               detailPageControllers, // Gunakan satu controller untuk semua
-          count: widget.data.coa.details.length,
+          count: widget.data.roa.details.length,
           effect: const WormEffect(
             dotHeight: 8,
             dotWidth: 8,
@@ -444,57 +402,57 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
 
       SizedBox(height: 12.0),
 
-      SizedBox(
-        child: ExpandablePageView.builder(
-          controller: detailPageControllers,
-          itemCount: widget.data.coa.details.length,
-          itemBuilder: (context, pageIndex) {
-            return Column(
-              children: [
-                Text(
-                  "Detail Data Ke - ${pageIndex + 1}",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
+      // SizedBox(
+      //   child: ExpandablePageView.builder(
+      //     controller: detailPageControllers,
+      //     itemCount: widget.data.roa.details.length,
+      //     itemBuilder: (context, pageIndex) {
+      //       return Column(
+      //         children: [
+      //           Text(
+      //             "Detail Data Ke - ${pageIndex + 1}",
+      //             style: const TextStyle(
+      //               fontWeight: FontWeight.bold,
+      //               fontSize: 16,
+      //             ),
+      //           ),
 
-                CustomSectionCard("Details", [
-                  CustomSectionCardData(
-                    'Parameters',
-                    widget.data.coa.details[pageIndex].parameter.toString() ??
-                        '',
-                  ),
-                  CustomSectionCardData(
-                    'Actual Min',
-                    widget.data.coa.details[pageIndex].actualMin.toString() ??
-                        '',
-                  ),
-                  CustomSectionCardData(
-                    'Actual Max',
-                    widget.data.coa.details[pageIndex].actualMax.toString() ??
-                        '',
-                  ),
-                  CustomSectionCardData(
-                    'Standard Min',
-                    widget.data.coa.details[pageIndex].standardMin.toString() ??
-                        '',
-                  ),
-                  CustomSectionCardData(
-                    'Standard Max',
-                    widget.data.coa.details[pageIndex].standardMax.toString() ??
-                        '',
-                  ),
-                  CustomSectionCardData(
-                    'Method',
-                    widget.data.coa.details[pageIndex].method.toString() ?? '',
-                  ),
-                ]),
-              ],
-            );
-          },
-        ),
-      ),
+      //           CustomSectionCard("Details", [
+      //             CustomSectionCardData(
+      //               'Parameters',
+      //               widget.data.coa.details[pageIndex].parameter.toString() ??
+      //                   '',
+      //             ),
+      //             CustomSectionCardData(
+      //               'Actual Min',
+      //               widget.data.coa.details[pageIndex].actualMin.toString() ??
+      //                   '',
+      //             ),
+      //             CustomSectionCardData(
+      //               'Actual Max',
+      //               widget.data.coa.details[pageIndex].actualMax.toString() ??
+      //                   '',
+      //             ),
+      //             CustomSectionCardData(
+      //               'Standard Min',
+      //               widget.data.coa.details[pageIndex].standardMin.toString() ??
+      //                   '',
+      //             ),
+      //             CustomSectionCardData(
+      //               'Standard Max',
+      //               widget.data.coa.details[pageIndex].standardMax.toString() ??
+      //                   '',
+      //             ),
+      //             CustomSectionCardData(
+      //               'Method',
+      //               widget.data.coa.details[pageIndex].method.toString() ?? '',
+      //             ),
+      //           ]),
+      //         ],
+      //       );
+      //     },
+      //   ),
+      // ),
     ]);
   }
 
@@ -546,29 +504,19 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
                         '',
                   ),
                   CustomSectionCardData(
-                    'Result Min',
-                    widget.data.analytical.details[pageIndex].resultMin
+                    'Result',
+                    widget.data.analytical.details[pageIndex].result
                             .toString() ??
                         '',
                   ),
+                
                   CustomSectionCardData(
-                    'Result Max',
-                    widget.data.analytical.details[pageIndex].resultMax
+                    'Specification',
+                    widget.data.analytical.details[pageIndex].specification
                             .toString() ??
                         '',
                   ),
-                  CustomSectionCardData(
-                    'Specification Min',
-                    widget.data.analytical.details[pageIndex].specificationMin
-                            .toString() ??
-                        '',
-                  ),
-                  CustomSectionCardData(
-                    'Specification Max',
-                    widget.data.analytical.details[pageIndex].specificationMax
-                            .toString() ??
-                        '',
-                  ),
+                 
                   CustomSectionCardData(
                     'Status',
                     (widget.data.analytical.details[pageIndex].statusOk) == 'y'
@@ -592,7 +540,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
 
   Future<bool> _approveRejectReport(String status) async {
     var isSuccess = await context
-        .read<AnalyticalResultIncomingPlantChemicalIngredientProvider>()
+        .read<AnalyticalResultIncomingPlantFuelProvider>()
         .updateApproveRejectReport(
           id: _data.analytical.id,
           status: status,

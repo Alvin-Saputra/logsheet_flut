@@ -39,7 +39,10 @@ import 'package:logsheet_app/features/quality_control/presentation/pages/analyti
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_report_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_input_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_report_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_report_list_page.dart';
@@ -85,7 +88,8 @@ class _UserHomePageState extends State<UserHomePage> {
       formDailyQualityCompositeFractionation,
       formAnalyticalResultIncomingMaterialByVessel,
       formAnalyticalResultIncomingMaterialByTruck,
-      formAnalyticalResultIncomingPlantChemicalIngredient;
+      formAnalyticalResultIncomingPlantChemicalIngredient,
+      formAnalyticalResultIncomingPlantFuel;
 
   Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
@@ -386,6 +390,18 @@ class _UserHomePageState extends State<UserHomePage> {
               (form) =>
                   form.isMenu ==
                       "Analytical_Result_of_Incoming_Plant_Chemical_Ingredient" &&
+                  form.isActive == "T",
+            )
+            .first;
+
+             formAnalyticalResultIncomingPlantFuel =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu ==
+                      "Analytical_Result_of_Incoming_Plant_Fuel_Solar_Coal" &&
                   form.isActive == "T",
             )
             .first;
@@ -967,7 +983,7 @@ class _UserHomePageState extends State<UserHomePage> {
               leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
               title: Text(
                 // 'Analytical Result Of Incoming Plant Chemical/Ingredient (F/QCO-010)\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
-                'Analytical Result Of Incoming Plant Fuel Coal \n(${formAnalyticalResultIncomingPlantChemicalIngredient?.code})',
+                'Analytical Result Of Incoming Plant Fuel Coal \n(${formAnalyticalResultIncomingPlantFuel?.code})',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -980,7 +996,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 _buildDrawerItem(
                   icon: Icons.list_alt,
                   title:
-                      'List \n(${formAnalyticalResultIncomingPlantChemicalIngredient?.code})',
+                      'List \n(${formAnalyticalResultIncomingPlantFuel?.code})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -988,7 +1004,41 @@ class _UserHomePageState extends State<UserHomePage> {
                         builder:
                             (_) =>
                                 // ParentAnalyticalResultIncomingPlantChemicalIngredient()
-                                AnalyticalResultIncomingPlantFuelInputPage(),
+                                AnalyticalResultIncomingPlantFuelListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title:
+                      'Approval \n(${formAnalyticalResultIncomingPlantFuel?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                // ParentAnalyticalResultIncomingPlantChemicalIngredient()
+                                AnalyticalResultIncomingPlantFuelApprovalListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                 _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title:
+                      'Report \n(${formAnalyticalResultIncomingPlantChemicalIngredient?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                // ParentAnalyticalResultIncomingPlantChemicalIngredient()
+                                AnalyticalResultIncomingPlantFuelReportListPage(),
                       ),
                     );
                   },

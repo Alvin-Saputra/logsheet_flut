@@ -138,7 +138,6 @@ class _AnalyticalResultIncomingPlantChemicalIngredientEditPageState
       setState(() {
         final coaData = widget.data.coa;
 
-        // --- PRE-POPULATE COA DATA ---
         if (coaData.product != null && coaData.product!.isNotEmpty) {
           coaSelectedMaterial = coaData.product;
         } else {

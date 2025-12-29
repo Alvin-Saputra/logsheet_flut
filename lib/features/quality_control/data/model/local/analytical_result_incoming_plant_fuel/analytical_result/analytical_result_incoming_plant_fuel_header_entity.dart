@@ -1,9 +1,8 @@
-import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_detail_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_chemical_ingredient/certificate_of_analysis/certificate_of_analysis_incoming_plant_chemical_ingredient_detail_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_fuel/analytical_result/analytical_result_incoming_plant_fuel_detail_entity.dart';
 
-class AnalyticalResultIncomingPlantChemicalIngredientHeaderEntity {
+class AnalyticalResultIncomingPlantFuelHeaderEntity {
   final String id;
-  final String idCoa;
+  final String idRoa;
   final DateTime? date;
   final String? material;
   final double? quantity;
@@ -11,7 +10,6 @@ class AnalyticalResultIncomingPlantChemicalIngredientHeaderEntity {
   final String? supplier;
   final String? policeNo;
 
-  final String? flag;
   final String? entryBy;
   final DateTime? entryDate;
   final String? preparedBy;
@@ -29,18 +27,16 @@ class AnalyticalResultIncomingPlantChemicalIngredientHeaderEntity {
   final String? revisionNo;
   final DateTime? revisionDate;
 
-  final List<AnalyticalResultIncomingPlantChemicalIngredientDetailEntity>
-  details;
+  final List<AnalyticalResultIncomingPlantFuelDetailEntity> details;
 
-  AnalyticalResultIncomingPlantChemicalIngredientHeaderEntity({
+  AnalyticalResultIncomingPlantFuelHeaderEntity({
     required this.id,
-    required this.idCoa,
+    required this.idRoa,
     required this.material,
     required this.quantity,
     required this.analyst,
     required this.supplier,
     required this.policeNo,
-    required this.flag,
     required this.entryBy,
     required this.entryDate,
     required this.preparedBy,

@@ -17,23 +17,25 @@ import 'package:logsheet_app/features/master_data/presentation/provider/master/u
 import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_fuel/analytical_result/analytical_result_incoming_plant_fuel_detail_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_fuel/analytical_result/analytical_result_incoming_plant_fuel_header_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_fuel/analytical_with_report_of_analysis_header_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_fuel/report_of_analysis/report_of_analysis_incoming_plant_fuel_detail_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_fuel/report_of_analysis/report_of_analysis_incoming_plant_fuel_header_entity.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class AnalyticalResultIncomingPlantFuelInputPage extends StatefulWidget {
-  AnalyticalResultIncomingPlantFuelInputPage({super.key});
+class AnalyticalResultIncomingPlantFuelEditPage extends StatefulWidget {
+  AnalyticalResultIncomingPlantFuelEditPage({super.key, required this.data});
+
+  AnalyticalWithReportOfAnalysisHeaderEntity data;
 
   @override
-  State<AnalyticalResultIncomingPlantFuelInputPage> createState() =>
-      _AnalyticalResultIncomingPlantFuelInputPageState();
+  State<AnalyticalResultIncomingPlantFuelEditPage> createState() =>
+      _AnalyticalResultIncomingPlantFuelEditPageState();
 }
 
-class _AnalyticalResultIncomingPlantFuelInputPageState
-    extends State<AnalyticalResultIncomingPlantFuelInputPage> {
+class _AnalyticalResultIncomingPlantFuelEditPageState
+    extends State<AnalyticalResultIncomingPlantFuelEditPage> {
   final _formKey = GlobalKey<FormState>();
 
   DataFormNoEntity? formData;
@@ -73,7 +75,6 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
       TextEditingController();
   final TextEditingController topSizeofReceivedSampleController =
       TextEditingController();
-
   final TextEditingController hardGrooveGrindabilityIndexController =
       TextEditingController();
 
@@ -93,12 +94,11 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
     'Gross Calorific Value',
   ];
 
+  late AnalyticalWithReportOfAnalysisHeaderEntity updatedData;
+
   @override
   initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await context.read<ValueProvider>().fetchOilTypes();
-    });
 
     for (int i = 0; i < analyticalParameters.length; i++) {
       analyticalDetailControllers.add({
@@ -118,6 +118,78 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
         'result': TextEditingController(),
       });
     }
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await context.read<ValueProvider>().fetchOilTypes();
+
+      setState(() {
+        final roaData = widget.data.roa;
+        reportNoController.text = roaData.reportNo;
+        shipperController.text = roaData.shipper ?? '';
+        buyerController.text = roaData.buyer ?? '';
+        dateReceivedController.text =
+            formatDatetoString(roaData.dateReceived, 'dd-MM-yyyy') ?? '';
+        dateAnalyzedStartController.text =
+            formatDatetoString(roaData.dateAnalyzedStart, 'dd-MM-yyyy') ?? '';
+        dateAnalyzedEndController.text =
+            formatDatetoString(roaData.dateAnalyzedEnd, 'dd-MM-yyyy') ?? '';
+        dateReportedController.text =
+            formatDatetoString(roaData.dateReported, 'dd-MM-yyyy') ?? '';
+        labSampleIdController.text = roaData.labSampleId ?? '';
+        customerSampleIdController.text = roaData.customerSampleId ?? '';
+        sealNoController.text = roaData.sealNo ?? '';
+        weightofReceivedSampleController.text =
+            roaData.weightofReceivedSample?.toString() ?? '';
+        topSizeofReceivedSampleController.text =
+            roaData.topSizeofReceivedSample?.toString() ?? '';
+        hardGrooveGrindabilityIndexController.text =
+            roaData.hardGrooveGrindabilityIndex?.toString() ?? '';
+
+        for (int i = 0; i < roaData.details.length; i++) {
+          // Safety check agar tidak error jika jumlah detail di API > jumlah parameter lokal
+          if (i < roaDetailControllers.length) {
+            roaDetailControllers[i]['parameter_name'] =
+                roaData.details[i].parameter ?? '';
+            roaDetailControllers[i]['unit']?.text =
+                roaData.details[i].unit.toString();
+            roaDetailControllers[i]['basis']?.text =
+                roaData.details[i].basis.toString();
+            roaDetailControllers[i]['result']?.text =
+                roaData.details[i].result.toString();
+          }
+        }
+
+        final analyticalData = widget.data.analytical;
+        dateController.text =
+            formatDatetoString(analyticalData.date, 'dd-MM-yyyy') ?? '';
+        if (analyticalData.material != null &&
+            analyticalData.material!.isNotEmpty) {
+          analyticalSelectedMaterial = analyticalData.material;
+        } else {
+          analyticalSelectedMaterial = null;
+        }
+
+        quantityController.text = analyticalData.quantity?.toString() ?? '';
+        analystController.text = analyticalData.analyst ?? '';
+        supplierController.text = analyticalData.supplier ?? '';
+        policeNumberController.text = analyticalData.policeNo ?? '';
+
+        for (int i = 0; i < analyticalData.details.length; i++) {
+          // Safety check agar tidak error jika jumlah detail di API > jumlah parameter lokal
+          if (i < analyticalDetailControllers.length) {
+            analyticalDetailControllers[i]['parameter_name'] =
+                analyticalData.details[i].parameter ?? '';
+            analyticalDetailControllers[i]['result']?.text =
+                analyticalData.details[i].result.toString();
+            analyticalDetailControllers[i]['specification']?.text =
+                analyticalData.details[i].specification.toString() ?? '';
+            analyticalDetailControllers[i]['remark']?.text =
+                analyticalData.details[i].remark ?? '';
+            analyticalDetailControllers[i]['status'] =
+                analyticalData.details[i].statusOk == 'Y';
+          }
+        }
+      });
+    });
   }
 
   @override
@@ -193,10 +265,7 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
                           }
 
                           if (analyticalSelectedMaterial == null) {
-                            showSnackBar(
-                              "Material Type wajib dipilih",
-                              context,
-                            );
+                            showSnackBar("Oil Type wajib dipilih", context);
                             return;
                           }
 
@@ -204,20 +273,17 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
                           //   showSnackBar("Tanggal Wajib dipilih", context);
                           //   return;
                           // }
-                          if (!_validateDetailRows(context, "ROA")) return;
 
-                          if (!_validateDetailRows(context, "Analytical"))
-                            return;
-
-                          final bool isSuccess = await _insertData();
+                          final bool isSuccess = await _updateData();
 
                           if (isSuccess) {
                             showSnackBar("Berhasil menyimpan data", context);
-                            Navigator.of(context).pop();
+                            Navigator.of(context).pop(updatedData);
                           } else {
                             showSnackBar("Gagal menyimpan data", context);
                           }
                         },
+                        label: 'Update Data',
                       );
                 },
               ),
@@ -334,7 +400,6 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
                   label: "Result",
                   icon: Icons.person_rounded,
                   isNumeric: true,
-                  isRequired: true,
                 ),
 
                 CustomTextField(
@@ -342,7 +407,6 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
                   label: "Specification",
                   icon: Icons.person_rounded,
                   isNumeric: true,
-                  isRequired: true,
                 ),
 
                 CustomTextField(
@@ -506,7 +570,6 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
                   label: "Unit",
                   icon: Icons.person_rounded,
                   isNumeric: false,
-                  isRequired: true,
                 ),
 
                 CustomTextField(
@@ -514,7 +577,6 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
                   label: "Basis",
                   icon: Icons.person_rounded,
                   isNumeric: false,
-                  isRequired: true,
                 ),
 
                 CustomTextField(
@@ -522,7 +584,6 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
                   label: "Result",
                   icon: Icons.person_rounded,
                   isNumeric: true,
-                  isRequired: true,
                 ),
               ],
             );
@@ -553,7 +614,7 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
     );
   }
 
-  Future<bool> _insertData() async {
+  Future<bool> _updateData() async {
     final plant = context.read<PlantProvider>().currentPlant;
     final user = context.read<UserProvider>();
     final businessUnit =
@@ -566,7 +627,6 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
               id: '',
               idHdr: '',
               specification: parseDouble(item['specification'].text) ?? 0,
-
               statusOk: item['status'] == true ? 'Y' : 'N',
               parameter: item['parameter_name'],
               result: parseDouble(item['result'].text) ?? 0,
@@ -588,7 +648,7 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
           }).toList();
 
       final analyticalHeader = AnalyticalResultIncomingPlantFuelHeaderEntity(
-        id: '',
+        id: widget.data.analytical.id,
         idRoa: '',
         material: analyticalSelectedMaterial ?? '',
         quantity: parseDouble(quantityController.text) ?? 0,
@@ -668,96 +728,20 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
 
       final isSuccess = await context
           .read<AnalyticalResultIncomingPlantFuelProvider>()
-          .insertReport(
+          .updateReport(
             reportOfAnalysisHeaderInput: roaHeader,
             analyticalResultHeaderInput: analyticalHeader,
           );
-
+      updatedData = AnalyticalWithReportOfAnalysisHeaderEntity(
+        roa: roaHeader,
+        analytical: analyticalHeader,
+      );
       return isSuccess;
 
       // return true;
     } catch (e) {
       debugPrint("Error inserting Analytical Incoming Plant Fuel: $e");
       return false;
-    }
-  }
-
-  bool _validateDetailRows(BuildContext context, String fromDetails) {
-    // Tentukan key mana saja yang WAJIB diisi
-    // Sesuaikan string ini dengan key yang Anda buat di function generateDetailRows
-
-    if (fromDetails != "ROA") {
-      final List<String> mandatoryKeys = ['unit', 'basis', 'result'];
-
-      for (int i = 0; i < roaDetailControllers.length; i++) {
-        final row = roaDetailControllers[i];
-        bool isPageValid = true;
-
-        // Cek hanya key yang ada di list mandatoryKeys
-        for (final key in mandatoryKeys) {
-          // Pastikan key ada di map dan text-nya kosong
-          if (row[key] != null && row[key]!.text.trim().isEmpty) {
-            isPageValid = false;
-            break; // Stop loop, halaman ini sudah invalid
-          }
-        }
-
-        if (!isPageValid) {
-          // 1. Pindahkan PageView ke halaman yang error
-          roaPageControllers.animateToPage(
-            i,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeIn,
-          );
-
-          // 2. Tampilkan pesan
-          showSnackBar(
-            "Detail ke-${i + 1} belum lengkap. Basis, Unit, dan Result.",
-            context,
-          );
-
-          return false; // Validasi gagal
-        }
-      }
-      return true; // Validasi sukses
-    }
-
-    if (fromDetails != "Analytical") {
-      final List<String> mandatoryKeys = ['result', 'specification'];
-
-      for (int i = 0; i < analyticalDetailControllers.length; i++) {
-        final row = analyticalDetailControllers[i];
-        bool isPageValid = true;
-
-        // Cek hanya key yang ada di list mandatoryKeys
-        for (final key in mandatoryKeys) {
-          // Pastikan key ada di map dan text-nya kosong
-          if (row[key] != null && row[key]!.text.trim().isEmpty) {
-            isPageValid = false;
-            break; // Stop loop, halaman ini sudah invalid
-          }
-        }
-
-        if (!isPageValid) {
-          // 1. Pindahkan PageView ke halaman yang error
-          analyticalPageControllers.animateToPage(
-            i,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeIn,
-          );
-
-          // 2. Tampilkan pesan
-          showSnackBar(
-            "Detail ke-${i + 1} belum lengkap. Basis, Unit, dan Result.",
-            context,
-          );
-
-          return false; // Validasi gagal
-        }
-      }
-      return true; // Validasi sukses
-    } else {
-      return true;
     }
   }
 }

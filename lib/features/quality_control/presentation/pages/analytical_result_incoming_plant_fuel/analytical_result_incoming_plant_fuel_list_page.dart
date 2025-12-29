@@ -6,39 +6,33 @@ import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_input_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_list_detail_page.dart';
 import 'package:logsheet_app/core/widgets/custom_date_field.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_detail_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_input_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/parent_analytical_result_incoming_plant_chemical_ingredient.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_detail_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_input_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_provider.dart';
 import 'package:provider/provider.dart';
 
-class AnalyticalResultIncomingPlantChemicalIngredientListPage
-    extends StatefulWidget {
-  const AnalyticalResultIncomingPlantChemicalIngredientListPage({super.key});
+class AnalyticalResultIncomingPlantFuelListPage extends StatefulWidget {
+  const AnalyticalResultIncomingPlantFuelListPage({super.key});
 
   @override
-  State<AnalyticalResultIncomingPlantChemicalIngredientListPage>
-  createState() =>
-      _AnalyticalResultIncomingPlantChemicalIngredientListPageState();
+  State<AnalyticalResultIncomingPlantFuelListPage> createState() =>
+      _AnalyticalResultIncomingPlantFuelListPageState();
 }
 
-class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
-    extends State<AnalyticalResultIncomingPlantChemicalIngredientListPage> {
+class _AnalyticalResultIncomingPlantFuelListPageState
+    extends State<AnalyticalResultIncomingPlantFuelListPage> {
   DataFormNoEntity? formData;
 
   final TextEditingController dateEntryController = TextEditingController();
   @override
   initState() {
     super.initState();
-    context
-        .read<AnalyticalResultIncomingPlantChemicalIngredientProvider>()
-        .clearReports();
+    context.read<AnalyticalResultIncomingPlantFuelProvider>().clearReports();
   }
 
   @override
@@ -53,8 +47,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
             context,
             MaterialPageRoute(
               builder:
-                  (context) =>
-                      AnalyticalResultIncomingPlantChemicalIngredientInputPage(),
+                  (context) => AnalyticalResultIncomingPlantFuelInputPage(),
             ),
           ).then((_) async {
             if (!mounted) return;
@@ -67,7 +60,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
               'yyyy-MM-dd',
             );
             await context
-                .read<AnalyticalResultIncomingPlantChemicalIngredientProvider>()
+                .read<AnalyticalResultIncomingPlantFuelProvider>()
                 .fetchReport(
                   plantId,
                   formattedDate,
@@ -110,13 +103,10 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
             padding: const EdgeInsets.all(8.0),
             child: Builder(
               builder: (context) {
-                return Consumer<
-                  AnalyticalResultIncomingPlantChemicalIngredientProvider
-                >(
+                return Consumer<AnalyticalResultIncomingPlantFuelProvider>(
                   builder: (
                     BuildContext context,
-                    AnalyticalResultIncomingPlantChemicalIngredientProvider
-                    provider,
+                    AnalyticalResultIncomingPlantFuelProvider provider,
                     Widget? child,
                   ) {
                     return (provider.isLoading)
@@ -172,9 +162,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
                 final plant = context.read<PlantProvider>().currentPlant;
                 final plantId = plant?.code ?? '';
                 await context
-                    .read<
-                      AnalyticalResultIncomingPlantChemicalIngredientProvider
-                    >()
+                    .read<AnalyticalResultIncomingPlantFuelProvider>()
                     .fetchReport(
                       plantId,
                       formattedDate,
@@ -217,13 +205,9 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
           context,
           MaterialPageRoute(
             builder:
-                (
-                  context,
-                ) => AnalyticalResultIncomingPlantChemicalIngredientDetailPage(
+                (context) => AnalyticalResultIncomingPlantFuelDetailPage(
                   data: context
-                      .read<
-                        AnalyticalResultIncomingPlantChemicalIngredientProvider
-                      >()
+                      .read<AnalyticalResultIncomingPlantFuelProvider>()
                       .reportList
                       .firstWhere((element) => element.analytical.id == id),
                 ),
@@ -239,7 +223,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
             'yyyy-MM-dd',
           );
           await context
-              .read<AnalyticalResultIncomingPlantChemicalIngredientProvider>()
+              .read<AnalyticalResultIncomingPlantFuelProvider>()
               .fetchReport(plantId, formattedDate, purpose: "list");
         });
       },
@@ -307,42 +291,11 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
                   ),
                 ],
               ),
-              // Row(
-              //   children: [
-              //     const Icon(
-              //       Icons.car_repair_outlined,
-              //       size: 18,
-              //       color: Colors.grey,
-              //     ),
-              //     SizedBox(width: 8),
-              //     Text(
-              //       'Vessel/Vechicle: $vesselVehicle',
-              //       style: const TextStyle(fontSize: 14, color: Colors.black87),
-              //     ),
-              //   ],
-              // ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  String? parseDateTimeForQuery(String? selectedDate) {
-    if (selectedDate == null || selectedDate.isEmpty) return null;
-
-    try {
-      // Step 1: Parse dari format UI
-      final inputFormat = DateFormat('dd-MM-yyyy');
-      final dateTime = inputFormat.parse(selectedDate);
-
-      // Step 2: Ubah ke format yang diinginkan
-      final outputFormat = DateFormat('yyyy-MM-dd');
-      return outputFormat.format(dateTime);
-    } catch (e) {
-      print("Error parsing date: $e");
-      return null;
-    }
   }
 
   String _formatDateString(String? s) {
