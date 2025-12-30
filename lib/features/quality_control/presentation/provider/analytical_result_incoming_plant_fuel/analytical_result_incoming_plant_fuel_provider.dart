@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
 import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_api_service.dart';
@@ -219,9 +220,10 @@ class AnalyticalResultIncomingPlantFuelProvider with ChangeNotifier {
         print('DEBUG: Data raw length: ${data?.length}');
 
         // PERBAIKAN: Gunakan List.from untuk keamanan tipe data
-        if (purpose == "list") {
-          _reportList = (data ?? []).where((report) => report.analytical.preparedStatus != null).toList();
-        } else {
+        if (purpose == "list" && AppRoles.leadQC.contains(role)) {
+          _reportList = (data ?? []).where((report) => report.analytical.preparedStatus == null).toList();
+        } 
+        else {
           _reportList = data ?? [];
         }
 

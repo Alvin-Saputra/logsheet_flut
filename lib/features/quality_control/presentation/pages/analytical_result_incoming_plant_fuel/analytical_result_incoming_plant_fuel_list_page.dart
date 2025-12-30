@@ -224,7 +224,7 @@ class _AnalyticalResultIncomingPlantFuelListPageState
           );
           await context
               .read<AnalyticalResultIncomingPlantFuelProvider>()
-              .fetchReport(plantId, formattedDate, purpose: "list");
+              .fetchReport(plantId, formattedDate, purpose: "list", role: role);
         });
       },
       child: Card(

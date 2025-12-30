@@ -41,6 +41,7 @@ class CustomDateField extends StatelessWidget {
         child: TextField(
           controller: controller,
           decoration: InputDecoration(
+            labelText: label,
             hintText: label,
             hintStyle: const TextStyle(color: Color(0xFF655F5B)),
             prefixIcon: Icon(icon, color: Color(0xFF655F5B)),
