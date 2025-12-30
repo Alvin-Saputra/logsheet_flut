@@ -82,11 +82,29 @@ dynamic changeStringDateFormat(
   String inputFormat,
   String outputFormat, {
   bool returnDateTime = false,
+  bool withTime = false,
 }) {
   final inputDateTime = DateFormat(inputFormat).parse(date);
 
   if (returnDateTime) {
     return inputDateTime; // return DateTime
+  }
+
+  if (returnDateTime && withTime) {
+    final date = DateTime.now();
+
+    DateTime(
+      inputDateTime.year,
+      inputDateTime.month,
+      inputDateTime.day,
+      date.hour,
+      date.minute,
+      date.second,
+    );
+    final timeFormat = '$outputFormat HH:mm:ss';
+    return DateFormat(
+      timeFormat,
+    ).format(inputDateTime); // return String with time
   }
 
   return DateFormat(outputFormat).format(inputDateTime); // return String
