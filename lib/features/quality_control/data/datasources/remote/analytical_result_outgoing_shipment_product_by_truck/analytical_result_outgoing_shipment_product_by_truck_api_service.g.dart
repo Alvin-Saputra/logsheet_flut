@@ -59,6 +59,75 @@ class _AnalyticalResultOutgoingShipmentProductByTruckApiService
     return _value;
   }
 
+  @override
+  Future<FetchAnalyticalResultOutgoingShipmentProductByTruckResponse>
+  fetchReports(String token, String? date) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'entry_date': date};
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{r'Authorization': token};
+    _headers.removeWhere((k, v) => v == null);
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<
+      FetchAnalyticalResultOutgoingShipmentProductByTruckResponse
+    >(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/arosptruck',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late FetchAnalyticalResultOutgoingShipmentProductByTruckResponse _value;
+    try {
+      _value =
+          FetchAnalyticalResultOutgoingShipmentProductByTruckResponse.fromJson(
+            _result.data!,
+          );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<DeleteAnalyticalResultOutgoingShipmentProductByTruckResponse>
+  deleteReport(String token, String id) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{r'Authorization': token};
+    _headers.removeWhere((k, v) => v == null);
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<
+      DeleteAnalyticalResultOutgoingShipmentProductByTruckResponse
+    >(
+      Options(method: 'DELETE', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/arosptruck/${id}',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late DeleteAnalyticalResultOutgoingShipmentProductByTruckResponse _value;
+    try {
+      _value =
+          DeleteAnalyticalResultOutgoingShipmentProductByTruckResponse.fromJson(
+            _result.data!,
+          );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
     if (T != dynamic &&
         !(requestOptions.responseType == ResponseType.bytes ||

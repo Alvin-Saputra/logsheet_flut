@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
@@ -43,8 +45,8 @@ class AnalyticalResultOutgoingShipmentProductByTruckProvider
   String? _latestId;
   String? get latestId => _latestId;
 
-  List<AnalyticalResultIncomingMaterialByTruckHeaderEntity> _reportList = [];
-  List<AnalyticalResultIncomingMaterialByTruckHeaderEntity> get reportList =>
+  List<AnalyticalResultOutgoingShipmentProductByTruckHeaderEntity> _reportList = [];
+  List<AnalyticalResultOutgoingShipmentProductByTruckHeaderEntity> get reportList =>
       _reportList;
 
   void _setLoading(bool value) {
@@ -136,77 +138,76 @@ class AnalyticalResultOutgoingShipmentProductByTruckProvider
     }
   }
 
-  // Future<void> fetchReport(
-  //   String plantId,
-  //   String? date, {
-  //   String? role,
-  //   String? purpose,
-  // }) async {
-  //   _setLoading(true);
-  //   _setErrorMessage(null);
+  Future<void> fetchReport(
+    String? date, {
+    String? role,
+    String? purpose,
+  }) async {
+    _setLoading(true);
+    _setErrorMessage(null);
 
-  //   try {
-  //     String token = await _storageService.readSessionToken() ?? '';
-  //     final response = await _apiService.fetchReports(
-  //       'Bearer $token',
-  //       plantId,
-  //       date ?? '',
-  //     );
+    try {
+      String token = await _storageService.readSessionToken() ?? '';
+      final response = await _apiService.fetchReports(
+        'Bearer $token',
+        date ?? '',
+      );
+       
 
-  //     if (response != null && response.success == true) {
-  //       final data = response.data;
-  //       _reportList = data;
+      if (response.success == true) {
+       final data = response.data;
+        _reportList = data;
+      
+        log("report List Length: ${_reportList.length}");
+        // if (purpose == "list" && AppRoles.leadQC.contains(role)) {
+        //   _reportList =
+        //       _reportList
+        //           .where(
+        //             (item) => item.correctedStatus == null,
+        //           )
+        //           .toList();
+        // }
+        log("report List Length: ${_reportList.length}");
 
-  //       if (purpose == "list" && AppRoles.leadQC.contains(role)) {
-  //         _reportList =
-  //             _reportList
-  //                 .where(
-  //                   (item) => item.flag == 'T' && item.preparedStatus == null,
-  //                 )
-  //                 .toList();
-  //       } else {
-  //         _reportList = _reportList.where((item) => item.flag == 'T').toList();
-  //       }
+        notifyListeners();
+      } else {
+        _setErrorMessage('Fetch report failed.');
+      }
+      notifyListeners();
+    } catch (e) {
+      _setErrorMessage("$e");
+      notifyListeners();
+    } finally {
+      _setLoading(false);
+      notifyListeners();
+    }
+  }
 
-  //       notifyListeners();
-  //     } else {
-  //       _setErrorMessage('Fetch report failed.');
-  //     }
-  //     notifyListeners();
-  //   } catch (e) {
-  //     _setErrorMessage("$e");
-  //     notifyListeners();
-  //   } finally {
-  //     _setLoading(false);
-  //     notifyListeners();
-  //   }
-  // }
+  Future<bool> deleteReport({required String id}) async {
+    _setLoadingDelete(true);
+    _setErrorMessage(null);
 
-  // Future<bool> deleteReport({required String id}) async {
-  //   _setLoadingDelete(true);
-  //   _setErrorMessage(null);
+    try {
+      String token = await _storageService.readSessionToken() ?? '';
+      final response = await _apiService.deleteReport('Bearer $token', id);
 
-  //   try {
-  //     String token = await _storageService.readSessionToken() ?? '';
-  //     final response = await _apiService.deleteReport('Bearer $token', id);
-
-  //     if (response != null && response.success == true) {
-  //       notifyListeners();
-  //       return true;
-  //     } else {
-  //       _setErrorMessage('Delete Report Failed');
-  //       notifyListeners();
-  //       return false;
-  //     }
-  //   } catch (e) {
-  //     _setErrorMessage("$e");
-  //     notifyListeners();
-  //     return false;
-  //   } finally {
-  //     _setLoadingDelete(false);
-  //     notifyListeners();
-  //   }
-  // }
+      if (response != null && response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage('Delete Report Failed');
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage("$e");
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoadingDelete(false);
+      notifyListeners();
+    }
+  }
 
   // Future<bool> updateReport({
   //   required AnalyticalResultIncomingMaterialByTruckHeaderEntity headerInput,
