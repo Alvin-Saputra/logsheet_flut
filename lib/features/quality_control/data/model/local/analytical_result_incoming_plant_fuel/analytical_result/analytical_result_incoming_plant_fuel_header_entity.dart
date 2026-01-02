@@ -3,6 +3,8 @@ import 'package:logsheet_app/features/quality_control/data/model/local/analytica
 class AnalyticalResultIncomingPlantFuelHeaderEntity {
   final String id;
   final String idRoa;
+  final String company;
+  final String plant;
   final DateTime? date;
   final String? material;
   final double? quantity;
@@ -32,6 +34,8 @@ class AnalyticalResultIncomingPlantFuelHeaderEntity {
   AnalyticalResultIncomingPlantFuelHeaderEntity({
     required this.id,
     required this.idRoa,
+    required this.company,
+    required this.plant,
     required this.material,
     required this.quantity,
     required this.analyst,

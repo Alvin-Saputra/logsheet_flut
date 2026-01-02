@@ -85,7 +85,7 @@ class _AnalyticalResultIncomingPlantFuelListPageState
             .where(
               (form) =>
                   form.isMenu ==
-                  "Analytical_Result_of_Incoming_Plant_Chemical_Ingredient",
+                  "Analytical_Result_of_Out_Going_Shipment_Product_By_Truck",
             )
             .first;
     return AppBar(title: Text("List (${formData!.code})"), actions: [

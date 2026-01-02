@@ -333,17 +333,27 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
         ),
 
         IconButton(
-          onPressed: () {
-            Navigator.push(
+          onPressed: () async {
+            final result = await Navigator.push<
+              AnalyticalWithCertificateOfAnalysisHeaderEntity
+            >(
               context,
               MaterialPageRoute(
                 builder:
-                    (_) =>
+                    (context) =>
                         AnalyticalResultIncomingPlantChemicalIngredientEditPage(
-                          data: widget.data,
+                          data: _data,
                         ),
               ),
             );
+
+            if (!mounted) return;
+
+            if (result != null) {
+              setState(() {
+                _data = result;
+              });
+            }
           },
           icon: const Icon(Icons.edit_rounded, color: Colors.red),
         ),
@@ -357,6 +367,8 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
       child: Column(
         children: [
           CustomSectionCard('Analytical Information', [
+            CustomSectionCardData('Company', _data.analytical.company),
+            CustomSectionCardData('Plant', _data.analytical.plant),
             CustomSectionCardData(
               'Date',
               formatDatetoString(_data.analytical.date, 'yyyy-MM-dd') ?? '',
@@ -408,10 +420,14 @@ class _AnalyticalResultIncomingPlantChemicalIngredientDetailPageState
             ),
             CustomSectionCardData('Vehicle', _data.coa.vehicle ?? ''),
             CustomSectionCardData('Lot No', _data.coa.lotNo ?? ''),
-            CustomSectionCardData('Production date',  formatDatetoString(_data.coa.productionDate, 'yyyy-MM-dd') ??
-                  '',),
-            CustomSectionCardData('Expired date',  formatDatetoString(_data.coa.expiredDate, 'yyyy-MM-dd') ??
-                  '',),
+            CustomSectionCardData(
+              'Production date',
+              formatDatetoString(_data.coa.productionDate, 'yyyy-MM-dd') ?? '',
+            ),
+            CustomSectionCardData(
+              'Expired date',
+              formatDatetoString(_data.coa.expiredDate, 'yyyy-MM-dd') ?? '',
+            ),
           ]),
           _buildCOADetailPager(),
         ],

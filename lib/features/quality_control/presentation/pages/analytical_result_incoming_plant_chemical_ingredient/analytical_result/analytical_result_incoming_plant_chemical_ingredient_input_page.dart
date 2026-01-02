@@ -1,4 +1,3 @@
-
 import 'package:expandable_page_view/expandable_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -210,6 +209,11 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
                           //   return;
                           // }
 
+                          if (!_validateDetailRows(context, "COA")) return;
+
+                          if (!_validateDetailRows(context, "Analytical"))
+                            return;
+
                           final bool isSuccess = await _insertData();
 
                           if (isSuccess) {
@@ -420,6 +424,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
                   label: "Result Min",
                   icon: Icons.person_rounded,
                   isNumeric: true,
+                  isRequired: true,
                 ),
 
                 CustomTextField(
@@ -427,6 +432,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
                   label: "Result max",
                   icon: Icons.person_rounded,
                   isNumeric: true,
+                  isRequired: true,
                 ),
 
                 CustomTextField(
@@ -434,6 +440,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
                   label: "Specification Min",
                   icon: Icons.person_rounded,
                   isNumeric: true,
+                  isRequired: true,
                 ),
 
                 CustomTextField(
@@ -441,6 +448,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
                   label: "Specification Max",
                   icon: Icons.person_rounded,
                   isNumeric: true,
+                  isRequired: true,
                 ),
                 CustomTextField(
                   controller: row['remark']!,
@@ -583,6 +591,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
                   label: "Actual min",
                   icon: Icons.person_rounded,
                   isNumeric: true,
+                  isRequired: true,
                 ),
 
                 CustomTextField(
@@ -590,6 +599,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
                   label: "Actual max",
                   icon: Icons.person_rounded,
                   isNumeric: true,
+                  isRequired: true,
                 ),
 
                 CustomTextField(
@@ -597,6 +607,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
                   label: "Standard min",
                   icon: Icons.person_rounded,
                   isNumeric: true,
+                  isRequired: true,
                 ),
 
                 CustomTextField(
@@ -604,6 +615,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
                   label: "Standard max",
                   icon: Icons.person_rounded,
                   isNumeric: true,
+                  isRequired: true,
                 ),
                 CustomTextField(
                   controller: row['method']!,
@@ -681,6 +693,8 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
           AnalyticalResultIncomingPlantChemicalIngredientHeaderEntity(
             id: '',
             idCoa: '',
+            company: businessUnit?.buCode ?? '',
+            plant: plant?.code ?? '',
             noRefCoa: noDocController.text,
             material: analyticalSelectedMaterial,
             quantity: parseDouble(quantityController.text),
@@ -768,6 +782,95 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
     } catch (e) {
       debugPrint("Error inserting Analytical Incoming Material By Vessel: $e");
       return false;
+    }
+  }
+
+  bool _validateDetailRows(BuildContext context, String fromDetails) {
+    // Tentukan key mana saja yang WAJIB diisi
+    // Sesuaikan string ini dengan key yang Anda buat di function generateDetailRows
+
+    if (fromDetails != "COA") {
+      final List<String> mandatoryKeys = [
+        'actual_min',
+        'actual_max',
+        'standard_min',
+        'actual_max',
+      ];
+
+      for (int i = 0; i < coaDetailControllers.length; i++) {
+        final row = coaDetailControllers[i];
+        bool isPageValid = true;
+
+        // Cek hanya key yang ada di list mandatoryKeys
+        for (final key in mandatoryKeys) {
+          // Pastikan key ada di map dan text-nya kosong
+          if (row[key] != null && row[key]!.text.trim().isEmpty) {
+            isPageValid = false;
+            break; // Stop loop, halaman ini sudah invalid
+          }
+        }
+
+        if (!isPageValid) {
+          // 1. Pindahkan PageView ke halaman yang error
+          coaPageControllers.animateToPage(
+            i,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeIn,
+          );
+
+          // 2. Tampilkan pesan
+          showSnackBar(
+            "Detail ke-${i + 1} Certificate of Analysis belum lengkap.",
+            context,
+          );
+
+          return false; // Validasi gagal
+        }
+      }
+      return true; // Validasi sukses
+    }
+
+    if (fromDetails != "Analytical") {
+      final List<String> mandatoryKeys = [
+        'result_min',
+        'result_max'
+            'specification_min',
+        'specification_max',
+      ];
+
+      for (int i = 0; i < analyticalDetailControllers.length; i++) {
+        final row = analyticalDetailControllers[i];
+        bool isPageValid = true;
+
+        // Cek hanya key yang ada di list mandatoryKeys
+        for (final key in mandatoryKeys) {
+          // Pastikan key ada di map dan text-nya kosong
+          if (row[key] != null && row[key]!.text.trim().isEmpty) {
+            isPageValid = false;
+            break; // Stop loop, halaman ini sudah invalid
+          }
+        }
+
+        if (!isPageValid) {
+          // 1. Pindahkan PageView ke halaman yang error
+          analyticalPageControllers.animateToPage(
+            i,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeIn,
+          );
+
+          // 2. Tampilkan pesan
+          showSnackBar(
+            "Detail ke-${i + 1} Analytical belum lengkap.",
+            context,
+          );
+
+          return false; // Validasi gagal
+        }
+      }
+      return true; // Validasi sukses
+    } else {
+      return true;
     }
   }
 }

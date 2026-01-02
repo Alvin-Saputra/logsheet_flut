@@ -45,9 +45,10 @@ class AnalyticalResultOutgoingShipmentProductByTruckProvider
   String? _latestId;
   String? get latestId => _latestId;
 
-  List<AnalyticalResultOutgoingShipmentProductByTruckHeaderEntity> _reportList = [];
-  List<AnalyticalResultOutgoingShipmentProductByTruckHeaderEntity> get reportList =>
-      _reportList;
+  List<AnalyticalResultOutgoingShipmentProductByTruckHeaderEntity> _reportList =
+      [];
+  List<AnalyticalResultOutgoingShipmentProductByTruckHeaderEntity>
+  get reportList => _reportList;
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -89,6 +90,8 @@ class AnalyticalResultOutgoingShipmentProductByTruckProvider
 
     try {
       final body = {
+        "company": headerInput.company,
+        "plant": headerInput.plant,
         "loading_date":
             formatDatetoString(headerInput.loadingDate, 'yyy-MM-dd HH:mm:ss') ??
             '',
@@ -102,8 +105,8 @@ class AnalyticalResultOutgoingShipmentProductByTruckProvider
                 .map(
                   (detail) => {
                     "ships_tank": detail.shipsTank ?? '',
-                    "no_police": detail.shipsTank ?? '',
-                    "ffa": detail.ffa ?? '',
+                    "no_police": detail.noPolice ?? '',
+                    "ffa": detail.ffa ?? 0,
                     "m_and_i": detail.mni ?? 0,
                     "iv": detail.iv ?? 0,
                     "lovibond_color_red": detail.lovibondColorRed ?? 0,
@@ -152,12 +155,11 @@ class AnalyticalResultOutgoingShipmentProductByTruckProvider
         'Bearer $token',
         date ?? '',
       );
-       
 
       if (response.success == true) {
-       final data = response.data;
+        final data = response.data;
         _reportList = data;
-      
+
         log("report List Length: ${_reportList.length}");
         // if (purpose == "list" && AppRoles.leadQC.contains(role)) {
         //   _reportList =
@@ -209,107 +211,104 @@ class AnalyticalResultOutgoingShipmentProductByTruckProvider
     }
   }
 
-  // Future<bool> updateReport({
-  //   required AnalyticalResultIncomingMaterialByTruckHeaderEntity headerInput,
-  //   required String menuId,
-  // }) async {
-  //   _setLoadingInput(true);
+  Future<bool> updateReport({
+    required AnalyticalResultOutgoingShipmentProductByTruckHeaderEntity
+    headerInput,
+  }) async {
+    _setLoadingInput(true);
 
-  //   try {
-  //     final body = {
-  //       "id": headerInput.id,
-  //       "material": headerInput.material,
-  //       "arrival_date": formatDatetoString(
-  //         headerInput.arrival ?? DateTime.now(),
-  //         'yyy-MM-dd HH:mm:ss',
-  //       ),
-  //       "contract_do": headerInput.contractDoNomor,
-  //       "supplier": headerInput.supplier,
-  //       "vessel_vehicle": headerInput.vesselVehicle,
-  //       "ss_ffa": headerInput.ssFfa.toString(),
-  //       "ss_mni": headerInput.ssMni.toString(),
-  //       "ss_others": headerInput.ssOthers.toString(),
-  //       "detail":
-  //           headerInput.details
-  //               .map(
-  //                 (detail) => {
-  //                   "id": detail.id,
-  //                   "no": detail.no,
-  //                   "sampling_date": formatDatetoString(
-  //                     detail.samplingDate ?? DateTime.now(),
-  //                     'yyy-MM-dd HH:mm:ss',
-  //                   ),
-  //                   "police_no": detail.policeNo,
-  //                   "p_ffa": detail.pFfa.toString(),
-  //                   "p_moisture": detail.pMoisture.toString(),
-  //                   "p_iv": detail.pIv.toString(),
-  //                   "p_dobi": detail.pDobi.toString(),
-  //                   "p_pv": detail.pPv.toString(),
-  //                   "p_color_r": detail.pColorR.toString(),
-  //                   "p_color_y": detail.pColorY.toString(),
-  //                   "analis": detail.analis,
-  //                   "remarks": detail.remarks,
-  //                 },
-  //               )
-  //               .toList(),
-  //     };
+    try {
+      final body = {
+        "loading_date":
+            formatDatetoString(headerInput.loadingDate, 'yyy-MM-dd HH:mm:ss') ??
+            '',
+        "product_name": headerInput.productName,
+        "quantity": (headerInput.quantity ?? 0).toString(),
+        "ships_name": headerInput.shipsName ?? '',
+        "destination": headerInput.destination,
+        "load_port": headerInput.loadPort,
+        "details":
+            headerInput.details
+                .map(
+                  (detail) => {
+                    "id": detail.id,
+                    "id_hdr": detail.idHdr,
+                    "ships_tank": detail.shipsTank ?? '',
+                    "no_police": detail.noPolice ?? '',
+                    "ffa": detail.ffa ?? 0,
+                    "m_and_i": detail.mni ?? 0,
+                    "iv": detail.iv ?? 0,
+                    "lovibond_color_red": detail.lovibondColorRed ?? 0,
+                    "lovibond_color_yellow": detail.lovibondColorYellow ?? 0,
+                    "pv": detail.pv ?? 0,
+                    "other": detail.other ?? '',
+                    "remarks": detail.remark,
+                  },
+                )
+                .toList(),
+      };
 
-  //     String token = await _storageService.readSessionToken() ?? '';
+      String token = await _storageService.readSessionToken() ?? '';
 
-  //     final response = await _apiService.updateReport('Bearer $token', body);
+      final response = await _apiService.updateReport(
+        'Bearer $token',
+        headerInput.id,
+        body,
+      );
 
-  //     if (response != null && response.success == true) {
-  //       notifyListeners();
-  //       return true;
-  //     } else {
-  //       _setErrorMessage('Update report failed.');
-  //       notifyListeners();
-  //       return false;
-  //     }
-  //   } catch (e) {
-  //     _setErrorMessage(e.toString());
-  //     notifyListeners();
-  //     return false;
-  //   } finally {
-  //     _setLoadingInput(false);
-  //     notifyListeners();
-  //   }
-  // }
+      if (response != null && response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage('Update report failed.');
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage(e.toString());
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoadingInput(false);
+      notifyListeners();
+    }
+  }
 
-  // Future<bool> updateApproveRejectReport({
-  //   required String id,
-  //   // required String role,
-  //   required String status,
-  //   required String remarks,
-  // }) async {
-  //   _setLoadingEdit(true);
-  //   _setErrorMessage(null);
-  //   try {
-  //     final body = {"id": id, "approve_status": status, "remark": remarks};
+  Future<bool> updateApproveRejectReport({
+    required String id,
+    // required String role,
+    required String status,
+    required String remarks,
+  }) async {
+    _setLoadingEdit(true);
+    _setErrorMessage(null);
+    try {
+      final body = {"id": id, "status": status, "remarks": remarks};
 
-  //     String token = await _storageService.readSessionToken() ?? '';
-  //     final response = await _apiService.updateApproveRejectReport(
-  //       'Bearer $token',
-  //       body,
-  //     );
+      String token = await _storageService.readSessionToken() ?? '';
+      final response = await _apiService.updateApprovalReport(
+        'Bearer $token',
+        id,
+        body,
+      );
 
-  //     if (response != null && response.success == true) {
-  //       notifyListeners();
-  //       return true;
-  //     } else {
-  //       _setErrorMessage('Update Approve/Reject Report Failed');
-  //       notifyListeners();
-  //       return false;
-  //     }
-  //   } catch (e) {
-  //     _setErrorMessage(e.toString());
-  //     notifyListeners();
-  //     return false;
-  //   } finally {
-  //     _setLoadingEdit(false);
-  //     notifyListeners();
-  //   }
-  // }
+      if (response != null && response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage('Update Approve/Reject Report Failed');
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage(e.toString());
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoadingEdit(false);
+      notifyListeners();
+    }
+  }
 
   void clearReports() {
     _reportList.clear();

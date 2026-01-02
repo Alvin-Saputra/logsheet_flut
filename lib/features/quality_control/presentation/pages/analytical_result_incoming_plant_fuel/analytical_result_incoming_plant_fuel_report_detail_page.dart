@@ -18,7 +18,10 @@ import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class AnalyticalResultIncomingPlantFuelReportDetailPage extends StatefulWidget {
-  AnalyticalResultIncomingPlantFuelReportDetailPage({super.key, required this.data});
+  AnalyticalResultIncomingPlantFuelReportDetailPage({
+    super.key,
+    required this.data,
+  });
 
   final AnalyticalWithReportOfAnalysisHeaderEntity data;
 
@@ -122,143 +125,149 @@ class _AnalyticalResultIncomingPlantFuelReportDetailPageState
                         ],
                       ),
 
-                       if (
-                      (AppRoles.leadQC.contains(
-                          userProvider.currentUser?.role,
-                        )) ||
-                        (AppRoles.qualityControlManagerApproval.contains(
-                          userProvider.currentUser?.role,
-                        )))
-                      CustomSectionCard('Approval Actions', [
-                        if (_data.analytical.preparedStatus == "Approved" &&
-                            _data.analytical.approvedStatus == "Approved") ...[
-                          Text(
-                            "Checklist Approved",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green,
+                      if ((AppRoles.leadQC.contains(
+                            userProvider.currentUser?.role,
+                          )) ||
+                          (AppRoles.qualityControlManagerApproval.contains(
+                            userProvider.currentUser?.role,
+                          )))
+                        CustomSectionCard('Approval Actions', [
+                          if (_data.analytical.preparedStatus == "Approved" &&
+                              _data.analytical.approvedStatus ==
+                                  "Approved") ...[
+                            Text(
+                              "Checklist Approved",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
                             ),
-                          ),
-                        ] else if (_data.analytical.preparedStatus == "Rejected" ||
-                            _data.analytical.approvedStatus == "Rejected") ...[
-                          Text(
-                            "Checklist Rejected",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red,
+                          ] else if (_data.analytical.preparedStatus ==
+                                  "Rejected" ||
+                              _data.analytical.approvedStatus ==
+                                  "Rejected") ...[
+                            Text(
+                              "Checklist Rejected",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                              ),
                             ),
-                          ),
-                        ] else if (AppRoles.leadQC.contains(
-                          userProvider.currentUser?.role,
-                        )) ...[
-                          if (_data.analytical.preparedStatus == null) ...[
-                            Text('Prepared Status:'),
-                            SizedBox(height: 8.0),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0,
-                                      vertical: 8.0,
-                                    ),
-                                    child: ElevatedButton(
-                                      onPressed: () async {
-                                        _showRejectBottomSheet(context);
-                                      },
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: const [
-                                          Text('Reject'),
-                                          Icon(Icons.close),
-                                        ],
+                          ] else if (AppRoles.leadQC.contains(
+                            userProvider.currentUser?.role,
+                          )) ...[
+                            if (_data.analytical.preparedStatus == null) ...[
+                              Text('Prepared Status:'),
+                              SizedBox(height: 8.0),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                        vertical: 8.0,
+                                      ),
+                                      child: ElevatedButton(
+                                        onPressed: () async {
+                                          _showRejectBottomSheet(context);
+                                        },
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: const [
+                                            Text('Reject'),
+                                            Icon(Icons.close),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0,
-                                      vertical: 8.0,
-                                    ),
-                                    child: ElevatedButton(
-                                      onPressed: () async {
-                                        bool isSuccess =
-                                            await _approveRejectReport(
-                                              "Approved",
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                        vertical: 8.0,
+                                      ),
+                                      child: ElevatedButton(
+                                        onPressed: () async {
+                                          bool isSuccess =
+                                              await _approveRejectReport(
+                                                "Approved",
+                                              );
+                                          if (isSuccess) {
+                                            showSnackBar(
+                                              "Berhasil Approve Checklist",
+                                              context,
                                             );
-                                        if (isSuccess) {
-                                          showSnackBar(
-                                            "Berhasil Approve Checklist",
-                                            context,
-                                          );
 
-                                          log("Sukses Approve");
-                                          if (!mounted) return;
-                                          Navigator.of(this.context).pop();
-                                        } else {
-                                          showSnackBar(
-                                            "Gagal Approve Checklist",
-                                            context,
-                                          );
-                                        }
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.green,
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: const [
-                                          Text('Approve'),
-                                          Icon(Icons.check),
-                                        ],
+                                            log("Sukses Approve");
+                                            if (!mounted) return;
+                                            Navigator.of(this.context).pop();
+                                          } else {
+                                            showSnackBar(
+                                              "Gagal Approve Checklist",
+                                              context,
+                                            );
+                                          }
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.green,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: const [
+                                            Text('Approve'),
+                                            Icon(Icons.check),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
+                                ],
+                              ),
+                            ] else if (_data.analytical.preparedStatus !=
+                                    null &&
+                                _data.analytical.approvedStatus == null) ...[
+                              Text(
+                                "Waiting Apprvoal From Manager QC...",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.orange,
                                 ),
-                              ],
-                            ),
-                          ] else if (_data.analytical.preparedStatus != null &&
-                              _data.analytical.approvedStatus == null) ...[
-                            Text(
-                              "Waiting Apprvoal From Manager QC...",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.orange,
                               ),
-                            ),
-                          ],
-                        ] else if (AppRoles.qualityControlManagerApproval
-                            .contains(userProvider.currentUser?.role)) ...[
-                          if (_data.analytical.approvedStatus == null) ...[
-                            Text(
-                              "Waiting Apprvoal From Leader QC...",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.orange,
+                            ],
+                          ] else if (AppRoles.qualityControlManagerApproval
+                              .contains(userProvider.currentUser?.role)) ...[
+                            if (_data.analytical.approvedStatus == null) ...[
+                              Text(
+                                "Waiting Apprvoal From Leader QC...",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.orange,
+                                ),
                               ),
-                            ),
-                          ] else if (_data.analytical.preparedStatus == "Approved" ||
-                              _data.analytical.approvedStatus == "Rejected") ...[
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Text(
-                                  "Checklist Prepared",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.amber,
+                            ] else if (_data.analytical.preparedStatus ==
+                                    "Approved" ||
+                                _data.analytical.approvedStatus ==
+                                    "Rejected") ...[
+                              Row(
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  Text(
+                                    "Checklist Prepared",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.amber,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
+                                ],
+                              ),
+                            ],
                           ],
-                        ],
-                      ]),
+                        ]),
                     ],
                   ),
                 ),
@@ -343,6 +352,8 @@ class _AnalyticalResultIncomingPlantFuelReportDetailPageState
       child: Column(
         children: [
           CustomSectionCard('Analytical Information', [
+            CustomSectionCardData('Company', _data.analytical.company),
+            CustomSectionCardData('Plant', _data.analytical.plant),
             CustomSectionCardData(
               'Date',
               formatDatetoString(_data.analytical.date, 'yyyy-MM-dd') ?? '',
@@ -512,14 +523,14 @@ class _AnalyticalResultIncomingPlantFuelReportDetailPageState
                             .toString() ??
                         '',
                   ),
-                
+
                   CustomSectionCardData(
                     'Specification',
                     widget.data.analytical.details[pageIndex].specification
                             .toString() ??
                         '',
                   ),
-                 
+
                   CustomSectionCardData(
                     'Status',
                     (widget.data.analytical.details[pageIndex].statusOk) == 'y'

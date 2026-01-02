@@ -359,6 +359,8 @@ class _AnalyticalResultIncomingPlantFuelDetailPageState
       child: Column(
         children: [
           CustomSectionCard('Analytical Information', [
+              CustomSectionCardData('Company', _data.analytical.company),
+              CustomSectionCardData('Plant', _data.analytical.plant),
             CustomSectionCardData(
               'Date',
               formatDatetoString(_data.analytical.date, 'yyyy-MM-dd') ?? '',

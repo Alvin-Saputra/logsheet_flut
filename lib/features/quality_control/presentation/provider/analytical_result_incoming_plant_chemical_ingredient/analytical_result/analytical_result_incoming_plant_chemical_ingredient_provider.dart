@@ -125,9 +125,11 @@ class AnalyticalResultIncomingPlantChemicalIngredientProvider
         },
 
         "analytical": {
+          "company": analyticalResultHeaderInput.company,
+          "plant": analyticalResultHeaderInput.plant,
           "material": analyticalResultHeaderInput.material,
           "no_ref_coa": analyticalResultHeaderInput.noRefCoa,
-          "received_quantity": analyticalResultHeaderInput.quantity,
+          "quantity": analyticalResultHeaderInput.quantity,
           "analyst": analyticalResultHeaderInput.analyst,
           "supplier": analyticalResultHeaderInput.supplier,
           "police_no": analyticalResultHeaderInput.policeNo,
@@ -307,7 +309,7 @@ class AnalyticalResultIncomingPlantChemicalIngredientProvider
           ),
           "material": analyticalResultHeaderInput.material,
 
-          "received_quantity": analyticalResultHeaderInput.quantity,
+          "quantity": analyticalResultHeaderInput.quantity,
           "analyst": analyticalResultHeaderInput.analyst,
           "supplier": analyticalResultHeaderInput.supplier,
           "police_no": analyticalResultHeaderInput.policeNo,

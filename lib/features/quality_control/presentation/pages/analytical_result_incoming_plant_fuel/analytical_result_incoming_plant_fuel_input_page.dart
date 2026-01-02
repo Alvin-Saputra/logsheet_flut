@@ -1,4 +1,3 @@
-
 import 'package:expandable_page_view/expandable_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -131,7 +130,7 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
             .where(
               (form) =>
                   form.isMenu ==
-                  "Analytical_Result_Of_Incoming_Material_By_Truck",
+                  "Analytical_Result_of_Out_Going_Shipment_Product_By_Truck",
             )
             .first;
     return AppBar(
@@ -588,6 +587,8 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
       final analyticalHeader = AnalyticalResultIncomingPlantFuelHeaderEntity(
         id: '',
         idRoa: '',
+        company: businessUnit?.buCode ?? '',
+        plant: plant?.code ?? '',
         material: analyticalSelectedMaterial ?? '',
         quantity: parseDouble(quantityController.text) ?? 0,
         analyst: analystController.text,
@@ -710,7 +711,7 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
 
           // 2. Tampilkan pesan
           showSnackBar(
-            "Detail ke-${i + 1} belum lengkap. Basis, Unit, dan Result.",
+            "Detail ke-${i + 1} Report of Analysis belum lengkap.",
             context,
           );
 
@@ -746,7 +747,7 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
 
           // 2. Tampilkan pesan
           showSnackBar(
-            "Detail ke-${i + 1} belum lengkap. Basis, Unit, dan Result.",
+            "Detail ke-${i + 1} Analytical belum lengkap.",
             context,
           );
 

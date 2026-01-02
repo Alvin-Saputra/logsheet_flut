@@ -205,7 +205,7 @@ class _AnalyticalResultIncomingPlantFuelEditPageState
             .where(
               (form) =>
                   form.isMenu ==
-                  "Analytical_Result_Of_Incoming_Material_By_Truck",
+                  "Analytical_Result_of_Out_Going_Shipment_Product_By_Truck",
             )
             .first;
     return AppBar(
@@ -650,6 +650,8 @@ class _AnalyticalResultIncomingPlantFuelEditPageState
       final analyticalHeader = AnalyticalResultIncomingPlantFuelHeaderEntity(
         id: widget.data.analytical.id,
         idRoa: '',
+        company: businessUnit?.buCode ?? '',
+        plant: plant?.code ?? '',
         material: analyticalSelectedMaterial ?? '',
         quantity: parseDouble(quantityController.text) ?? 0,
         analyst: analystController.text,

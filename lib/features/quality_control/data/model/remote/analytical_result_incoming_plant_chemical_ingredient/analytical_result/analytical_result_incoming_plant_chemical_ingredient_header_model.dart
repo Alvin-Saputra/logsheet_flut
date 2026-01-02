@@ -14,6 +14,12 @@ class AnalyticalResultIncomingPlantChemicalIngredientHeaderModel
   @JsonKey(name: 'id_coa')
   final String jsonIdCoa;
 
+  @JsonKey(name: 'company')
+  final String? jsonCompany;
+
+  @JsonKey(name: 'plant')
+  final String? jsonPlant;
+
   @JsonKey(name: 'no_ref_coa')
   final String? jsonNoRefCoa;
 
@@ -103,6 +109,8 @@ class AnalyticalResultIncomingPlantChemicalIngredientHeaderModel
   AnalyticalResultIncomingPlantChemicalIngredientHeaderModel({
     required this.jsonId,
     required this.jsonIdCoa,
+    this.jsonCompany,
+    this.jsonPlant,
     this.jsonNoRefCoa,
     this.jsonMaterial,
     this.jsonQuantity,
@@ -134,6 +142,8 @@ class AnalyticalResultIncomingPlantChemicalIngredientHeaderModel
   }) : super(
          id: jsonId,
          idCoa: jsonIdCoa,
+         company: jsonCompany??'',
+         plant: jsonPlant??'',
          noRefCoa: jsonNoRefCoa,
          material: jsonMaterial,
          quantity: parseDouble(jsonQuantity),

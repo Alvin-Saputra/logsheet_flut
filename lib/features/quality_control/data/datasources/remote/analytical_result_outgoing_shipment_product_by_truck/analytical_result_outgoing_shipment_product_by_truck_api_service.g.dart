@@ -128,6 +128,83 @@ class _AnalyticalResultOutgoingShipmentProductByTruckApiService
     return _value;
   }
 
+  @override
+  Future<UpdateAnalyticalResultOutgoingShipmentProductByTruckResponse>
+  updateReport(String token, String id, Map<String, dynamic> body) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{r'Authorization': token};
+    _headers.removeWhere((k, v) => v == null);
+    final _data = <String, dynamic>{};
+    _data.addAll(body);
+    final _options = _setStreamType<
+      UpdateAnalyticalResultOutgoingShipmentProductByTruckResponse
+    >(
+      Options(method: 'PUT', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/arosptruck/${id}',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late UpdateAnalyticalResultOutgoingShipmentProductByTruckResponse _value;
+    try {
+      _value =
+          UpdateAnalyticalResultOutgoingShipmentProductByTruckResponse.fromJson(
+            _result.data!,
+          );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<
+    UpdateApproveRejectAnalyticalResultOutgoingShipmentProductByTruckResponse
+  >
+  updateApprovalReport(
+    String token,
+    String id,
+    Map<String, dynamic> body,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{r'Authorization': token};
+    _headers.removeWhere((k, v) => v == null);
+    final _data = <String, dynamic>{};
+    _data.addAll(body);
+    final _options = _setStreamType<
+      UpdateApproveRejectAnalyticalResultOutgoingShipmentProductByTruckResponse
+    >(
+      Options(method: 'PUT', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/arosptruck/${id}/approve',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late UpdateApproveRejectAnalyticalResultOutgoingShipmentProductByTruckResponse
+    _value;
+    try {
+      _value =
+          UpdateApproveRejectAnalyticalResultOutgoingShipmentProductByTruckResponse.fromJson(
+            _result.data!,
+          );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
     if (T != dynamic &&
         !(requestOptions.responseType == ResponseType.bytes ||

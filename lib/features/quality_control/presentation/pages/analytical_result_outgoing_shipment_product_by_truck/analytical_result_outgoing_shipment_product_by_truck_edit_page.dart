@@ -21,19 +21,22 @@ import 'package:logsheet_app/features/quality_control/presentation/provider/anal
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class AnalyticalResultOutgoingShipmentProductByTruckInputPage
+class AnalyticalResultOutgoingShipmentProductByTruckEditPage
     extends StatefulWidget {
-  const AnalyticalResultOutgoingShipmentProductByTruckInputPage({super.key});
+  const AnalyticalResultOutgoingShipmentProductByTruckEditPage({
+    super.key,
+    required this.data,
+  });
+
+  final AnalyticalResultOutgoingShipmentProductByTruckHeaderEntity data;
 
   @override
-  State<AnalyticalResultOutgoingShipmentProductByTruckInputPage>
-  createState() =>
-      _AnalyticalResultOutgoingShipmentProductByTruckInputPageState();
+  State<AnalyticalResultOutgoingShipmentProductByTruckEditPage> createState() =>
+      _AnalyticalResultOutgoingShipmentProductByTruckEditPageState();
 }
 
-class _AnalyticalResultOutgoingShipmentProductByTruckInputPageState
-    extends State<AnalyticalResultOutgoingShipmentProductByTruckInputPage> {
-  final _formKey = GlobalKey<FormState>();
+class _AnalyticalResultOutgoingShipmentProductByTruckEditPageState
+    extends State<AnalyticalResultOutgoingShipmentProductByTruckEditPage> {
   DataFormNoEntity? formData;
   String? selectedBpToTank;
   String? selectedProduct;
@@ -53,6 +56,7 @@ class _AnalyticalResultOutgoingShipmentProductByTruckInputPageState
   final TextEditingController pvController = TextEditingController();
   final TextEditingController otherController = TextEditingController();
   final TextEditingController remarkController = TextEditingController();
+
   final TextEditingController loadingDateController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController shipsNameController = TextEditingController();
@@ -71,6 +75,46 @@ class _AnalyticalResultOutgoingShipmentProductByTruckInputPageState
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       // await context.read<ProductProvider>().fetchProducts();
       await context.read<ValueProvider>().fetchOilTypes();
+
+      setState(() {
+        loadingDateController.text =
+            formatDatetoString(widget.data.loadingDate, 'dd-MM-yyyy') ?? '';
+        if (widget.data.productName != null &&
+            widget.data.productName!.isNotEmpty) {
+          selectedProduct = widget.data.productName;
+        } else {
+          selectedProduct = null;
+        }
+        quantityController.text = widget.data.quantity.toString();
+        shipsNameController.text = widget.data.shipsName ?? '';
+        destinationController.text = widget.data.shipsName ?? '';
+        loadPortController.text = widget.data.loadPort ?? '';
+
+        generateDetailRows(widget.data.details.length);
+
+        for (int i = 0; i < widget.data.details.length; i++) {
+          detailControllers[i]['ships_tank_no']?.text =
+              widget.data.details[i].shipsTank ?? '';
+          detailControllers[i]['no_police']?.text =
+              widget.data.details[i].noPolice ?? '';
+          detailControllers[i]['ffa']?.text =
+              widget.data.details[i].ffa.toString();
+          detailControllers[i]['mni']?.text =
+              widget.data.details[i].mni.toString();
+          detailControllers[i]['iv']?.text =
+              widget.data.details[i].iv.toString();
+          detailControllers[i]['lovibond_color_red']?.text =
+              widget.data.details[i].lovibondColorRed.toString();
+          detailControllers[i]['lovibond_color_yellow']?.text =
+              widget.data.details[i].lovibondColorYellow.toString();
+          detailControllers[i]['pv']?.text =
+              widget.data.details[i].pv.toString();
+          detailControllers[i]['other']?.text =
+              widget.data.details[i].other.toString();
+          detailControllers[i]['remark']?.text =
+              widget.data.details[i].remark ?? '';
+        }
+      });
     });
   }
 
@@ -117,122 +161,87 @@ class _AnalyticalResultOutgoingShipmentProductByTruckInputPageState
     return SafeArea(
       child: Stack(
         children: [
-          Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  CustomDateField(
-                    controller: loadingDateController,
-                    label: 'Loading Date',
-                    icon: Icons.event,
-                  ),
-                  SizedBox(height: 8.0),
-                  _productDropdown(
-                    context: context,
-                    selectedValue: selectedProduct,
-                    onChanged: (String? value) {
-                      setState(() {
-                        selectedProduct = value;
-                      });
-                    },
-                  ),
-                  SizedBox(height: 8.0),
-                  CustomTextField(
-                    controller: quantityController,
-                    label: "Quantity",
-                    icon: Icons.storage_rounded,
-                    isRequired: true,
-                  ),
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                CustomDateField(
+                  controller: loadingDateController,
+                  label: 'Loading Date',
+                  icon: Icons.event,
+                ),
+                SizedBox(height: 8.0),
+                _productDropdown(
+                  context: context,
+                  selectedValue: selectedProduct,
+                  onChanged: (String? value) {
+                    setState(() {
+                      selectedProduct = value;
+                    });
+                  },
+                ),
+                SizedBox(height: 8.0),
+                CustomTextField(
+                  controller: quantityController,
+                  label: "Quantity",
+                  icon: Icons.storage_rounded,
+                ),
 
-                  CustomTextField(
-                    controller: shipsNameController,
-                    label: "Ship's Name",
-                    icon: Icons.directions_ferry,
-                    isRequired: true,
-                  ),
+                CustomTextField(
+                  controller: shipsNameController,
+                  label: "Ship's Name",
+                  icon: Icons.directions_ferry,
+                ),
 
-                  CustomTextField(
-                    controller: destinationController,
-                    label: "Destination",
-                    icon: Icons.place_rounded,
-                    isRequired: true,
-                  ),
+                CustomTextField(
+                  controller: destinationController,
+                  label: "Destination",
+                  icon: Icons.place_rounded,
+                ),
 
-                  CustomTextField(
-                    controller: loadPortController,
-                    label: "Load Port",
-                    icon: Icons.pivot_table_chart_rounded,
-                    isRequired: true,
-                  ),
+                CustomTextField(
+                  controller: loadPortController,
+                  label: "Load Port",
+                  icon: Icons.pivot_table_chart_rounded,
+                ),
 
-                  _detailGeneratorSection(),
-                  if (detailControllers.isNotEmpty) _detailFormList(),
+                if (detailControllers.isNotEmpty) _detailFormList(),
 
-                  const SizedBox(height: 24),
-                  Consumer<
+                const SizedBox(height: 24),
+                Consumer<
+                  AnalyticalResultOutgoingShipmentProductByTruckProvider
+                >(
+                  builder: (
+                    BuildContext context,
                     AnalyticalResultOutgoingShipmentProductByTruckProvider
-                  >(
-                    builder: (
-                      BuildContext context,
-                      AnalyticalResultOutgoingShipmentProductByTruckProvider
-                      provider,
-                      Widget? child,
-                    ) {
-                      return (provider.isLoadingInput)
-                          ? Center(child: CircularProgressIndicator())
-                          : CustomSaveButton(
-                            onPressed: () async {
-                              if (!_formKey.currentState!.validate()) {
-                                showSnackBar(
-                                  "Mohon lengkapi semua field",
-                                  context,
-                                );
-                                return;
-                              }
-
-                              if (selectedProduct == null) {
-                                showSnackBar(
-                                  "Material Type wajib dipilih",
-                                  context,
-                                );
-                                return;
-                              }
-
-                              if (loadingDateController.text == "") {
-                                showSnackBar("Tanggal Wajib dipilih", context);
-                                return;
-                              }
-
-                              if (numberOfRows == 0 || numberOfRows == null) {
-                                showSnackBar("Wajib Generate Details", context);
-                                return;
-                              }
-
-                              if (!_validateDetailRows(context)) return;                           
-
-                              final bool isSuccess;
-                              isSuccess = await _insertReport();
-                              if (isSuccess == true) {
-                                showSnackBar(
-                                  "Berhasil menyimpan data",
-                                  this.context,
-                                );
-                                Navigator.of(this.context).pop();
-                              } else {
-                                showSnackBar(
-                                  "Gagal menyimpan data",
-                                  this.context,
-                                );
-                              }
-                            },
-                          );
-                    },
-                  ),
-                ],
-              ),
+                    provider,
+                    Widget? child,
+                  ) {
+                    return (provider.isLoadingInput)
+                        ? Center(child: CircularProgressIndicator())
+                        : CustomSaveButton(
+                          onPressed: () async {
+                            final bool isSuccess;
+                            isSuccess = await _updateReport();
+                            if (isSuccess == true) {
+                              showSnackBar(
+                                "Berhasil menyimpan data",
+                                this.context,
+                              );
+                              Navigator.of(this.context).pop();
+                            } else {
+                              showSnackBar(
+                                "Gagal menyimpan data",
+                                this.context,
+                              );
+                            }
+                          },
+                          label: "Update Data",
+                        );
+                  },
+                ),
+              ],
             ),
           ),
         ],
@@ -345,47 +354,6 @@ class _AnalyticalResultOutgoingShipmentProductByTruckInputPageState
     setState(() {});
   }
 
-  Widget _detailGeneratorSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Berapa detail yang ingin diinput?",
-          style: TextStyle(fontSize: 14),
-        ),
-        SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                width: 80,
-                child: TextField(
-                  keyboardType: TextInputType.number,
-                  onChanged: (v) {
-                    numberOfRows = int.tryParse(v);
-                  },
-                  decoration: InputDecoration(
-                    hintText: "0",
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(width: 12),
-            ElevatedButton(
-              onPressed: () {
-                if (numberOfRows == null || numberOfRows! <= 0) return;
-                generateDetailRows(numberOfRows!);
-              },
-              child: Text("Generate"),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   Widget _detailFormList() {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8),
@@ -444,56 +412,48 @@ class _AnalyticalResultOutgoingShipmentProductByTruckInputPageState
                           label: "Ship's Tank No",
                           icon: Icons.directions_ferry,
                           isNumeric: true,
-                          isRequired: true,
                         ),
                         CustomTextField(
                           controller: row['no_police']!,
                           label: 'No Police',
                           icon: Icons.scoreboard,
                           isNumeric: true,
-                          isRequired: true,
                         ),
                         CustomTextField(
                           controller: row['ffa']!,
                           label: 'FFA (%)',
                           icon: Icons.opacity,
                           isNumeric: true,
-                          isRequired: true,
                         ),
                         CustomTextField(
                           controller: row['mni']!,
                           label: 'M&I (%)',
                           icon: Icons.opacity,
                           isNumeric: true,
-                          isRequired: true,
                         ),
                         CustomTextField(
                           controller: row['iv']!,
                           label: 'IV (grl2/100gr)',
                           icon: Icons.opacity,
                           isNumeric: true,
-                          isRequired: true,
                         ),
                         CustomTextField(
                           controller: row['lovibond_color_red']!,
                           label: 'Lovibond Color Red (R)',
                           icon: Icons.palette,
                           isNumeric: true,
-                          isRequired: true,
                         ),
                         CustomTextField(
                           controller: row['lovibond_color_yellow']!,
                           label: 'Lovibond Color Yellow (Y)',
                           icon: Icons.color_lens_rounded,
                           isNumeric: true,
-                          isRequired: true,
                         ),
                         CustomTextField(
                           controller: row['pv']!,
                           label: 'PV',
                           icon: Icons.opacity,
                           isNumeric: true,
-                          isRequired: true,
                         ),
                         CustomTextField(
                           controller: row['other']!,
@@ -514,18 +474,20 @@ class _AnalyticalResultOutgoingShipmentProductByTruckInputPageState
     );
   }
 
-  Future<bool> _insertReport() async {
+  Future<bool> _updateReport() async {
     final plant = context.read<PlantProvider>().currentPlant;
     final user = context.read<UserProvider>();
     final businessUnit =
         context.read<BusinessUnitProvider>().currentBusinessUnit;
-
     try {
       final detail =
-          detailControllers.map((row) {
+          detailControllers.asMap().entries.map((entry) {
+            final index = entry.key;
+            final row = entry.value;
+            final oldDetail = widget.data.details[index];
             return AnalyticalResultOutgoingShipmentProductByTruckDetailEntity(
-              id: "",
-              idHdr: "",
+              id: oldDetail.id,
+              idHdr: oldDetail.idHdr,
               // String sudah benar menggunakan .text
               shipsTank: row['ships_tank_no']?.text ?? '',
               noPolice: row['no_police']?.text ?? '',
@@ -546,7 +508,7 @@ class _AnalyticalResultOutgoingShipmentProductByTruckInputPageState
           }).toList();
 
       final report = AnalyticalResultOutgoingShipmentProductByTruckHeaderEntity(
-        id: '',
+        id: widget.data.id,
         company: businessUnit?.buCode ?? '',
         plant: plant?.code ?? '',
         loadingDate: changeStringDateFormat(
@@ -583,57 +545,12 @@ class _AnalyticalResultOutgoingShipmentProductByTruckInputPageState
 
       final isSuccess = await context
           .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
-          .insertReport(headerInput: report);
+          .updateReport(headerInput: report);
 
       return isSuccess;
     } catch (e) {
       debugPrint("Error inserting Daily Quality Composite Fractionation: $e");
       return false;
     }
-  }
-
-  bool _validateDetailRows(BuildContext context) {
-    final List<String> mandatoryKeys = [
-      'ships_tank_no',
-      'no_police',
-      'ffa',
-      'mni',
-      'iv',
-      'lovibond_color_red',
-      'lovibond_color_yellow',
-      'pv',
-    ];
-
-    for (int i = 0; i < detailControllers.length; i++) {
-      final row = detailControllers[i];
-      bool isPageValid = true;
-
-      // Cek hanya key yang ada di list mandatoryKeys
-      for (final key in mandatoryKeys) {
-        // Pastikan key ada di map dan text-nya kosong
-        if (row[key] != null && row[key]!.text.trim().isEmpty) {
-          isPageValid = false;
-          break; // Stop loop, halaman ini sudah invalid
-        }
-      }
-
-      if (!isPageValid) {
-        // 1. Pindahkan PageView ke halaman yang error
-        pageControllers.animateToPage(
-          i,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeIn,
-        );
-
-        // 2. Tampilkan pesan
-        showSnackBar(
-          "Detail ke-${i + 1} belum lengkap.",
-          context,
-        );
-
-        return false; // Validasi gagal
-      }
-    }
-    return true; // Validasi sukses
   }
 }

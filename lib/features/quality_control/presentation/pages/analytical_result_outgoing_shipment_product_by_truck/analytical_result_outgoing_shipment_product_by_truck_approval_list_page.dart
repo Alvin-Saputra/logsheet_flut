@@ -7,36 +7,36 @@ import 'package:logsheet_app/core/widgets/custom_date_field.dart';
 import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_approval_detail_page.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_approval_detail_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_approval_detail_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_approval_detail_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_list_detail_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_provider.dart';
 import 'package:provider/provider.dart';
 
 // Dummy model class to simulate your report entity
 
-class AnalyticalResultIncomingPlantFuelApprovalListPage
+class AnalyticalResultOutgoingShipmentProductByTruckApprovalListPage
     extends StatefulWidget {
-  const AnalyticalResultIncomingPlantFuelApprovalListPage({super.key});
+  const AnalyticalResultOutgoingShipmentProductByTruckApprovalListPage({
+    super.key,
+  });
 
   @override
-  State<AnalyticalResultIncomingPlantFuelApprovalListPage>
+  State<AnalyticalResultOutgoingShipmentProductByTruckApprovalListPage>
   createState() =>
-      _AnalyticalResultIncomingPlantFuelApprovalListPageState();
+      _AnalyticalResultOutgoingShipmentProductByTruckApprovalListPageState();
 }
 
-class _AnalyticalResultIncomingPlantFuelApprovalListPageState
-    extends State<AnalyticalResultIncomingPlantFuelApprovalListPage> {
+class _AnalyticalResultOutgoingShipmentProductByTruckApprovalListPageState
+    extends
+        State<AnalyticalResultOutgoingShipmentProductByTruckApprovalListPage> {
   DataFormNoEntity? formData;
   final TextEditingController dateEntryController = TextEditingController();
   @override
   initState() {
     super.initState();
     context
-        .read<AnalyticalResultIncomingPlantFuelProvider>()
+        .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
         .clearReports();
   }
 
@@ -48,10 +48,12 @@ class _AnalyticalResultIncomingPlantFuelApprovalListPageState
         children: [
           _buildFilterSection(context),
           Expanded(
-            child: Consumer<AnalyticalResultIncomingPlantFuelProvider>(
+            child: Consumer<
+              AnalyticalResultOutgoingShipmentProductByTruckProvider
+            >(
               builder: (
                 BuildContext context,
-                AnalyticalResultIncomingPlantFuelProvider provider,
+                AnalyticalResultOutgoingShipmentProductByTruckProvider provider,
                 Widget? child,
               ) {
                 return (provider.isLoading)
@@ -67,16 +69,16 @@ class _AnalyticalResultIncomingPlantFuelApprovalListPageState
                         itemCount: provider.reportList.length,
                         itemBuilder: (context, index) {
                           final item = provider.reportList[index];
-                          log("item.transactionDate: ${item.analytical.date}");
+                          // log("item.transactionDate: ${item.analytical.date}");
                           final formattedDate = DateFormat(
                             'dd-MM-yyyy',
-                          ).format(item.analytical.date ?? DateTime.now());
+                          ).format(item.loadingDate ?? DateTime.now());
                           return _approvalCardItem(
-                            id: item.analytical.id ?? '',
+                            id: item.id ?? '',
                             date: formattedDate,
-                            preparedStatus: item.analytical.preparedStatus ?? '',
-                            approvedStatus: item.analytical.approvedStatus ?? '',
-                            material: item.analytical.material,
+                            preparedStatus: item.correctedStatus ?? '',
+                            approvedStatus: item.approvedStatus ?? '',
+                            material: item.productName,
                           );
                         },
                       ),
@@ -103,10 +105,10 @@ class _AnalyticalResultIncomingPlantFuelApprovalListPageState
     return AppBar(
       title: Text("Approval (${formData!.code})"),
       actions: [
-        Consumer<AnalyticalResultIncomingPlantFuelProvider>(
+        Consumer<AnalyticalResultOutgoingShipmentProductByTruckProvider>(
           builder: (
             BuildContext context,
-            AnalyticalResultIncomingPlantFuelProvider provider,
+            AnalyticalResultOutgoingShipmentProductByTruckProvider provider,
             Widget? child,
           ) {
             return (provider.isLoading)
@@ -115,7 +117,12 @@ class _AnalyticalResultIncomingPlantFuelApprovalListPageState
                   onPressed: () async {
                     final plant =
                         await context.read<PlantProvider>().currentPlant;
-                    await provider.fetchReport(plant?.code ?? '', '');
+                    final formattedDate = changeStringDateFormat(
+                      dateEntryController.text,
+                      'dd-MM-yyyy',
+                      'yyyy-MM-dd',
+                    );
+                    await provider.fetchReport(formattedDate);
                   },
                   icon: Icon(Icons.replay),
                 );
@@ -151,8 +158,10 @@ class _AnalyticalResultIncomingPlantFuelApprovalListPageState
                 final plant = context.read<PlantProvider>().currentPlant;
                 final plantId = plant?.code ?? '';
                 await context
-                    .read<AnalyticalResultIncomingPlantFuelProvider>()
-                    .fetchReport(plantId, formattedDate);
+                    .read<
+                      AnalyticalResultOutgoingShipmentProductByTruckProvider
+                    >()
+                    .fetchReport(formattedDate);
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
               }
@@ -220,15 +229,16 @@ class _AnalyticalResultIncomingPlantFuelApprovalListPageState
             context,
             MaterialPageRoute(
               builder:
-                  (context) =>
-                      AnalyticalResultIncomingPlantFuelApprovalDetailPage(
-                        data: context
-                            .read<
-                              AnalyticalResultIncomingPlantFuelProvider
-                            >()
-                            .reportList
-                            .firstWhere((element) => element.analytical.id == id),
-                      ),
+                  (
+                    context,
+                  ) => AnalyticalResultOutgoingShipmentProductByTruckApprovalDetailPage(
+                    data: context
+                        .read<
+                          AnalyticalResultOutgoingShipmentProductByTruckProvider
+                        >()
+                        .reportList
+                        .firstWhere((element) => element.id == id),
+                  ),
             ),
           ).then((_) async {
             if (!mounted) return;
@@ -239,8 +249,8 @@ class _AnalyticalResultIncomingPlantFuelApprovalListPageState
               'yyyy-MM-dd',
             );
             await context
-                .read<AnalyticalResultIncomingPlantFuelProvider>()
-                .fetchReport(plant?.code ?? '', formattedDate);
+                .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
+                .fetchReport(formattedDate);
           });
         },
         child: Padding(

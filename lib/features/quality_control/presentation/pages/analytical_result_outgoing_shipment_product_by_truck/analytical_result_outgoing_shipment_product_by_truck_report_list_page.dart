@@ -9,43 +9,70 @@ import 'package:logsheet_app/features/master_data/presentation/provider/master/p
 import 'package:logsheet_app/core/widgets/custom_date_field.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_report_detail_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_report_detail_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_input_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_list_detail_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_report_detail_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_provider.dart';
 import 'package:provider/provider.dart';
 
-class AnalyticalResultIncomingPlantFuelReportListPage
+class AnalyticalResultOutgoingShipmentProductByTruckListPage
     extends StatefulWidget {
-  const AnalyticalResultIncomingPlantFuelReportListPage({
-    super.key,
-  });
+  const AnalyticalResultOutgoingShipmentProductByTruckListPage({super.key});
 
   @override
-  State<AnalyticalResultIncomingPlantFuelReportListPage>
-  createState() =>
-      _AnalyticalResultIncomingPlantFuelReportListPageState();
+  State<AnalyticalResultOutgoingShipmentProductByTruckListPage> createState() =>
+      _AnalyticalResultOutgoingShipmentProductByTruckListPageState();
 }
 
-class _AnalyticalResultIncomingPlantFuelReportListPageState
-    extends
-        State<AnalyticalResultIncomingPlantFuelReportListPage> {
+class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
+    extends State<AnalyticalResultOutgoingShipmentProductByTruckListPage> {
   DataFormNoEntity? formData;
 
   final TextEditingController dateEntryController = TextEditingController();
-
   @override
   initState() {
     super.initState();
     context
-        .read<AnalyticalResultIncomingPlantFuelProvider>()
+        .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
         .clearReports();
   }
 
   @override
   Widget build(BuildContext context) {
     final userRole = context.read<UserProvider>().currentUser?.role;
-    return Scaffold(appBar: _buildAppBar(), body: _buildBody(userRole ?? ''));
+    return Scaffold(
+      appBar: _buildAppBar(),
+      body: _buildBody(userRole ?? ''),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      AnalyticalResultOutgoingShipmentProductByTruckInputPage(),
+            ),
+          ).then((_) async {
+            if (!mounted) return;
+
+            final plant = context.read<PlantProvider>().currentPlant;
+            final plantId = plant?.code ?? '';
+            final formattedDate = changeStringDateFormat(
+              dateEntryController.text,
+              'dd-MM-yyyy',
+              'yyyy-MM-dd',
+            );
+            await context
+                .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
+                .fetchReport(formattedDate, purpose: "list", role: userRole);
+          });
+        },
+        label: const Text("Tambah Report"),
+        icon: Icon(Icons.add),
+        backgroundColor: Color(0xFFB91C1C),
+        foregroundColor: Colors.white,
+      ),
+    );
   }
 
   AppBar _buildAppBar() {
@@ -59,7 +86,7 @@ class _AnalyticalResultIncomingPlantFuelReportListPageState
                   "Analytical_Result_of_Out_Going_Shipment_Product_By_Truck",
             )
             .first;
-    return AppBar(title: Text("Report List (${formData!.code})"), actions: [
+    return AppBar(title: Text("List (${formData!.code})"), actions: [
         
       ],
     );
@@ -75,11 +102,11 @@ class _AnalyticalResultIncomingPlantFuelReportListPageState
             child: Builder(
               builder: (context) {
                 return Consumer<
-                  AnalyticalResultIncomingPlantFuelProvider
+                  AnalyticalResultOutgoingShipmentProductByTruckProvider
                 >(
                   builder: (
                     BuildContext context,
-                    AnalyticalResultIncomingPlantFuelProvider
+                    AnalyticalResultOutgoingShipmentProductByTruckProvider
                     provider,
                     Widget? child,
                   ) {
@@ -90,16 +117,13 @@ class _AnalyticalResultIncomingPlantFuelReportListPageState
                         : ListView.builder(
                           itemCount: provider.reportList.length,
                           itemBuilder: (context, index) {
-                            final item = provider.reportList[index].analytical;
+                            final item = provider.reportList[index];
                             return _cardItem(
                               id: item.id ?? '',
-                              date: item.date?.toString() ?? '',
+                              date: item.entryDate?.toString() ?? '',
                               entryBy: item.entryBy ?? '',
-                              tank: item.material,
+                              productName: item.productName,
                               role: role,
-
-                              approvedStatus: item.approvedStatus ?? '',
-                              preparedStatus: item.preparedStatus ?? '',
                             );
                           },
                         );
@@ -140,12 +164,14 @@ class _AnalyticalResultIncomingPlantFuelReportListPageState
                 final plantId = plant?.code ?? '';
                 await context
                     .read<
-                      AnalyticalResultIncomingPlantFuelProvider
+                      AnalyticalResultOutgoingShipmentProductByTruckProvider
                     >()
-                    .fetchReport(plantId, formattedDate);
+                    .fetchReport(formattedDate, purpose: "list", role: role);
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
               }
+
+              // }
             },
             icon: const Icon(Icons.search),
             label: const Text('Cari'),
@@ -166,28 +192,12 @@ class _AnalyticalResultIncomingPlantFuelReportListPageState
   Widget _cardItem({
     required String id,
     required String date,
-    required String? tank,
+    required String? productName,
     required String? entryBy,
     required String? role,
-    required String approvedStatus,
-    required String preparedStatus,
-    Color? badgeColor,
-    String? showedStatus,
   }) {
-    if (preparedStatus == "Approved" && approvedStatus == "Approved") {
-      badgeColor = Colors.green;
-      showedStatus = "Approved";
-    } else if (preparedStatus == "Rejected" || approvedStatus == "Rejected") {
-      badgeColor = Colors.red;
-      showedStatus = "Rejected";
-    } else if (preparedStatus != '') {
-      badgeColor = Colors.orange;
-      showedStatus = "Prepared";
-    } else if (preparedStatus == '') {
-      badgeColor = Colors.blue;
-      showedStatus = "Submitted";
-    }
     return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: () {
         Navigator.push(
           context,
@@ -195,17 +205,18 @@ class _AnalyticalResultIncomingPlantFuelReportListPageState
             builder:
                 (
                   context,
-                ) => AnalyticalResultIncomingPlantFuelReportDetailPage(
+                ) => AnalyticalResultOutgoingShipmentProductByTruckReportDetailPage(
                   data: context
                       .read<
-                        AnalyticalResultIncomingPlantFuelProvider
+                        AnalyticalResultOutgoingShipmentProductByTruckProvider
                       >()
                       .reportList
-                      .firstWhere((element) => element.analytical.id == id),
+                      .firstWhere((element) => element.id == id),
                 ),
           ),
         ).then((_) async {
           if (!mounted) return;
+
           final plant = context.read<PlantProvider>().currentPlant;
           final plantId = plant?.code ?? '';
           final formattedDate = changeStringDateFormat(
@@ -214,8 +225,8 @@ class _AnalyticalResultIncomingPlantFuelReportListPageState
             'yyyy-MM-dd',
           );
           await context
-              .read<AnalyticalResultIncomingPlantFuelProvider>()
-              .fetchReport(plantId, formattedDate);
+              .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
+              .fetchReport(formattedDate, purpose: "list", role: role);
         });
       },
       child: Card(
@@ -241,17 +252,6 @@ class _AnalyticalResultIncomingPlantFuelReportListPageState
                       horizontal: 10,
                       vertical: 4,
                     ),
-                    decoration: BoxDecoration(
-                      color: badgeColor,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '$showedStatus',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                   ),
                 ],
               ),
@@ -276,7 +276,7 @@ class _AnalyticalResultIncomingPlantFuelReportListPageState
                   const Icon(Icons.storage, size: 18, color: Colors.grey),
                   SizedBox(width: 8),
                   Text(
-                    "$tank",
+                    "$productName",
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                   SizedBox(width: 16),
@@ -298,23 +298,6 @@ class _AnalyticalResultIncomingPlantFuelReportListPageState
         ),
       ),
     );
-  }
-
-  String? parseDateTimeForQuery(String? selectedDate) {
-    if (selectedDate == null || selectedDate.isEmpty) return null;
-
-    try {
-      // Step 1: Parse dari format UI
-      final inputFormat = DateFormat('dd-MM-yyyy');
-      final dateTime = inputFormat.parse(selectedDate);
-
-      // Step 2: Ubah ke format yang diinginkan
-      final outputFormat = DateFormat('yyyy-MM-dd');
-      return outputFormat.format(dateTime);
-    } catch (e) {
-      print("Error parsing date: $e");
-      return null;
-    }
   }
 
   String _formatDateString(String? s) {

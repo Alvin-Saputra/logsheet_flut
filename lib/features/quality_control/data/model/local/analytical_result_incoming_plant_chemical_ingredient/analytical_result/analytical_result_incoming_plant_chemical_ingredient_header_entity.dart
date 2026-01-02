@@ -4,6 +4,8 @@ import 'package:logsheet_app/features/quality_control/data/model/local/analytica
 class AnalyticalResultIncomingPlantChemicalIngredientHeaderEntity {
   final String id;
   final String idCoa;
+  final String company;
+  final String plant;
   final DateTime? date;
   final String? noRefCoa;
   final String? material;
@@ -39,6 +41,8 @@ class AnalyticalResultIncomingPlantChemicalIngredientHeaderEntity {
   AnalyticalResultIncomingPlantChemicalIngredientHeaderEntity({
     required this.id,
     required this.idCoa,
+    required this.company, 
+    required this.plant,
     required this.noRefCoa,
     required this.material,
     required this.quantity,

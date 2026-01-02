@@ -13,6 +13,12 @@ class AnalyticalResultIncomingPlantFuelHeaderModel
   @JsonKey(name: 'id_roa')
   final String jsonIdCoa;
 
+  @JsonKey(name: 'company')
+  final String? jsonCompany;
+
+  @JsonKey(name: 'plant')
+  final String? jsonPlant;
+
   @JsonKey(name: 'date')
   final String? jsonDate;
 
@@ -86,6 +92,8 @@ class AnalyticalResultIncomingPlantFuelHeaderModel
   AnalyticalResultIncomingPlantFuelHeaderModel({
     required this.jsonId,
     required this.jsonIdCoa,
+    this.jsonCompany,
+    this.jsonPlant,
     this.jsonMaterial,
     this.jsonQuantity,
     this.jsonAnalyst,
@@ -112,6 +120,8 @@ class AnalyticalResultIncomingPlantFuelHeaderModel
   }) : super(
          id: jsonId,
          idRoa: jsonIdCoa,
+         company: jsonCompany ?? '',
+         plant: jsonPlant ?? '',
          material: jsonMaterial,
          date: formatStringtoDate(jsonDate ?? '', 'yyyy-MM-dd'),
          quantity: parseDouble(jsonQuantity),

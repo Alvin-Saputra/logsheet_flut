@@ -98,6 +98,8 @@ class _AnalyticalResultIncomingPlantChemicalIngredientEditPageState
     'PORE VOLUME',
   ];
 
+  late AnalyticalWithCertificateOfAnalysisHeaderEntity updatedData;
+
   @override
   void initState() {
     super.initState();
@@ -325,7 +327,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientEditPageState
 
                           if (isSuccess) {
                             showSnackBar("Berhasil menyimpan data", context);
-                            Navigator.of(context).pop();
+                            Navigator.of(context).pop(updatedData);
                           } else {
                             showSnackBar("Gagal menyimpan data", context);
                           }
@@ -823,6 +825,8 @@ class _AnalyticalResultIncomingPlantChemicalIngredientEditPageState
           AnalyticalResultIncomingPlantChemicalIngredientHeaderEntity(
             id: widget.data.analytical.id,
             idCoa: widget.data.analytical.idCoa,
+            company: businessUnit?.buCode ?? '',
+            plant: plant?.code ?? '',
             noRefCoa: noDocController.text,
             material: analyticalSelectedMaterial,
             quantity: parseDouble(quantityController.text),
@@ -903,6 +907,11 @@ class _AnalyticalResultIncomingPlantChemicalIngredientEditPageState
             certificateOfAnalysisHeaderInput: coaHeader,
             analyticalResultHeaderInput: analyticalHeader,
           );
+
+      updatedData = AnalyticalWithCertificateOfAnalysisHeaderEntity(
+        analytical: analyticalHeader,
+        coa: coaHeader,
+      );
 
       return isSuccess;
 

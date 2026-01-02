@@ -11,6 +11,8 @@ _$AnalyticalResultOutgoingShipmentProductByTruckHeaderModelFromJson(
   Map<String, dynamic> json,
 ) => AnalyticalResultOutgoingShipmentProductByTruckHeaderModel(
   jsonId: json['id'] as String,
+  jsonCompany: json['company'] as String?,
+  jsonPlant: json['plant'] as String?,
   jsonLoadingDate: json['loading_date'] as String?,
   jsonProductName: json['product_name'] as String?,
   jsonQuantity: json['quantity'] as String?,
@@ -49,6 +51,8 @@ _$AnalyticalResultOutgoingShipmentProductByTruckHeaderModelToJson(
   AnalyticalResultOutgoingShipmentProductByTruckHeaderModel instance,
 ) => <String, dynamic>{
   'id': instance.jsonId,
+  'company': instance.jsonCompany,
+  'plant': instance.jsonPlant,
   'loading_date': instance.jsonLoadingDate,
   'product_name': instance.jsonProductName,
   'quantity': instance.jsonQuantity,

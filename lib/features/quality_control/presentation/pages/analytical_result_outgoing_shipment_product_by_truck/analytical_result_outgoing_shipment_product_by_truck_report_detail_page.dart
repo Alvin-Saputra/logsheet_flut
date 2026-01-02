@@ -5,25 +5,20 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
-import 'package:logsheet_app/core/widgets/custom_confirmation_dialog.dart';
 import 'package:logsheet_app/core/widgets/custom_info_card.dart';
 import 'package:logsheet_app/core/widgets/custom_section_card.dart';
 import 'package:logsheet_app/core/widgets/custom_section_card_data.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_header_entity.dart';
 import 'package:logsheet_app/core/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_header_entity.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_edit_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_edit_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class AnalyticalResultOutgoingShipmentProductByTruckListDetailPage
+class AnalyticalResultOutgoingShipmentProductByTruckReportDetailPage
     extends StatefulWidget {
-  AnalyticalResultOutgoingShipmentProductByTruckListDetailPage({
+  AnalyticalResultOutgoingShipmentProductByTruckReportDetailPage({
     super.key,
     required this.data,
   });
@@ -31,14 +26,14 @@ class AnalyticalResultOutgoingShipmentProductByTruckListDetailPage
   final AnalyticalResultOutgoingShipmentProductByTruckHeaderEntity data;
 
   @override
-  State<AnalyticalResultOutgoingShipmentProductByTruckListDetailPage>
+  State<AnalyticalResultOutgoingShipmentProductByTruckReportDetailPage>
   createState() =>
-      _AnalyticalResultOutgoingShipmentProductByTruckListDetailPageState();
+      _AnalyticalResultOutgoingShipmentProductByTruckReportDetailPageState();
 }
 
-class _AnalyticalResultOutgoingShipmentProductByTruckListDetailPageState
+class _AnalyticalResultOutgoingShipmentProductByTruckReportDetailPageState
     extends
-        State<AnalyticalResultOutgoingShipmentProductByTruckListDetailPage> {
+        State<AnalyticalResultOutgoingShipmentProductByTruckReportDetailPage> {
   final TextEditingController remarkController = TextEditingController();
   final PageController detailPageControllers = PageController();
   late AnalyticalResultOutgoingShipmentProductByTruckHeaderEntity _data;
@@ -410,75 +405,6 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListDetailPageState
       ),
       centerTitle: true,
       iconTheme: const IconThemeData(color: Colors.black),
-      actions: [
-        if (_data?.correctedStatus == null)
-          IconButton(
-            onPressed: () async {
-              final result = await Navigator.push<
-                AnalyticalResultOutgoingShipmentProductByTruckHeaderEntity
-              >(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (context) =>
-                          AnalyticalResultOutgoingShipmentProductByTruckEditPage(
-                            data: _data,
-                          ),
-                ),
-              );
-
-              if (!mounted) return;
-
-              if (result != null) {
-                setState(() {
-                  _data = result;
-                });
-              }
-            },
-            icon: const Icon(Icons.edit),
-          ),
-
-        IconButton(
-          onPressed: () async {
-            final provider =
-                context
-                    .read<
-                      AnalyticalResultOutgoingShipmentProductByTruckProvider
-                    >();
-
-            customConfirmationDialog(
-              context: context,
-              title: 'Delete Report',
-              message:
-                  'Are you sure you want to delete this report? This action cannot be undone.',
-              onConfirm: () async {
-                final success = await provider.deleteReport(id: _data.id ?? '');
-
-                if (!context.mounted) return false;
-
-                if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Report deleted successfully.'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                  Navigator.of(context).pop(); // tutup halaman detail
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Failed to delete report.'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-                return success;
-              },
-            );
-          },
-          icon: const Icon(Icons.delete_rounded, color: Colors.red),
-        ),
-      ],
     );
   }
 

@@ -12,6 +12,8 @@ _$AnalyticalResultIncomingPlantChemicalIngredientHeaderModelFromJson(
 ) => AnalyticalResultIncomingPlantChemicalIngredientHeaderModel(
   jsonId: json['id'] as String,
   jsonIdCoa: json['id_coa'] as String,
+  jsonCompany: json['company'] as String?,
+  jsonPlant: json['plant'] as String?,
   jsonNoRefCoa: json['no_ref_coa'] as String?,
   jsonMaterial: json['material'] as String?,
   jsonQuantity: json['quantity'] as String?,
@@ -56,6 +58,8 @@ _$AnalyticalResultIncomingPlantChemicalIngredientHeaderModelToJson(
 ) => <String, dynamic>{
   'id': instance.jsonId,
   'id_coa': instance.jsonIdCoa,
+  'company': instance.jsonCompany,
+  'plant': instance.jsonPlant,
   'no_ref_coa': instance.jsonNoRefCoa,
   'date': instance.jsonDate,
   'material': instance.jsonMaterial,

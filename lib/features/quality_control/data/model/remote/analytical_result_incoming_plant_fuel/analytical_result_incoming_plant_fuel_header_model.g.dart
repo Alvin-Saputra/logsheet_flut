@@ -12,6 +12,8 @@ _$AnalyticalResultIncomingPlantFuelHeaderModelFromJson(
 ) => AnalyticalResultIncomingPlantFuelHeaderModel(
   jsonId: json['id'] as String,
   jsonIdCoa: json['id_roa'] as String,
+  jsonCompany: json['company'] as String?,
+  jsonPlant: json['plant'] as String?,
   jsonMaterial: json['material'] as String?,
   jsonQuantity: json['quantity'] as String?,
   jsonAnalyst: json['analyst'] as String?,
@@ -49,6 +51,8 @@ Map<String, dynamic> _$AnalyticalResultIncomingPlantFuelHeaderModelToJson(
 ) => <String, dynamic>{
   'id': instance.jsonId,
   'id_roa': instance.jsonIdCoa,
+  'company': instance.jsonCompany,
+  'plant': instance.jsonPlant,
   'date': instance.jsonDate,
   'material': instance.jsonMaterial,
   'quantity': instance.jsonQuantity,

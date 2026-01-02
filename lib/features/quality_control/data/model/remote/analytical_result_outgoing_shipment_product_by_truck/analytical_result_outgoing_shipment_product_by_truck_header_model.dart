@@ -11,6 +11,12 @@ class AnalyticalResultOutgoingShipmentProductByTruckHeaderModel
   @JsonKey(name: 'id')
   final String jsonId;
 
+  @JsonKey(name: 'company')
+  final String? jsonCompany;
+
+  @JsonKey(name: 'plant')
+  final String? jsonPlant;
+
   @JsonKey(name: 'loading_date')
   final String? jsonLoadingDate;
 
@@ -79,11 +85,14 @@ class AnalyticalResultOutgoingShipmentProductByTruckHeaderModel
 
   // List Detail (Model)
   @JsonKey(name: 'details')
-  final List<AnalyticalResultOutgoingShipmentProductByTruckDetailModel>? jsonDetail;
+  final List<AnalyticalResultOutgoingShipmentProductByTruckDetailModel>?
+  jsonDetail;
 
   AnalyticalResultOutgoingShipmentProductByTruckHeaderModel({
     // this.jsonDetail,
     required this.jsonId,
+    this.jsonCompany,
+    this.jsonPlant,
     this.jsonLoadingDate,
     this.jsonProductName,
     this.jsonQuantity,
@@ -108,31 +117,36 @@ class AnalyticalResultOutgoingShipmentProductByTruckHeaderModel
     this.jsonRevisionDate,
     this.jsonDetail,
   }) : super(
-    id: jsonId,
-    loadingDate: formatStringtoDate(jsonLoadingDate ?? '', 'yyyy-MM-dd'),
-    productName: jsonProductName,
-    quantity: parseDouble(jsonQuantity),
-    shipsName: jsonShipsName,
-    destination: jsonDestination,
-    loadPort: jsonLoadPort,
-    entryBy: jsonEntryBy,
-    entryDate: formatStringtoDate(jsonEntryDate ?? '', 'yyyy-MM-dd'),
-    correctedBy: jsonCorrectedBy,
-    correctedDate: formatStringtoDate(jsonCorrectedDate ?? '', 'yyyy-MM-dd'),
-    correctedStatus: jsonCorrectedStatus,
-    correctedStatusRemarks: jsonCorrectedStatusRemarks,
-    approvedBy: jsonApprovedBy,
-    approvedDate:  formatStringtoDate(jsonApprovedDate ?? '', 'yyyy-MM-dd'),
-    approvedStatus: jsonApprovedStatus,
-    approvedStatusRemarks: jsonApprovedStatusRemarks,
-    updatedBy: jsonUpdatedBy,
-    updatedDate:  formatStringtoDate(jsonUpdatedDate?? '', 'yyyy-MM-dd'),
-    formNo: jsonFormNo,
-    dateIssued:  formatStringtoDate(jsonDateIssued?? '', 'yyyy-MM-dd'),
-    revisionNo: jsonRevisionNo.toString(),
-    revisionDate:  formatStringtoDate(jsonRevisionDate ?? '', 'yyyy-MM-dd'),
-    details: jsonDetail??[],
-  );
+         id: jsonId,
+         company: jsonCompany ?? '',
+         plant: jsonPlant ?? '',
+         loadingDate: formatStringtoDate(jsonLoadingDate ?? '', 'yyyy-MM-dd'),
+         productName: jsonProductName,
+         quantity: parseDouble(jsonQuantity),
+         shipsName: jsonShipsName,
+         destination: jsonDestination,
+         loadPort: jsonLoadPort,
+         entryBy: jsonEntryBy,
+         entryDate: formatStringtoDate(jsonEntryDate ?? '', 'yyyy-MM-dd'),
+         correctedBy: jsonCorrectedBy,
+         correctedDate: formatStringtoDate(
+           jsonCorrectedDate ?? '',
+           'yyyy-MM-dd',
+         ),
+         correctedStatus: jsonCorrectedStatus,
+         correctedStatusRemarks: jsonCorrectedStatusRemarks,
+         approvedBy: jsonApprovedBy,
+         approvedDate: formatStringtoDate(jsonApprovedDate ?? '', 'yyyy-MM-dd'),
+         approvedStatus: jsonApprovedStatus,
+         approvedStatusRemarks: jsonApprovedStatusRemarks,
+         updatedBy: jsonUpdatedBy,
+         updatedDate: formatStringtoDate(jsonUpdatedDate ?? '', 'yyyy-MM-dd'),
+         formNo: jsonFormNo,
+         dateIssued: formatStringtoDate(jsonDateIssued ?? '', 'yyyy-MM-dd'),
+         revisionNo: jsonRevisionNo.toString(),
+         revisionDate: formatStringtoDate(jsonRevisionDate ?? '', 'yyyy-MM-dd'),
+         details: jsonDetail ?? [],
+       );
 
   factory AnalyticalResultOutgoingShipmentProductByTruckHeaderModel.fromJson(
     Map<String, dynamic> json,

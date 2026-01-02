@@ -43,6 +43,7 @@ import 'package:logsheet_app/features/quality_control/presentation/pages/analyti
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_input_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_report_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_input_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_approval_list_page.dart';
@@ -91,7 +92,8 @@ class _UserHomePageState extends State<UserHomePage> {
       formAnalyticalResultIncomingMaterialByVessel,
       formAnalyticalResultIncomingMaterialByTruck,
       formAnalyticalResultIncomingPlantChemicalIngredient,
-      formAnalyticalResultIncomingPlantFuel;
+      formAnalyticalResultIncomingPlantFuel,
+      formAnalyticalResultOutgoingShipmentProductByTruck;
 
   Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
@@ -407,6 +409,17 @@ class _UserHomePageState extends State<UserHomePage> {
                   form.isActive == "T",
             )
             .first;
+    formAnalyticalResultOutgoingShipmentProductByTruck =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu ==
+                      "Analytical_Result_of_Out_Going_Shipment_Product_By_Truck" &&
+                  form.isActive == "T",
+            )
+            .first;
 
     // Daily_Production_Refinery_Fractination
     final userRole = widget.userEntity.role;
@@ -477,7 +490,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.21"), Text("Build 2025-12-30")],
+              children: [Text("Version 1.0.23"), Text("Build 2026-01-02")],
             ),
           ],
         ),
@@ -1032,7 +1045,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 _buildDrawerItem(
                   icon: Icons.list_alt,
                   title:
-                      'Report \n(${formAnalyticalResultIncomingPlantChemicalIngredient?.code})',
+                      'Report \n(${formAnalyticalResultIncomingPlantFuel?.code})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -1052,7 +1065,7 @@ class _UserHomePageState extends State<UserHomePage> {
               leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
               title: Text(
                 // 'Analytical Result Of Incoming Plant Chemical/Ingredient (F/QCO-010)\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
-                'Analytical Result Of Outgoing Shipment Product By Truck  \n(${formAnalyticalResultIncomingPlantFuel?.code})',
+                'Analytical Result Of Outgoing Shipment Product By Truck  \n(${formAnalyticalResultOutgoingShipmentProductByTruck?.code})',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -1065,7 +1078,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 _buildDrawerItem(
                   icon: Icons.list_alt,
                   title:
-                      'List \n(${formAnalyticalResultIncomingPlantFuel?.code})',
+                      'List \n(${formAnalyticalResultOutgoingShipmentProductByTruck?.code})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -1079,10 +1092,12 @@ class _UserHomePageState extends State<UserHomePage> {
                   },
                 ),
 
+                
+
                 _buildDrawerItem(
                   icon: Icons.list_alt,
                   title:
-                      'Approval \n(${formAnalyticalResultIncomingPlantFuel?.code})',
+                      'Approval \n(${formAnalyticalResultOutgoingShipmentProductByTruck?.code})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -1090,7 +1105,7 @@ class _UserHomePageState extends State<UserHomePage> {
                         builder:
                             (_) =>
                                 // ParentAnalyticalResultIncomingPlantChemicalIngredient()
-                                AnalyticalResultIncomingPlantFuelApprovalListPage(),
+                                AnalyticalResultOutgoingShipmentProductByTruckApprovalListPage(),
                       ),
                     );
                   },
@@ -1099,7 +1114,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 _buildDrawerItem(
                   icon: Icons.list_alt,
                   title:
-                      'Report \n(${formAnalyticalResultIncomingPlantChemicalIngredient?.code})',
+                      'Report \n(${formAnalyticalResultOutgoingShipmentProductByTruck?.code})',
                   onTap: () {
                     Navigator.push(
                       context,

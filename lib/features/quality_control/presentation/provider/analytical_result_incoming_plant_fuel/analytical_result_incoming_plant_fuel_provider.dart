@@ -137,6 +137,8 @@ class AnalyticalResultIncomingPlantFuelProvider with ChangeNotifier {
         },
 
         "analytical": {
+          "company": analyticalResultHeaderInput.company,
+          "plant": analyticalResultHeaderInput.plant,
           "date": formatDatetoString(
             analyticalResultHeaderInput.date ?? DateTime.now(),
             'yyyy-MM-dd HH:mm:ss',
@@ -221,9 +223,11 @@ class AnalyticalResultIncomingPlantFuelProvider with ChangeNotifier {
 
         // PERBAIKAN: Gunakan List.from untuk keamanan tipe data
         if (purpose == "list" && AppRoles.leadQC.contains(role)) {
-          _reportList = (data ?? []).where((report) => report.analytical.preparedStatus == null).toList();
-        } 
-        else {
+          _reportList =
+              (data ?? [])
+                  .where((report) => report.analytical.preparedStatus == null)
+                  .toList();
+        } else {
           _reportList = data ?? [];
         }
 
