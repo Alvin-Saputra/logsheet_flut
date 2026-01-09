@@ -8,6 +8,10 @@ import 'package:logsheet_app/core/theme/app_theme.dart';
 import 'package:logsheet_app/features/auth/presentation/provider/auth_provider.dart';
 import 'package:logsheet_app/features/daily_production/data/repository/daily_production/daily_production_fractionation_repository.dart';
 import 'package:logsheet_app/features/daily_production/data/repository/daily_production/daily_production_refinery_repository.dart';
+import 'package:logsheet_app/features/master_data/data/datasources/master/cryztallizer_mysql_service.dart';
+import 'package:logsheet_app/features/master_data/data/model/master/crystallizer_entity.dart';
+import 'package:logsheet_app/features/master_data/data/repository/master/crystallizer_repository.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/crystallizer_provider.dart';
 import 'package:logsheet_app/features/production/data/repository/dry_fractionation/dry_fractionation_repository.dart';
 import 'package:logsheet_app/features/production/data/repository/logsheet/deodorizing_filtration_repository.dart';
 import 'package:logsheet_app/features/production/data/repository/logsheet/pretreatment_bleaching_filtration_repository.dart';
@@ -114,7 +118,7 @@ void main() async {
   final analyticalResultIncomingPlantFuelApiService =
       AnalyticalResultIncomingPlantFuelApiService(dioClient.dio);
 
-      final analyticalResultOutgoingShipmentProductByTruckApiService =
+  final analyticalResultOutgoingShipmentProductByTruckApiService =
       AnalyticalResultOutgoingShipmentProductByTruckApiService(dioClient.dio);
 
   runApp(
@@ -134,6 +138,11 @@ void main() async {
         Provider<ProductMySQLService>(
           create: (context) => ProductMySQLService(),
         ),
+
+        Provider<CrystallizerMySQLService>(
+          create: (context) => CrystallizerMySQLService(),
+        ),
+
         // Provide Quality Report QC MySQL Service
         Provider<QualityReportQCMySQLService>(
           create: (context) => QualityReportQCMySQLService(),
@@ -223,6 +232,14 @@ void main() async {
               (context) =>
                   ProductRepository(context.read<ProductMySQLService>()),
         ),
+
+        Provider<CrystallizerRepository>(
+          create:
+              (context) => CrystallizerRepository(
+                context.read<CrystallizerMySQLService>(),
+              ),
+        ),
+
         // Provide Quality Report QC Repository
         Provider<QualityReportQCRepository>(
           create:
@@ -349,6 +366,12 @@ void main() async {
         ChangeNotifierProvider(
           create:
               (context) => ProductProvider(context.read<ProductRepository>()),
+        ),
+
+        ChangeNotifierProvider(
+          create:
+              (context) =>
+                  CrystallizerProvider(context.read<CrystallizerRepository>()),
         ),
         // Provide Quality Report QC Provider
         ChangeNotifierProvider(
@@ -481,12 +504,13 @@ void main() async {
               ),
         ),
 
-          ChangeNotifierProvider(
+        ChangeNotifierProvider(
           create:
-              (context) => AnalyticalResultOutgoingShipmentProductByTruckProvider(
-                analyticalResultOutgoingShipmentProductByTruckApiService,
-                storageService,
-              ),
+              (context) =>
+                  AnalyticalResultOutgoingShipmentProductByTruckProvider(
+                    analyticalResultOutgoingShipmentProductByTruckApiService,
+                    storageService,
+                  ),
         ),
 
         //Provide Business Unit DAO

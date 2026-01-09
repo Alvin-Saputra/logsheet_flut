@@ -91,7 +91,7 @@ class DailyProductionFractionationProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> insertTicket(DailyProductionFractionationEntity entity) async {
+  Future<bool> insertTicket(List<DailyProductionFractionationEntity> entity) async {
     _setLoading(false);
     _setErrorMessage(null);
 
@@ -113,7 +113,7 @@ class DailyProductionFractionationProvider with ChangeNotifier {
     } catch (e) {
       _setLoading(false);
       _setErrorMessage('Failed to insert report: $e');
-      return false;
+      rethrow;
     }
   }
 
@@ -192,8 +192,11 @@ class DailyProductionFractionationProvider with ChangeNotifier {
       _setLoading(false);
       log('Daily Prod Refinery List length: ${_reportsList.length}');
     } catch (e) {
+      
       _setErrorMessage('Failed to fetch Daily Production Refinery: $e');
       _setLoading(false);
+     
+      
     }
   }
 
@@ -217,7 +220,7 @@ class DailyProductionFractionationProvider with ChangeNotifier {
   }
 
   Future<bool> updateReport(
-    DailyProductionFractionationEntity report,
+    List<DailyProductionFractionationEntity> report,
     String username,
     String role,
     String plantCode,

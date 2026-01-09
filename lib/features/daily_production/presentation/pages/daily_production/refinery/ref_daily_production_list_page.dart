@@ -217,6 +217,25 @@ class _DailyProductionRefineryListPageState
                                 ),
                               ),
                             ),
+
+
+                              Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: report.isCompleted == false ? Colors.green : Colors.red,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                _getIsCompletedStatus(report),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                         const Divider(height: 16),
@@ -352,6 +371,14 @@ class _DailyProductionRefineryListPageState
       return "Rejected";
     }
     return "Submitted";
+  }
+
+  String _getIsCompletedStatus(DailyProductionRefineryEntity report) {
+    if (report.isCompleted == true) {
+      return "Close";
+    } else {
+      return "Open";
+    }
   }
 
   Color _getStatusColor(DailyProductionRefineryEntity report) {

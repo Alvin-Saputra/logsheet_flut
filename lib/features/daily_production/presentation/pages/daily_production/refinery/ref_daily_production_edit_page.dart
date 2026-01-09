@@ -111,6 +111,8 @@ class _RefDailyProductionEditPageState
   final TextEditingController bleachingTypeController = TextEditingController();
   final TextEditingController bleachingBatchController =
       TextEditingController();
+  final TextEditingController bleachingYieldPercentController =
+      TextEditingController();
   // Phosphoric Acid
   String? selectedShiftPhosphoric;
   bool ref500Phosphoric = false;
@@ -130,6 +132,8 @@ class _RefDailyProductionEditPageState
 
   // Section 6: Remarks
   final TextEditingController remarksController = TextEditingController();
+
+  bool? isTicketcomplete = false;
 
   @override
   void initState() {
@@ -617,6 +621,7 @@ class _RefDailyProductionEditPageState
                   bleachingBagController: bleachingBagController,
                   bleachingTypeController: bleachingTypeController,
                   bleachingBatchController: bleachingBatchController,
+                  bleachingBatchYieldPercent: bleachingYieldPercentController,
                   ref500Bleaching: ref500Bleaching,
                   ref150Bleaching: ref150Bleaching,
                   phosphoricWeightController:
@@ -739,6 +744,17 @@ class _RefDailyProductionEditPageState
               ),
               const SizedBox(height: 24),
 
+              CheckboxListTile(
+                value: isTicketcomplete ?? false,
+                title: const Text("Ticket Selesai"),
+                onChanged: (value) {
+                  setState(() {
+                    isTicketcomplete = value;
+                  });
+                },
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
+
               // --- Submit Button ---
               CustomSaveButton(
                 onPressed:
@@ -795,42 +811,37 @@ class _RefDailyProductionEditPageState
 
     if (entity.workCenter == "REF-01") {
       flowmeter1AwalController.text =
-          ((entity.oilTypeRmAwalFlowmeter ?? 0.0) * 1000).toString();
+          entity.oilTypeRmAwalFlowmeter != null ? ((entity.oilTypeRmAwalFlowmeter! * 1000).toString()) : '';
       flowmeter1AkhirController.text =
-          ((entity.oilTypeRmAkhirFlowmeter ?? 0.0) * 1000).toString();
+          entity.oilTypeRmAkhirFlowmeter != null ? ((entity.oilTypeRmAkhirFlowmeter! * 1000).toString()) : '';
 
       flowmeter2AwalController.text =
-          ((entity.oilTypeFgAwalFlowmeter ?? 0.0) * 1000).toString();
+          entity.oilTypeFgAwalFlowmeter != null ? ((entity.oilTypeFgAwalFlowmeter! * 1000).toString()) : '';
       flowmeter2AkhirController.text =
-          ((entity.oilTypeFgAkhirFlowmeter ?? 0.0) * 1000).toString();
-
-      flowmeter2AwalController.text =
-          ((entity.oilTypeFgAwalFlowmeter ?? 0.0) * 1000).toString();
-      flowmeter2AkhirController.text =
-          ((entity.oilTypeFgAkhirFlowmeter ?? 0.0) * 1000).toString();
+          entity.oilTypeFgAkhirFlowmeter != null ? ((entity.oilTypeFgAkhirFlowmeter! * 1000).toString()) : '';
 
       flowmeter3AwalController.text =
-          ((entity.bpAwalFlowmeter ?? 0.0) * 1000).toString();
+          entity.bpAwalFlowmeter != null ? ((entity.bpAwalFlowmeter! * 1000).toString()) : '';
       flowmeter3AkhirController.text =
-          ((entity.bpAkhirFlowmeter ?? 0.0) * 1000).toString();
+          entity.bpAkhirFlowmeter != null ? ((entity.bpAkhirFlowmeter! * 1000).toString()) : '';
     } else {
+      // Gunakan tanda tanya (?) sebelum toString()
       flowmeter1AwalController.text =
-          (entity.oilTypeRmAwalFlowmeter).toString();
+          entity.oilTypeRmAwalFlowmeter?.toString() ?? '';
+
       flowmeter1AkhirController.text =
-          (entity.oilTypeRmAkhirFlowmeter).toString();
+          entity.oilTypeRmAkhirFlowmeter?.toString() ?? '';
 
       flowmeter2AwalController.text =
-          (entity.oilTypeFgAwalFlowmeter).toString();
-      flowmeter2AkhirController.text =
-          (entity.oilTypeFgAkhirFlowmeter).toString();
+          entity.oilTypeFgAwalFlowmeter?.toString() ?? '';
 
-      flowmeter2AwalController.text =
-          (entity.oilTypeFgAwalFlowmeter).toString();
       flowmeter2AkhirController.text =
-          (entity.oilTypeFgAkhirFlowmeter).toString();
+          entity.oilTypeFgAkhirFlowmeter?.toString() ?? '';
 
-      flowmeter3AwalController.text = (entity.bpAwalFlowmeter).toString();
-      flowmeter3AkhirController.text = (entity.bpAkhirFlowmeter).toString();
+      flowmeter3AwalController.text = entity.bpAwalFlowmeter?.toString() ?? '';
+
+      flowmeter3AkhirController.text =
+          entity.bpAkhirFlowmeter?.toString() ?? '';
     }
 
     // Section 4: Auxiliary Material
@@ -926,14 +937,14 @@ class _RefDailyProductionEditPageState
     double? flow1Awal, flow1Akhir, flow2Awal, flow2Akhir, flow3Awal, flow3Akhir;
 
     if (selectedRefineryMachine == "REF-01") {
-      flow1Awal = parseDouble(flowmeter1AwalController)! / 1000;
-      flow1Akhir = parseDouble(flowmeter1AkhirController)! / 1000;
+      flow1Awal = (parseDouble(flowmeter1AwalController) ?? 0) / 1000;
+      flow1Akhir = (parseDouble(flowmeter1AkhirController) ?? 0) / 1000;
 
-      flow2Awal = parseDouble(flowmeter2AwalController)! / 1000;
-      flow2Akhir = parseDouble(flowmeter2AkhirController)! / 1000;
+      flow2Awal = (parseDouble(flowmeter2AwalController) ?? 0) / 1000;
+      flow2Akhir = (parseDouble(flowmeter2AkhirController) ?? 0) / 1000;
 
-      flow3Awal = parseDouble(flowmeter3AwalController)! / 1000;
-      flow3Akhir = parseDouble(flowmeter3AkhirController)! / 1000;
+      flow3Awal = (parseDouble(flowmeter3AwalController) ?? 0) / 1000;
+      flow3Akhir = (parseDouble(flowmeter3AkhirController) ?? 0) / 1000;
     } else {
       flow1Awal = parseDouble(flowmeter1AwalController);
       flow1Akhir = parseDouble(flowmeter1AkhirController);
@@ -989,6 +1000,7 @@ class _RefDailyProductionEditPageState
             isBahanPenolongActive
                 ? parseInt(bleachingBatchController.text)
                 : null,
+        beYieldPercent: parseDouble(bleachingYieldPercentController),
         paRefTank: isBahanPenolongActive ? selectedRefineryMachine : null,
         paTotal: isBahanPenolongActive ? phosphoricTotalController.text : null,
         paLotBatchNumber:
@@ -1010,6 +1022,7 @@ class _RefDailyProductionEditPageState
         uuSteamCpo: isUtillityUsageActive ? steamOilTypeController.text : null,
         uuYieldPercent:
             isUtillityUsageActive ? parseDouble(yieldPercentController) : null,
+        isCompleted: isTicketcomplete ?? false,
       );
 
       log("Attempting to update ticket ID: ${updatedEntity.id}");

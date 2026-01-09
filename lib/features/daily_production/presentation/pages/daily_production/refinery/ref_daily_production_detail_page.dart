@@ -160,7 +160,7 @@ class _DailyProductionRefineryDetailPageState
       centerTitle: true,
       iconTheme: const IconThemeData(color: Colors.black),
       actions: [
-        if (_currentReport.preparedStatus == null)
+        if (_currentReport.preparedStatus == null && _currentReport.isCompleted == false)
           IconButton(
             onPressed: () async {
               final result = await Navigator.of(context).push(
@@ -451,6 +451,11 @@ class _DailyProductionRefineryDetailPageState
               _buildDataRow(
                 'Checked Status',
                 _displayValue(_currentReport.checkedStatus),
+              ),
+
+              _buildDataRow(
+                'Is Completed',
+                _displayValue(_currentReport.isCompleted.toString()),
               ),
             ]),
 

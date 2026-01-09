@@ -88,6 +88,8 @@ class DailyProductionRefineryEntity {
   final int? revisionNo;
   final DateTime? revisionDate;
 
+  bool? isCompleted;
+
   DailyProductionRefineryEntity({
     required this.id,
     required this.company,
@@ -156,6 +158,7 @@ class DailyProductionRefineryEntity {
     required this.dateIssued,
     required this.revisionNo,
     required this.revisionDate,
+    required this.isCompleted,
   });
 
   factory DailyProductionRefineryEntity.fromMap(Map<String, dynamic> map) {
@@ -191,6 +194,14 @@ class DailyProductionRefineryEntity {
           return TimeOfDay(hour: hour, minute: minute);
         }
       }
+      return null;
+    }
+
+    bool? parseBool(dynamic value) {
+      if (value == null) return null;
+      if (value is bool) return value;
+      if (value is int) return value == 1;
+      if (value is String) return value == '1' || value.toLowerCase() == 'true';
       return null;
     }
 
@@ -262,6 +273,7 @@ class DailyProductionRefineryEntity {
       revisionNo: parseInt(map['revision_no']),
       revisionDate: parseDateTime(map['revision_date']),
       checkedStatusRemarks: map['checked_status_remarks'] as String?,
+      isCompleted: parseBool(map['is_completed']),
     );
   }
 
@@ -340,6 +352,7 @@ class DailyProductionRefineryEntity {
       'date_issued': dateIssued?.toIso8601String(),
       'revision_no': revisionNo,
       'revision_date': revisionDate?.toIso8601String(),
+      'is_completed': isCompleted == null ? null : (isCompleted! ? 1 : 0),
     };
   }
 
@@ -411,6 +424,7 @@ class DailyProductionRefineryEntity {
     DateTime? dateIssued,
     int? revisionNo,
     DateTime? revisionDate,
+    bool? isCompleted,
   }) {
     return DailyProductionRefineryEntity(
       id: id ?? this.id,
@@ -484,6 +498,7 @@ class DailyProductionRefineryEntity {
       revisionNo: revisionNo ?? this.revisionNo,
       revisionDate: revisionDate ?? this.revisionDate,
       checkedStatusRemarks: checkedStatusRemarks ?? this.checkedStatusRemarks,
+      isCompleted: isCompleted ?? this.isCompleted,
     );
   }
 }

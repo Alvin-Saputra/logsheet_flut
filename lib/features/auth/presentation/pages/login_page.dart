@@ -649,7 +649,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           Text(
-                            "Build 2026-01-02",
+                            "Build 2026-01-09",
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[800],

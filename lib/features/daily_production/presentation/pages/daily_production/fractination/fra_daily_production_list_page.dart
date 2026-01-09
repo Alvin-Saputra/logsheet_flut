@@ -86,12 +86,35 @@ class _DailyProductionFractionationListPageState
         userProvider,
         child,
       ) {
-        List<DailyProductionFractionationEntity> filteredList =
+        List<DailyProductionFractionationEntity> rawList =
             dailyProdFracProvider.reportsList
                 .where(
                   (e) => e.preparedStatus == null && e.checkedStatus == null,
                 )
                 .toList();
+
+        Map<String, List<DailyProductionFractionationEntity>> groupedMap = {};
+
+        for (var item in rawList) {
+          if (item.transactionDate != null && item.shift != null) {
+            String dateKey = DateFormat(
+              'yyyy-MM-dd',
+            ).format(item.transactionDate!);
+            String compositeKey = "$dateKey-${item.plant}-${item.shift}";
+
+            // Jika key belum ada, inisialisasi list kosong
+            if (!groupedMap.containsKey(compositeKey)) {
+              groupedMap[compositeKey] = [];
+            }
+
+            // Masukkan item ke dalam list di key tersebut
+            groupedMap[compositeKey]!.add(item);
+          }
+        }
+
+        // 3. Konversi Values menjadi List of List
+        // Tipe datanya sekarang: List<List<DailyProductionFractionationEntity>>
+        var groupedList = groupedMap.values.toList();
         if (dailyProdFracProvider.isLoading) {
           return Center(child: CircularProgressIndicator());
         }
@@ -127,7 +150,7 @@ class _DailyProductionFractionationListPageState
             ),
           );
         }
-        if (filteredList.isEmpty) {
+        if (groupedList.isEmpty) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -162,9 +185,15 @@ class _DailyProductionFractionationListPageState
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: ListView.builder(
             padding: const EdgeInsets.only(bottom: 88),
-            itemCount: filteredList.length,
+            itemCount: groupedList.length,
             itemBuilder: (context, index) {
-              final report = filteredList[index];
+              // final report = groupedList[index];
+              List<DailyProductionFractionationEntity> currentGroupItems =
+                  groupedList[index];
+
+              // 5. Ambil 1 Item Perwakilan untuk Tampilan (misal item pertama)
+              DailyProductionFractionationEntity displayItem =
+                  currentGroupItems.first;
               return Card(
                 child: InkWell(
                   onTap: () {
@@ -172,7 +201,7 @@ class _DailyProductionFractionationListPageState
                       MaterialPageRoute(
                         builder:
                             (context) => DailyProductionFractionationDetailPage(
-                              item: report,
+                              listItem: currentGroupItems = groupedList[index],
                               formData: widget.formData,
                             ),
                       ),
@@ -191,7 +220,7 @@ class _DailyProductionFractionationListPageState
                           children: [
                             Expanded(
                               child: Text(
-                                report.id,
+                                displayItem.id,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -205,11 +234,32 @@ class _DailyProductionFractionationListPageState
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: _getStatusColor(report),
+                                color: _getStatusColor(displayItem),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                _getStatusText(report),
+                                _getStatusText(displayItem),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color:
+                                    displayItem.isCompleted == false
+                                        ? Colors.green
+                                        : Colors.red,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                _getIsCompletedStatus(displayItem),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -232,7 +282,7 @@ class _DailyProductionFractionationListPageState
                             Text(
                               DateFormat(
                                 'yyyy-MM-dd',
-                              ).format(report.transactionDate!),
+                              ).format(displayItem.transactionDate!),
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
@@ -247,7 +297,7 @@ class _DailyProductionFractionationListPageState
                             SizedBox(width: 8),
                             Text(
                               // "${report.oilTypeRmAwalJam?.hour}: ${report.oilTypeRmAwalJam?.minute} ",
-                              _displayTime(report.oilTypeRmAwalJam),
+                              _displayTime(displayItem.oilTypeRmAwalJam),
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
@@ -261,7 +311,7 @@ class _DailyProductionFractionationListPageState
                             ),
                             SizedBox(width: 8),
                             Text(
-                              "Shift ${report.shift}",
+                              "Shift ${displayItem.shift}",
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
@@ -280,7 +330,7 @@ class _DailyProductionFractionationListPageState
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Entried by: ${report.entryBy}',
+                              'Entried by: ${displayItem.entryBy}',
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
@@ -371,5 +421,13 @@ class _DailyProductionFractionationListPageState
       return Colors.red;
     }
     return Colors.grey;
+  }
+
+  String _getIsCompletedStatus(DailyProductionFractionationEntity report) {
+    if (report.isCompleted == true) {
+      return "Close";
+    } else {
+      return "Open";
+    }
   }
 }

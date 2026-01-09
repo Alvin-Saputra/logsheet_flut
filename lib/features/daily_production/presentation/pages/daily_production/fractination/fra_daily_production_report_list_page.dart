@@ -191,17 +191,17 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
                           return Card(
                             child: InkWell(
                               onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) =>
-                                            DailyProductionFractionationDetailPage(
-                                              formData: formData!,
-                                              item: report,
-                                              isDisplayed: false,
-                                            ),
-                                  ),
-                                );
+                                // Navigator.of(context).push(
+                                //   MaterialPageRoute(
+                                //     builder:
+                                //         (context) =>
+                                //             DailyProductionFractionationDetailPage(
+                                //               formData: formData!,
+                                //               item: report,
+                                //               isDisplayed: false,
+                                //             ),
+                                //   ),
+                                // );
                               },
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -312,9 +312,9 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
                                         Icon(Icons.oil_barrel_rounded),
                                         const SizedBox(width: 6),
                                         Text(
-                                          report.oilTypeRm == null
+                                          report.oilTypeRmId == null
                                               ? "N/A"
-                                              : "${report.oilTypeRm}",
+                                              : "${report.oilTypeRmId}",
                                         ),
                                       ],
                                     ),

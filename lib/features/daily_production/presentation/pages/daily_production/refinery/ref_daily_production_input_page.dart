@@ -90,6 +90,7 @@ class _DailyProductionPageState
   // final List<String> oilTypeFg = ['RBDPO', 'RRBDPO', 'RRPS'];
   // final List<String> oilTypeBp = ['PFAD'];
   final List<String> dummyShiftOptions = ['1', '2', '3', "4", "5"];
+  String? selectedShift;
 
   final TextEditingController flowmeter1AwalController =
       TextEditingController();
@@ -136,6 +137,8 @@ class _DailyProductionPageState
   final TextEditingController bleachingBagController = TextEditingController();
   final TextEditingController bleachingTypeController = TextEditingController();
   final TextEditingController bleachingBatchController =
+      TextEditingController();
+    final TextEditingController bleachingYieldPercentController =
       TextEditingController();
 
   // Phosphoric Acid
@@ -642,6 +645,43 @@ class _DailyProductionPageState
             ),
             const SizedBox(height: 16),
 
+            DropdownButtonFormField<String>(
+              value: selectedShift,
+              items:
+                dummyShiftOptions.map((item) {
+                return DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(
+                  "${item}",
+                  style: const TextStyle(fontSize: 14),
+                  ),
+                );
+                }).toList(),
+              onChanged: (value) {
+              setState(() {
+                selectedShift = value;
+              });
+              },
+              decoration: InputDecoration(
+              filled: true,
+              fillColor: const Color(0xFFF0ECE9),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              labelText: 'Pilih Shift',
+              floatingLabelBehavior: FloatingLabelBehavior.auto,
+              prefixIcon: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: SvgPicture.asset(
+                'assets/icons/oil-refinery-tanks.svg',
+                height: 24,
+                width: 24,
+                ),
+              ),
+              ),
+            ),
+
             if (selectedOilRm == null) ...[
               const Center(
                 child: Text(
@@ -766,6 +806,7 @@ class _DailyProductionPageState
                   bleachingBagController: bleachingBagController,
                   bleachingTypeController: bleachingTypeController,
                   bleachingBatchController: bleachingBatchController,
+                  bleachingBatchYieldPercent: bleachingYieldPercentController,
                   ref500Bleaching: ref500Bleaching,
                   ref150Bleaching: ref150Bleaching,
                   phosphoricWeightController: phosphoricWeightController,
@@ -910,7 +951,7 @@ class _DailyProductionPageState
                       context,
                       onConfirm: () async => await submitReport(context),
                     ),
-                label: 'Submit Laporan',
+                label: 'Submit Draft Laporan',
               ),
             ],
           ],
@@ -1033,14 +1074,14 @@ class _DailyProductionPageState
     double? flow1Awal, flow1Akhir, flow2Awal, flow2Akhir, flow3Awal, flow3Akhir;
 
     if (selectedRefineryMachine == "REF-01") {
-      flow1Awal = parseInt(flowmeter1AwalController.text)! / 1000;
-      flow1Akhir = parseInt(flowmeter1AkhirController.text)! / 1000;
+      flow1Awal = parseInt(flowmeter1AwalController.text) != null ? parseInt(flowmeter1AwalController.text)! / 1000 : null;
+      flow1Akhir = parseInt(flowmeter1AkhirController.text) != null ? parseInt(flowmeter1AkhirController.text)! / 1000 : null;
 
-      flow2Awal = parseInt(flowmeter2AwalController.text)! / 1000;
-      flow2Akhir = parseInt(flowmeter2AkhirController.text)! / 1000;
+      flow2Awal = parseInt(flowmeter2AwalController.text) != null ? parseInt(flowmeter2AwalController.text)! / 1000 : null;
+      flow2Akhir = parseInt(flowmeter2AkhirController.text) != null ? parseInt(flowmeter2AkhirController.text)! / 1000 : null;
 
-      flow3Awal = parseInt(flowmeter3AwalController.text)! / 1000;
-      flow3Akhir = parseInt(flowmeter3AkhirController.text)! / 1000;
+      flow3Awal = parseInt(flowmeter3AwalController.text) != null ? parseInt(flowmeter3AwalController.text)! / 1000 : null;
+      flow3Akhir = parseInt(flowmeter3AkhirController.text) != null ? parseInt(flowmeter3AkhirController.text)! / 1000 : null;
     } else {
       flow1Awal = parseDouble(flowmeter1AwalController);
       flow1Akhir = parseDouble(flowmeter1AkhirController);
@@ -1061,9 +1102,7 @@ class _DailyProductionPageState
         transactionDate: getTransactionDate(),
         postingDate: postingDate,
         workCenter: selectedRefineryMachine,
-        shift:
-            selectedShiftBleaching ??
-            getShiftBasedOnTimeAndDate(postingDate).toString(),
+        shift: selectedShift ?? '',
         cpoTank: selected1Tank,
         oilTypeRmId: selectedOilRm,
         oilTypeRmAwalJam: selectedTime1Awal,
@@ -1090,7 +1129,7 @@ class _DailyProductionPageState
         beTotalBag: bleachingBagController.text,
         beTotalJenis: bleachingTypeController.text,
         beLotBatchNumber: parseInt(bleachingBatchController.text),
-        beYieldPercent: parseDouble(yieldPercentController),
+        beYieldPercent: parseDouble(bleachingYieldPercentController),
         paRefTank: selectedRefineryMachine,
         paRefQty: paValue,
         paTotal: phosphoricTotalController.text,
@@ -1121,6 +1160,7 @@ class _DailyProductionPageState
         dateIssued: dataForm.dateIssued,
         revisionNo: dataForm.revisionNo,
         revisionDate: dataForm.revisionDate,
+        isCompleted: false,
       );
       bool? success;
 

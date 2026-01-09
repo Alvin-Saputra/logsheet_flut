@@ -151,7 +151,8 @@ class DailyProductionRefineryMySQLService {
             a.form_no,
             a.date_issued,
             a.revision_no,
-            a.revision_date
+            a.revision_date,
+            a.is_completed
           FROM 
                 t_daily_production_refinery AS a
           JOIN m_product AS b 
@@ -233,7 +234,8 @@ class DailyProductionRefineryMySQLService {
           a.form_no,
           a.date_issued,
           a.revision_no,
-          a.revision_date
+          a.revision_date,
+          a.is_completed
         FROM 
           t_daily_production_refinery AS a
         JOIN m_product AS b 
@@ -315,7 +317,8 @@ class DailyProductionRefineryMySQLService {
                 a.form_no,
                 a.date_issued,
                 a.revision_no,
-                a.revision_date
+                a.revision_date,
+                a.is_completed
               FROM 
                 t_daily_production_refinery AS a
               JOIN m_product AS b 

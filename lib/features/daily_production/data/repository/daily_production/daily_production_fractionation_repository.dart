@@ -9,7 +9,7 @@ class DailyProductionFractionationRepository {
   DailyProductionFractionationRepository(this._mySQLService);
 
   // Insert Ticket
-  Future<bool> insert(DailyProductionFractionationEntity entity) async {
+  Future<bool> insert(List<DailyProductionFractionationEntity> entity) async {
     return await _mySQLService.insertTicket(entity);
   }
 
@@ -25,6 +25,7 @@ class DailyProductionFractionationRepository {
     String role,
     String plantCode,
   ) async {
+    try{
     final List<Map<String, dynamic>> reportsData = await _mySQLService
         .getAllTickets(dateFilter, time, username, role, plantCode);
 
@@ -40,6 +41,10 @@ class DailyProductionFractionationRepository {
     log('converted ${mapToList.length.toString()}');
 
     return mapToList;
+    }
+    catch(e){
+      rethrow;
+    }
   }
 
   Future<String?> getLatestTicketId(String plantCode) async {
@@ -51,7 +56,7 @@ class DailyProductionFractionationRepository {
   }
 
   Future<bool> updateReportTicket(
-    DailyProductionFractionationEntity report,
+    List<DailyProductionFractionationEntity> report,
   ) async {
     return await _mySQLService.updateTicket(report);
   }

@@ -159,7 +159,7 @@ class _DailyProductionFractionationApprovalDetailPageState
 
                   // --- Raw Material (RM) ---
                   _buildSectionHeader("Raw Material"),
-                  _buildDetailRow('Oil Type', report.oilTypeRm ?? '-'),
+                  _buildDetailRow('Oil Type', report.oilTypeRmId ?? '-'),
                   _buildDetailRow(
                     'From Tank',
                     report.oilTypeRmFromTank?.toString() ?? '-',
@@ -192,7 +192,7 @@ class _DailyProductionFractionationApprovalDetailPageState
 
                   // --- Finished Goods (FG) ---
                   _buildSectionHeader("Finished Goods"),
-                  _buildDetailRow('Oil Type', report.oilTypeFgs ?? '-'),
+                  _buildDetailRow('Oil Type', report.oilTypeFgsId ?? '-'),
                   _buildDetailRow(
                     'Start Time',
                     report.oilTypeFgsAwalJam != null
