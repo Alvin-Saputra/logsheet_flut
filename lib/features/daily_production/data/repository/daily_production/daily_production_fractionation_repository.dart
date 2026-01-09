@@ -13,8 +13,8 @@ class DailyProductionFractionationRepository {
     return await _mySQLService.insertTicket(entity);
   }
 
-  Future<bool> deleteTicket(String id, String username) async {
-    return await _mySQLService.deleteTicket(id, username);
+  Future<bool> deleteTicket(String username, String shift, String plant, String transaction_date)async {
+    return await _mySQLService.deleteTicket(username, shift, plant, transaction_date);
   }
 
   // Fetch all Quality Refinery Report
@@ -77,9 +77,10 @@ class DailyProductionFractionationRepository {
     String username,
     String status,
     String userRole,
-    int shift,
+    String shift,
     String? remark,
-    String id,
+    String plant,
+    String transaction_date
   ) async {
     return await _mySQLService.sendApproveRejectTicket(
       username,
@@ -87,7 +88,8 @@ class DailyProductionFractionationRepository {
       userRole,
       shift,
       remark,
-      id,
+      plant,
+      transaction_date
     );
   }
 

@@ -112,7 +112,7 @@ class _DailyProductionPageState
       TextEditingController();
   final TextEditingController flowmeter3TotalController =
       TextEditingController();
-
+  final oilTypeRmOipController = TextEditingController();
   final oilTypeRmTotalController = TextEditingController();
   final oilTypefgController = TextEditingController();
   final oilTypefgTotalController = TextEditingController();
@@ -715,6 +715,7 @@ class _DailyProductionPageState
                 onTankChanged: (value) => setState(() => selected1Tank = value),
                 flowRateAwalController: flowmeter1AwalController,
                 flowRateAkhirController: flowmeter1AkhirController,
+                oipController: oilTypeRmOipController,
                 flowRateTotalController: flowmeter1TotalController,
               ),
               const SizedBox(height: 16),
@@ -806,7 +807,7 @@ class _DailyProductionPageState
                   bleachingBagController: bleachingBagController,
                   bleachingTypeController: bleachingTypeController,
                   bleachingBatchController: bleachingBatchController,
-                  bleachingBatchYieldPercent: bleachingYieldPercentController,
+                  bleachingBatchYieldPercentController: bleachingYieldPercentController,
                   ref500Bleaching: ref500Bleaching,
                   ref150Bleaching: ref150Bleaching,
                   phosphoricWeightController: phosphoricWeightController,
@@ -1109,6 +1110,7 @@ class _DailyProductionPageState
         oilTypeRmAwalFlowmeter: flow1Awal,
         oilTypeRmAkhirJam: selectedTime1Akhir,
         oilTypeRmAkhirFlowmeter: flow1Akhir,
+        oilTypeRmOip: parseDouble(oilTypeRmOipController),
         oilTypeRmTotal: (flow1Akhir ?? 0.0) - (flow1Awal ?? 0.0),
         oilTypeFgId: selectedOilFg,
         oilTypeFgAwalJam: selectedTime2Awal,

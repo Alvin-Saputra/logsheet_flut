@@ -258,6 +258,10 @@ class _DailyProductionRefineryDetailPageState
                 _displayValue(_currentReport.oilTypeRmAkhirFlowmeter),
               ),
               _buildDataRow(
+                'OIP',
+                _displayValue(_currentReport.oilTypeRmOip),
+              ),
+              _buildDataRow(
                 'Total',
                 _displayValue(_currentReport.oilTypeRmTotal),
               ),

@@ -22,7 +22,7 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
   final TextEditingController phosphoricYieldController;
   final TextEditingController phosphoricBatchController;
   final TextEditingController phosporicTotalController;
-  final TextEditingController bleachingBatchYieldPercent;
+  final TextEditingController bleachingBatchYieldPercentController;
 
   final bool ref500Phosphoric;
   final bool ref150Phosphoric;
@@ -39,7 +39,7 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
     required this.bleachingBagController,
     required this.bleachingTypeController,
     required this.bleachingBatchController,
-    required this.bleachingBatchYieldPercent,
+    required this.bleachingBatchYieldPercentController,
     required this.ref500Bleaching,
     required this.ref150Bleaching,
     required this.phosphoricWeightController,
@@ -106,7 +106,7 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
              const SizedBox(height: 12),
 
             CustomTextField(
-              controller: bleachingBatchController,
+              controller: bleachingBatchYieldPercentController,
               label: 'Yield (%)',
               icon: Icons.numbers,
             ),

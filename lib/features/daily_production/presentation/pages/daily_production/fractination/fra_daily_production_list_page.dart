@@ -197,15 +197,31 @@ class _DailyProductionFractionationListPageState
               return Card(
                 child: InkWell(
                   onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder:
-                            (context) => DailyProductionFractionationDetailPage(
-                              listItem: currentGroupItems = groupedList[index],
-                              formData: widget.formData,
-                            ),
-                      ),
-                    );
+                    Navigator.of(context)
+                        .push(
+                          MaterialPageRoute(
+                            builder:
+                                (context) =>
+                                    DailyProductionFractionationDetailPage(
+                                      listItem:
+                                          currentGroupItems =
+                                              groupedList[index],
+                                      formData: widget.formData,
+                                    ),
+                          ),
+                        )
+                        .then((value) async {
+                          final plantCode =
+                              plantprovider.currentPlant?.code ?? "";
+
+                          await dailyProdFracProvider.fetchAllTickets(
+                            null,
+                            null,
+                            userProvider.currentUser?.username ?? "",
+                            userProvider.currentUser?.role ?? "",
+                            plantCode,
+                          );
+                        });
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(

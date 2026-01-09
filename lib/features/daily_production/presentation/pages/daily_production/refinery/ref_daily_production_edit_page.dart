@@ -105,6 +105,8 @@ class _RefDailyProductionEditPageState
   // Section 4: Auxiliary Material (Bahan Penolong)
   // Bleaching Earth
   String? selectedShiftBleaching;
+  final oilTypeRmOipController = TextEditingController();
+
   bool ref500Bleaching = false;
   bool ref150Bleaching = false;
   final TextEditingController bleachingBagController = TextEditingController();
@@ -546,6 +548,7 @@ class _RefDailyProductionEditPageState
                 flowRateAwalController: flowmeter1AwalController,
                 flowRateAkhirController: flowmeter1AkhirController,
                 flowRateTotalController: flowmeter1TotalController,
+                oipController: oilTypeRmOipController,
               ),
               const SizedBox(height: 16),
 
@@ -621,7 +624,7 @@ class _RefDailyProductionEditPageState
                   bleachingBagController: bleachingBagController,
                   bleachingTypeController: bleachingTypeController,
                   bleachingBatchController: bleachingBatchController,
-                  bleachingBatchYieldPercent: bleachingYieldPercentController,
+                  bleachingBatchYieldPercentController: bleachingYieldPercentController,
                   ref500Bleaching: ref500Bleaching,
                   ref150Bleaching: ref150Bleaching,
                   phosphoricWeightController:
@@ -779,6 +782,7 @@ class _RefDailyProductionEditPageState
     // Set top-level dropdowns and values
     selectedRefineryMachine = entity.workCenter;
     selectedOilRm = entity.oilTypeRmId;
+
     selectedShiftBleaching = entity.shift;
     selectedShiftPhosphoric = entity.shift;
 
@@ -811,21 +815,38 @@ class _RefDailyProductionEditPageState
 
     if (entity.workCenter == "REF-01") {
       flowmeter1AwalController.text =
-          entity.oilTypeRmAwalFlowmeter != null ? ((entity.oilTypeRmAwalFlowmeter! * 1000).toString()) : '';
+          entity.oilTypeRmAwalFlowmeter != null
+              ? ((entity.oilTypeRmAwalFlowmeter! * 1000).toString())
+              : '';
+      oilTypeRmOipController.text =
+          entity.oilTypeRmOip != null
+              ? ((entity.oilTypeRmOip! * 1000).toString())
+              : '';
       flowmeter1AkhirController.text =
-          entity.oilTypeRmAkhirFlowmeter != null ? ((entity.oilTypeRmAkhirFlowmeter! * 1000).toString()) : '';
+          entity.oilTypeRmAkhirFlowmeter != null
+              ? ((entity.oilTypeRmAkhirFlowmeter! * 1000).toString())
+              : '';
 
       flowmeter2AwalController.text =
-          entity.oilTypeFgAwalFlowmeter != null ? ((entity.oilTypeFgAwalFlowmeter! * 1000).toString()) : '';
+          entity.oilTypeFgAwalFlowmeter != null
+              ? ((entity.oilTypeFgAwalFlowmeter! * 1000).toString())
+              : '';
       flowmeter2AkhirController.text =
-          entity.oilTypeFgAkhirFlowmeter != null ? ((entity.oilTypeFgAkhirFlowmeter! * 1000).toString()) : '';
+          entity.oilTypeFgAkhirFlowmeter != null
+              ? ((entity.oilTypeFgAkhirFlowmeter! * 1000).toString())
+              : '';
 
       flowmeter3AwalController.text =
-          entity.bpAwalFlowmeter != null ? ((entity.bpAwalFlowmeter! * 1000).toString()) : '';
+          entity.bpAwalFlowmeter != null
+              ? ((entity.bpAwalFlowmeter! * 1000).toString())
+              : '';
       flowmeter3AkhirController.text =
-          entity.bpAkhirFlowmeter != null ? ((entity.bpAkhirFlowmeter! * 1000).toString()) : '';
+          entity.bpAkhirFlowmeter != null
+              ? ((entity.bpAkhirFlowmeter! * 1000).toString())
+              : '';
     } else {
       // Gunakan tanda tanya (?) sebelum toString()
+      oilTypeRmOipController.text = entity.oilTypeRmOip.toString() ?? '';
       flowmeter1AwalController.text =
           entity.oilTypeRmAwalFlowmeter?.toString() ?? '';
 
@@ -977,6 +998,7 @@ class _RefDailyProductionEditPageState
         oilTypeRmAwalFlowmeter: flow1Awal,
         oilTypeRmAkhirJam: selectedTime1Akhir,
         oilTypeRmAkhirFlowmeter: flow1Akhir,
+        oilTypeRmOip: parseDouble(oilTypeRmOipController),
         oilTypeRmTotal: (flow1Akhir ?? 0) - (flow1Awal ?? 0),
         oilTypeFgId: selectedOilFg,
         oilTypeFgAwalJam: selectedTime2Awal,

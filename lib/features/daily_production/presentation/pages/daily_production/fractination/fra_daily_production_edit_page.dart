@@ -751,7 +751,7 @@ class _DailyProductionFractionPageState
                   onPressed: _addNewRow,
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.all(16),
-                    side: const BorderSide(color: Colors.blue, width: 2),
+                    side: const BorderSide(color: Colors.red, width: 2),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

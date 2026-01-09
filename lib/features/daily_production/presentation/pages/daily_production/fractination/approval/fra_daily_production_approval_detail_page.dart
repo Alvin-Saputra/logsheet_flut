@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/daily_production/data/model/daily_production/daily_production_fractionation_entity.dart';
 import 'package:logsheet_app/features/daily_production/presentation/provider/daily_production/daily_production_fractionation_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
@@ -520,10 +521,10 @@ class _DailyProductionFractionationApprovalDetailPageState
         username,
         status,
         role,
-        shiftNumber,
+        report.shift??'',
         _remarkController.text.isEmpty ? null : _remarkController.text,
-        report.id,
         plantCode,
+        formatDatetoString(report.transactionDate, 'yyyy-MM-dd HH:mm:ss') ?? "",
       );
 
       if (result && context.mounted) {

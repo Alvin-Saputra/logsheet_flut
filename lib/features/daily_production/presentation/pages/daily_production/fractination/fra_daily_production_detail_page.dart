@@ -2,6 +2,7 @@ import 'package:expandable_page_view/expandable_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/core/widgets/custom_info_card.dart';
 import 'package:logsheet_app/core/widgets/custom_section_card.dart';
 import 'package:logsheet_app/core/widgets/custom_section_card_data.dart';
@@ -425,7 +426,7 @@ class _DailyProductionFractionationDetailPageState
                           ),
                         ),
 
-                         CustomSectionCardData(
+                        CustomSectionCardData(
                           'Oil Type Name',
                           _displayValue(
                             _listCurrentReport[pageIndex].oilTypeFghName,
@@ -647,12 +648,12 @@ class _DailyProductionFractionationDetailPageState
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: ElevatedButton(
                             onPressed: () {
-                              // _showApprovedRejectedBottomSheet(
-                              //   context,
-                              //   true,
-                              //   shift,
-                              //   user!,
-                              // );
+                              _showApprovedRejectedBottomSheet(
+                                context,
+                                true,
+                                shift,
+                                user!,
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green[700],
@@ -672,151 +673,153 @@ class _DailyProductionFractionationDetailPageState
   }
 
   Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
-    // await showDialog<bool>(
-    //   context: context,
-    //   builder: (BuildContext context) {
-    //     return Consumer2<DailyProductionFractionationProvider, UserProvider>(
-    //       builder:
-    //           (context, provider, userProvider, child) => AlertDialog(
-    //             title: const Text('Hapus Ticket'),
-    //             content: Text(
-    //               "Apakah anda yakin ingin menghapus Ticket ${_listCurrentReport.id}?",
-    //             ),
-    //             actions: <Widget>[
-    //               TextButton(
-    //                 child: const Text("Tidak"),
-    //                 onPressed: () => Navigator.pop(context),
-    //               ),
-    //               ElevatedButton(
-    //                 style: TextButton.styleFrom(
-    //                   backgroundColor: Colors.red,
-    //                   foregroundColor: Colors.white,
-    //                 ),
-    //                 child:
-    //                     provider.isLoadingDelete
-    //                         ? const SizedBox(
-    //                           width: 20,
-    //                           height: 20,
-    //                           child: CircularProgressIndicator(
-    //                             color: Colors.white,
-    //                           ),
-    //                         )
-    //                         : const Text(
-    //                           'Ya',
-    //                           style: TextStyle(color: Colors.white),
-    //                         ),
-    //                 onPressed: () async {
-    //                   final result = await provider.deleteTicketById(
-    //                     _listCurrentReport.id,
-    //                     userProvider.currentUser?.username ?? "",
-    //                   );
+    await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return Consumer2<DailyProductionFractionationProvider, UserProvider>(
+          builder:
+              (context, provider, userProvider, child) => AlertDialog(
+                title: const Text('Hapus Ticket'),
+                content: Text(
+                  "Apakah anda yakin ingin menghapus Ticket ",
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("Tidak"),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  ElevatedButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                    ),
+                    child:
+                        provider.isLoadingDelete
+                            ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            )
+                            : const Text(
+                              'Ya',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                    onPressed: () async {
+                      final result = await provider.deleteTicketById(
+                        userProvider.currentUser?.username ?? "",
+                        _listCurrentReport[0].shift ?? "",
+                        _listCurrentReport[0].plant ?? "",
+                        formatDatetoString(_listCurrentReport[0].transactionDate, 'yyyy-MM-dd HH:mm:ss') ?? "",
+                      );
 
-    //                   if (result) {
-    //                     if (!context.mounted) return;
-    //                     Navigator.pop(context); // Close dialog
-    //                     Navigator.pop(context); // Go back from detail page
-    //                   }
-    //                   // if (!context.mounted) return;
-    //                   // Navigator.pop(context); // Close dialog
-    //                   // Navigator.pop(context); // Go back from detail page
-    //                 },
-    //               ),
-    //             ],
-    //           ),
-    //     );
-    //     //   },
-    //     // );
-    //   },
-    // );
+                      if (result) {
+                        if (!context.mounted) return;
+                        Navigator.pop(context); // Close dialog
+                        Navigator.pop(context); // Go back from detail page
+                      }
+                      // if (!context.mounted) return;
+                      // Navigator.pop(context); // Close dialog
+                      // Navigator.pop(context); // Go back from detail page
+                    },
+                  ),
+                ],
+              ),
+        );
+        //   },
+        // );
+      },
+    );
   }
 
-  // void _showApprovedRejectedBottomSheet(
-  //   BuildContext context,
-  //   bool isApproved,
-  //   String shift,
-  //   UserEntity user,
-  // ) {
-  //   showModalBottomSheet(
-  //     context: context,
-  //     isScrollControlled: true,
-  //     builder: (BuildContext context) {
-  //       return Padding(
-  //         padding: EdgeInsets.only(
-  //           bottom: MediaQuery.of(context).viewInsets.bottom,
-  //         ),
-  //         child: Container(
-  //           padding: const EdgeInsets.all(16),
-  //           child: Column(
-  //             mainAxisSize: MainAxisSize.min,
-  //             crossAxisAlignment: CrossAxisAlignment.stretch,
-  //             children: <Widget>[
-  //               Text(
-  //                 isApproved ? "Approve Report" : "Reject Report",
-  //                 style: const TextStyle(
-  //                   fontSize: 20,
-  //                   fontWeight: FontWeight.bold,
-  //                 ),
-  //               ),
-  //               const SizedBox(height: 16),
-  //               if (!isApproved)
-  //                 TextFormField(
-  //                   controller: _remarkController,
-  //                   decoration: const InputDecoration(
-  //                     labelText: "Remarks",
-  //                     border: OutlineInputBorder(),
-  //                   ),
-  //                   maxLines: 5,
-  //                 ),
-  //               const SizedBox(height: 16),
-  //               ElevatedButton(
-  //                 onPressed: () async {
-  //                   final result = await context
-  //                       .read<DailyProductionFractionationProvider>()
-  //                       .sendApproveRejectReport(
-  //                         user.username,
-  //                         isApproved ? "Approved" : "Rejected",
-  //                         user.role,
-  //                         int.parse(shift),
-  //                         isApproved ? null : _remarkController.text,
-  //                         widget.listItem.id,
-  //                         widget.listItem.plant!,
-  //                       );
+  void _showApprovedRejectedBottomSheet(
+    BuildContext context,
+    bool isApproved,
+    String shift,
+    UserEntity user,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Text(
+                  isApproved ? "Approve Report" : "Reject Report",
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (!isApproved)
+                  TextFormField(
+                    controller: _remarkController,
+                    decoration: const InputDecoration(
+                      labelText: "Remarks",
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 5,
+                  ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () async {
+                    final result = await context
+                        .read<DailyProductionFractionationProvider>()
+                        .sendApproveRejectReport(
+                          user.username,
+                          isApproved ? "Approved" : "Rejected",
+                          user.role,
+                          _listCurrentReport[0].shift ?? "",
+                          isApproved ? null : _remarkController.text,
+                          _listCurrentReport[0].plant ?? "",
+                          formatDatetoString(_listCurrentReport[0].transactionDate, 'yyyy-MM-dd HH:mm:ss') ?? "",
+                        );
 
-  //                   if (result) {
-  //                     if (!context.mounted) return;
-  //                     ScaffoldMessenger.of(context).showSnackBar(
-  //                       SnackBar(
-  //                         content: Text(
-  //                           isApproved
-  //                               ? "N ${_listCurrentReport.id} berhasil diapprove"
-  //                               : "Number ${_listCurrentReport.id} berhasil direject",
-  //                         ),
-  //                       ),
-  //                     );
-  //                     Navigator.of(context).pop(); // Close bottom sheet
-  //                     Navigator.of(context).pop(); // Go back from detail page
-  //                   } else {
-  //                     if (!context.mounted) return;
-  //                     ScaffoldMessenger.of(context).showSnackBar(
-  //                       SnackBar(
-  //                         content: Text(
-  //                           isApproved
-  //                               ? "ID Transaksi ${_listCurrentReport.id} gagal diapprove"
-  //                               : "ID Transaksi ${_listCurrentReport.id} gagal direject",
-  //                         ),
-  //                       ),
-  //                     );
-  //                   }
-  //                 },
-  //                 child: Text(
-  //                   isApproved ? 'Submit Approval' : 'Submit Rejection',
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
+                    if (result) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isApproved
+                                ? "Report berhasil diapprove"
+                                : "Report berhasil direject",
+                          ),
+                        ),
+                      );
+                      Navigator.of(context).pop(); // Close bottom sheet
+                      Navigator.of(context).pop(); // Go back from detail page
+                    } else {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isApproved
+                                ? "Report gagal diapprove"
+                                : "Report gagal direject",
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  child: Text(
+                    isApproved ? 'Submit Approval' : 'Submit Rejection',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 }

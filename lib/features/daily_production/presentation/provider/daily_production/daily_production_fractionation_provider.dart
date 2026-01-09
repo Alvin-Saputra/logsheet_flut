@@ -91,7 +91,9 @@ class DailyProductionFractionationProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> insertTicket(List<DailyProductionFractionationEntity> entity) async {
+  Future<bool> insertTicket(
+    List<DailyProductionFractionationEntity> entity,
+  ) async {
     _setLoading(false);
     _setErrorMessage(null);
 
@@ -117,15 +119,25 @@ class DailyProductionFractionationProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> deleteTicketById(String id, String username) async {
+  Future<bool> deleteTicketById(
+    String username,
+    String shift,
+    String plant,
+    String transaction_date,
+  ) async {
     _setLoadingDelete(true);
     _setErrorMessage(null);
     try {
-      final response = await _repository.deleteTicket(id, username);
+      final response = await _repository.deleteTicket(
+        username,
+        shift,
+        plant,
+        transaction_date,
+      );
       log("Quality Refinery Provider deleteTicketById response: $response");
       _setLoadingDelete(false);
 
-      _reportsList.removeWhere((element) => element.id == id);
+      // _reportsList.removeWhere((element) => element.id == id);
       notifyListeners();
 
       return response;
@@ -192,11 +204,8 @@ class DailyProductionFractionationProvider with ChangeNotifier {
       _setLoading(false);
       log('Daily Prod Refinery List length: ${_reportsList.length}');
     } catch (e) {
-      
       _setErrorMessage('Failed to fetch Daily Production Refinery: $e');
       _setLoading(false);
-     
-      
     }
   }
 
@@ -246,10 +255,10 @@ class DailyProductionFractionationProvider with ChangeNotifier {
     String username,
     String status,
     String userRole,
-    int shift,
+    String shift,
     String? remark,
-    String id,
     String plantCode,
+    String transaction_date
   ) async {
     _setLoading(true);
     _setErrorMessage(null);
@@ -262,7 +271,8 @@ class DailyProductionFractionationProvider with ChangeNotifier {
         userRole,
         shift,
         remark,
-        id,
+        plantCode,
+        transaction_date
       );
       log("status from provider: $result");
       fetchAllTickets(null, null, username, userRole, plantCode);

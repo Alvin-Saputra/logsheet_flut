@@ -15,6 +15,7 @@ class SectionCpoRpaRps extends StatefulWidget {
   final TextEditingController flowRateAkhirController;
   final TextEditingController flowRateTotalController;
   final List<TankEntity>? dummmyTanks;
+  final TextEditingController oipController;
   String? selectedTank;
   final String? selectedWorkCenter;
   final Function(String?) onTankChanged;
@@ -32,6 +33,7 @@ class SectionCpoRpaRps extends StatefulWidget {
     required this.onTimeTapAwal,
     required this.onTimeTapAkhir,
     required this.selectedWorkCenter,
+    required this.oipController,
   });
 
   @override
@@ -216,6 +218,13 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
             if (widget.selectedWorkCenter == 'REF-01') ...[
               Text("Flow Rate: $flowRateAkhir T/H"),
             ],
+            const SizedBox(height: 12),
+            CustomTextField(
+              controller: widget.oipController,
+              label: 'OIP',
+              icon: Icons.speed,
+              isNumeric: true,
+            ),
             const SizedBox(height: 12),
             Row(
               children: [

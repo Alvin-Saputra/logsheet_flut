@@ -567,64 +567,149 @@ class DailyProductionFractionationMySQLService {
   }
 
   // TODO: FUNCTIONS IMPORTED
-  Future<bool> sendApproveRejectTicket(
-    final String username,
-    final String status,
-    final String userRole,
-    final int shift,
-    final String? remark,
-    final String id,
-  ) async {
-    MySQLConnection? connection;
-    try {
-      final connResult = await getMySQLConnection();
-      if (connResult.connection == null) {
-        log(
-          'Failed to get MySQL connection for Sending approve/reject Daily Production Fractionation report.',
-        );
-        return false;
-      }
-      connection = connResult.connection;
-      final date = DateTime.now();
-      String sql;
-      Map<String, dynamic> params;
+  // Future<bool> sendApproveRejectTicket(
+  //   final String username,
+  //   final String status,
+  //   final String userRole,
+  //   final String shift,
+  //   final String? remark,
+  //   final String plant,
+  //   final String transaction_date
+  // ) async {
+  //   MySQLConnection? connection;
+  //   try {
+  //     final connResult = await getMySQLConnection();
+  //     if (connResult.connection == null) {
+  //       log(
+  //         'Failed to get MySQL connection for Sending approve/reject Daily Production Fractionation report.',
+  //       );
+  //       return false;
+  //     }
+  //     connection = connResult.connection;
+  //     final date = DateTime.now();
+  //     String sql;
+  //     Map<String, dynamic> params;
 
-      if (AppRoles.managerProd.contains(userRole)) {
-        sql =
-            "UPDATE t_daily_production_fractionation SET verified_by = :username, verified_status = :status, verified_date = :date, checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
-        params = {
-          "username": username,
-          "status": status,
-          "date": date,
-          "remark": remark,
-          "id": id,
-        };
-      } else {
-        sql =
-            "UPDATE t_daily_production_fractionation SET prepared_by = :username, prepared_status = :status, prepared_date = :date, prepared_status_remarks = :remark WHERE id = :id";
-        params = {
-          "username": username,
-          "status": status,
-          "date": date,
-          "remark": remark,
-          "id": id,
-        };
-      }
-      final result = await connResult.connection!.execute(sql, params);
-      log("Query Sent: $sql");
-      log("Affected Rows: ${result.affectedRows}");
-      return result.affectedRows > BigInt.from(0);
-    } catch (e) {
-      log("$e");
+  //     if (AppRoles.managerProd.contains(userRole)) {
+  //       sql =
+  //           "UPDATE t_daily_production_fractionation SET verified_by = :username, verified_status = :status, verified_date = :date, checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
+  //       params = {
+  //         "username": username,
+  //         "status": status,
+  //         "date": date,
+  //         "remark": remark,
+  //         "id": id,
+  //       };
+  //     } else {
+  //       sql =
+  //           "UPDATE t_daily_production_fractionation SET prepared_by = :username, prepared_status = :status, prepared_date = :date, prepared_status_remarks = :remark WHERE id = :id";
+  //       params = {
+  //         "username": username,
+  //         "status": status,
+  //         "date": date,
+  //         "remark": remark,
+  //         "id": id,
+  //       };
+  //     }
+  //     final result = await connResult.connection!.execute(sql, params);
+  //     log("Query Sent: $sql");
+  //     log("Affected Rows: ${result.affectedRows}");
+  //     return result.affectedRows > BigInt.from(0);
+  //   } catch (e) {
+  //     log("$e");
+  //     return false;
+  //   } finally {
+  //     try {
+  //       await closeMySQLConnection(connection);
+  //     } catch (e) {
+  //       log("$e");
+  //     }
+  //   }
+  // }
+
+  Future<bool> sendApproveRejectTicket(
+  final String username,
+  final String status,
+  final String userRole,
+  final String shift,
+  final String? remark,
+  final String plant,
+  final String transaction_date, // Assumes format 'YYYY-MM-DD'
+) async {
+  MySQLConnection? connection;
+  try {
+    final connResult = await getMySQLConnection();
+    if (connResult.connection == null) {
+      log(
+        'Failed to get MySQL connection for Sending approve/reject Daily Production Fractionation report.',
+      );
       return false;
-    } finally {
-      try {
-        await closeMySQLConnection(connection);
-      } catch (e) {
-        log("$e");
-      }
+    }
+    connection = connResult.connection;
+    final date = DateTime.now();
+    String sql;
+    
+    // We prepare the common parameters first
+    final Map<String, dynamic> params = {
+      "username": username,
+      "status": status,
+      "date": date,
+      "remark": remark,
+      "plant": plant,
+      "shift": shift,
+      "transaction_date": transaction_date,
+    };
+
+    if (AppRoles.managerProd.contains(userRole)) {
+      // Logic for Manager: Updates Verified and Checked columns
+      sql = """
+        UPDATE t_daily_production_fractionation 
+        SET 
+          verified_by = :username, 
+          verified_status = :status, 
+          verified_date = :date, 
+          checked_by = :username, 
+          checked_status = :status, 
+          checked_date = :date, 
+          checked_status_remarks = :remark 
+        WHERE 
+          plant = :plant 
+          AND shift = :shift 
+          AND DATE(transaction_date) = :transaction_date
+      """;
+    } else {
+      // Logic for Operator/Lead: Updates Prepared columns
+      sql = """
+        UPDATE t_daily_production_fractionation 
+        SET 
+          prepared_by = :username, 
+          prepared_status = :status, 
+          prepared_date = :date, 
+          prepared_status_remarks = :remark 
+        WHERE 
+          plant = :plant 
+          AND shift = :shift 
+          AND DATE(transaction_date) = :transaction_date
+      """;
+    }
+
+    final result = await connResult.connection!.execute(sql, params);
+    log("Query Sent: $sql");
+    log("Params: $params");
+    log("Affected Rows: ${result.affectedRows}");
+    
+    return result.affectedRows > BigInt.from(0);
+  } catch (e) {
+    log("Error sending approve/reject: $e");
+    return false;
+  } finally {
+    try {
+      await closeMySQLConnection(connection);
+    } catch (e) {
+      log("Error closing connection: $e");
     }
   }
+}
 
   Future<List<Map<String, dynamic>>> getReportsForManager(
     String plantCode,
@@ -726,7 +811,7 @@ class DailyProductionFractionationMySQLService {
     }
   }
 
-  Future<bool> deleteTicket(String id, String username) async {
+  Future<bool> deleteTicket(String username, String shift, String plant, String transaction_date) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
@@ -736,15 +821,17 @@ class DailyProductionFractionationMySQLService {
       }
       connection = connResult.connection!;
       final result = await connection.execute(
-        "UPDATE t_daily_production_fractionation SET flag = 'D', prepared_by= :username, prepared_status = :prepared_status, prepared_date = :prepared_date WHERE id = :id",
+        "UPDATE t_daily_production_fractionation SET flag = 'D', prepared_by= :username, prepared_status = :prepared_status, prepared_date = :prepared_date WHERE transaction_date = :transaction_date AND plant = :plant AND shift = :shift",
         {
           "username": username,
           "prepared_status": "Deleted",
           "prepared_date": "${DateTime.now()}",
-          "id": id,
+          "transaction_date": transaction_date,
+          "plant": plant,
+          "shift": shift
         },
       );
-      log('Ticket $id terhapus: ${result.affectedRows} row(s) affected.');
+      log('Ticket berhasil dihapus: ${result.affectedRows} row(s) affected.');
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
       log('Error deleting ticket: $e');

@@ -18,6 +18,7 @@ class DailyProductionRefineryEntity {
   final double? oilTypeRmAwalFlowmeter;
   final TimeOfDay? oilTypeRmAkhirJam;
   final double? oilTypeRmAkhirFlowmeter;
+  final double? oilTypeRmOip;
   final double? oilTypeRmTotal;
 
   // Finished Goods (FG)
@@ -106,6 +107,7 @@ class DailyProductionRefineryEntity {
     required this.oilTypeRmAkhirJam,
     required this.oilTypeRmAkhirFlowmeter,
     required this.oilTypeRmTotal,
+    required this.oilTypeRmOip,
     required this.oilTypeFgId,
     this.oilTypeFg,
     required this.oilTypeFgAwalJam,
@@ -220,6 +222,7 @@ class DailyProductionRefineryEntity {
       oilTypeRmAwalFlowmeter: parseDouble(map['oil_type_rm_awal_flowmeter']),
       oilTypeRmAkhirJam: parseTimeOfDay(map['oil_type_rm_akhir_jam']),
       oilTypeRmAkhirFlowmeter: parseDouble(map['oil_type_rm_akhir_flowmeter']),
+      oilTypeRmOip: parseDouble(map['oil_type_rm_oip']),
       oilTypeRmTotal: parseDouble(map['oil_type_rm_total']),
       oilTypeFgId: map['oil_type_fg_id'] as String?,
       oilTypeFg: map['oil_type_fg'] as String?,
@@ -302,6 +305,7 @@ class DailyProductionRefineryEntity {
       'oil_type_rm_awal_flowmeter': oilTypeRmAwalFlowmeter,
       'oil_type_rm_akhir_jam': formatTimeOfDay(oilTypeRmAkhirJam),
       'oil_type_rm_akhir_flowmeter': oilTypeRmAkhirFlowmeter,
+      'oil_type_rm_oip': oilTypeRmOip,
       'oil_type_rm_total': oilTypeRmTotal,
       'oil_type_fg': oilTypeFgId,
       'oil_type_fg_awal_jam': formatTimeOfDay(oilTypeFgAwalJam),
@@ -371,6 +375,7 @@ class DailyProductionRefineryEntity {
     double? oilTypeRmAwalFlowmeter,
     TimeOfDay? oilTypeRmAkhirJam,
     double? oilTypeRmAkhirFlowmeter,
+    double? oilTypeRmOip,
     double? oilTypeRmTotal,
     String? oilTypeFgId,
     String? oilTypeFg,
@@ -443,6 +448,7 @@ class DailyProductionRefineryEntity {
       oilTypeRmAkhirJam: oilTypeRmAkhirJam ?? this.oilTypeRmAkhirJam,
       oilTypeRmAkhirFlowmeter:
           oilTypeRmAkhirFlowmeter ?? this.oilTypeRmAkhirFlowmeter,
+      oilTypeRmOip: oilTypeRmOip ?? this.oilTypeRmOip,
       oilTypeRmTotal: oilTypeRmTotal ?? this.oilTypeRmTotal,
       oilTypeFgId: oilTypeFgId ?? this.oilTypeFgId,
       oilTypeFg: oilTypeFg ?? this.oilTypeFg,
