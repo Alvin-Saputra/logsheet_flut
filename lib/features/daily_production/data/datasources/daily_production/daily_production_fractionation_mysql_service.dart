@@ -83,6 +83,7 @@ class DailyProductionFractionationMySQLService {
           FROM t_daily_production_fractionation
           WHERE plant = :plant
             AND transaction_date = :transaction_date
+            AND work_center = :work_center
             AND shift = :shift
             AND no = :no
             AND (flag IS NULL OR flag = 'T')
@@ -94,6 +95,7 @@ class DailyProductionFractionationMySQLService {
             "transaction_date": DateFormat(
               'yyyy-MM-dd',
             ).format(item.transactionDate ?? DateTime.now()),
+            "work_center":item.workCenter,
             "shift": item.shift,
             "no": item.no, // ⚠️ sesuaikan nama kolom
           });
@@ -101,7 +103,7 @@ class DailyProductionFractionationMySQLService {
           if (duplicateCheckResult.rows.isNotEmpty) {
             // ⛔ STOP PROCESS + ROLLBACK
             throw Exception(
-              "Data Dengan Plant, Tanggal, No, dan Shift yang sama sudah ada"
+              "Data Dengan Plant, Tanggal, No, Shift, dan Work Center yang sama sudah ada",
             );
           }
 
@@ -628,41 +630,41 @@ class DailyProductionFractionationMySQLService {
   // }
 
   Future<bool> sendApproveRejectTicket(
-  final String username,
-  final String status,
-  final String userRole,
-  final String shift,
-  final String? remark,
-  final String plant,
-  final String transaction_date, // Assumes format 'YYYY-MM-DD'
-) async {
-  MySQLConnection? connection;
-  try {
-    final connResult = await getMySQLConnection();
-    if (connResult.connection == null) {
-      log(
-        'Failed to get MySQL connection for Sending approve/reject Daily Production Fractionation report.',
-      );
-      return false;
-    }
-    connection = connResult.connection;
-    final date = DateTime.now();
-    String sql;
-    
-    // We prepare the common parameters first
-    final Map<String, dynamic> params = {
-      "username": username,
-      "status": status,
-      "date": date,
-      "remark": remark,
-      "plant": plant,
-      "shift": shift,
-      "transaction_date": transaction_date,
-    };
+    final String username,
+    final String status,
+    final String userRole,
+    final String shift,
+    final String? remark,
+    final String plant,
+    final String transaction_date, // Assumes format 'YYYY-MM-DD'
+  ) async {
+    MySQLConnection? connection;
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log(
+          'Failed to get MySQL connection for Sending approve/reject Daily Production Fractionation report.',
+        );
+        return false;
+      }
+      connection = connResult.connection;
+      final date = DateTime.now();
+      String sql;
 
-    if (AppRoles.managerProd.contains(userRole)) {
-      // Logic for Manager: Updates Verified and Checked columns
-      sql = """
+      // We prepare the common parameters first
+      final Map<String, dynamic> params = {
+        "username": username,
+        "status": status,
+        "date": date,
+        "remark": remark,
+        "plant": plant,
+        "shift": shift,
+        "transaction_date": transaction_date,
+      };
+
+      if (AppRoles.managerProd.contains(userRole)) {
+        // Logic for Manager: Updates Verified and Checked columns
+        sql = """
         UPDATE t_daily_production_fractionation 
         SET 
           verified_by = :username, 
@@ -677,9 +679,9 @@ class DailyProductionFractionationMySQLService {
           AND shift = :shift 
           AND DATE(transaction_date) = :transaction_date
       """;
-    } else {
-      // Logic for Operator/Lead: Updates Prepared columns
-      sql = """
+      } else {
+        // Logic for Operator/Lead: Updates Prepared columns
+        sql = """
         UPDATE t_daily_production_fractionation 
         SET 
           prepared_by = :username, 
@@ -691,127 +693,194 @@ class DailyProductionFractionationMySQLService {
           AND shift = :shift 
           AND DATE(transaction_date) = :transaction_date
       """;
-    }
+      }
 
-    final result = await connResult.connection!.execute(sql, params);
-    log("Query Sent: $sql");
-    log("Params: $params");
-    log("Affected Rows: ${result.affectedRows}");
-    
-    return result.affectedRows > BigInt.from(0);
-  } catch (e) {
-    log("Error sending approve/reject: $e");
-    return false;
-  } finally {
-    try {
-      await closeMySQLConnection(connection);
+      final result = await connResult.connection!.execute(sql, params);
+      log("Query Sent: $sql");
+      log("Params: $params");
+      log("Affected Rows: ${result.affectedRows}");
+
+      return result.affectedRows > BigInt.from(0);
     } catch (e) {
-      log("Error closing connection: $e");
+      log("Error sending approve/reject: $e");
+      return false;
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+      } catch (e) {
+        log("Error closing connection: $e");
+      }
     }
   }
-}
+
+  // Future<List<Map<String, dynamic>>> getReportsForManager(
+  //   String plantCode,
+  // ) async {
+  //   MySQLConnection? connection;
+  //   try {
+  //     final connResult = await getMySQLConnection();
+  //     if (connResult.connection == null) {
+  //       log('Failed to get MySQL connection for get reports for manager.');
+  //       return [];
+  //     }
+  //     connection = connResult.connection;
+  //     const sql = """
+  //       SELECT
+  //           a.id,
+  //           a.company,
+  //           a.plant,
+  //           a.transaction_date,
+  //           a.posting_date,
+  //           a.work_center,
+  //           a.shift,
+  //           a.oil_type_rm AS oil_type_rm_id,
+  //           b.raw_material AS oil_type_rm,
+  //           a.oil_type_rm_no,
+  //           a.oil_type_rm_cr,
+  //           a.oil_type_rm_from_tank,
+  //           a.oil_type_rm_awal_jam,
+  //           a.oil_type_rm_awal_flowmeter,
+  //           a.oil_type_rm_akhir_jam,
+  //           a.oil_type_rm_akhir_flowmeter,
+  //           a.oil_type_rm_total,
+  //           a.oil_type_fgs AS oil_type_fgs_id,
+  //           b.finish_good AS oil_type_fgs,
+  //           a.oil_type_fgs_no,
+  //           a.oil_type_fgs_cr,
+  //           a.oil_type_fgs_awal_jam,
+  //           a.oil_type_fgs_awal_flowmeter,
+  //           a.oil_type_fgs_akhir_jam,
+  //           a.oil_type_fgs_akhir_flowmeter,
+  //           a.oil_type_fgs_total,
+  //           a.oil_type_fgs_to_tank,
+  //           a.oil_type_fgh AS oil_type_fgh_id,
+  //           b.by_product AS oil_type_bp,
+  //           a.oil_type_fgh_no,
+  //           a.oil_type_fgh_awal_jam,
+  //           a.oil_type_fgh_awal_flowmeter,
+  //           a.oil_type_fgh_akhir_jam,
+  //           a.oil_type_fgh_akhir_flowmeter,
+  //           a.oil_type_fgh_total,
+  //           a.oil_type_fgh_to_tank,
+  //           a.remarks,
+  //           a.flag,
+  //           a.uu_item,
+  //           a.uu_budget_ref_qty,
+  //           a.uu_flowmeter_before,
+  //           a.uu_flowmeter_after,
+  //           a.uu_flowmeter_total,
+  //           a.uu_yield_percent,
+  //           a.uu_listrik,
+  //           a.uu_air,
+  //           a.entry_by,
+  //           a.entry_date,
+  //           a.prepared_by,
+  //           a.prepared_date,
+  //           a.prepared_status,
+  //           a.prepared_status_remarks,
+  //           a.verified_by,
+  //           a.verified_date,
+  //           a.verified_status,
+  //           a.verified_status_remarks,
+  //           a.checked_by,
+  //           a.checked_date,
+  //           a.checked_status,
+  //           a.checked_status_remarks,
+  //           a.form_no,
+  //           a.date_issued,
+  //           a.revision_no,
+  //           a.revision_date
+  //       FROM
+  //           t_daily_production_fractionation AS a
+  //       JOIN
+  //           m_product AS b
+  //       ON a.oil_type_rm = b.id
+  //       WHERE a.prepared_status = 'Approved' AND a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
+  //       ORDER BY posting_date DESC
+  //     """;
+  //     final result = await connection!.execute(sql, {"plantCode": plantCode});
+  //     log("Fetched ${result.rows.length} reports for manager.");
+  //     return result.rows.map((row) => row.assoc()).toList();
+  //   } catch (e) {
+  //     log('Error fetching reports for manager: $e');
+  //     return [];
+  //   } finally {
+  //     try {
+  //       await closeMySQLConnection(connection);
+  //     } catch (e) {
+  //       log("$e");
+  //     }
+  //   }
+  // }
 
   Future<List<Map<String, dynamic>>> getReportsForManager(
     String plantCode,
   ) async {
     MySQLConnection? connection;
+
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for get reports for manager.');
+        log('Failed to get MySQL connection for get all reports.');
         return [];
       }
+
       connection = connResult.connection;
-      const sql = """
-        SELECT
-            a.id,
-            a.company,
-            a.plant,
-            a.transaction_date,
-            a.posting_date,
-            a.work_center,
-            a.shift,
-            a.oil_type_rm AS oil_type_rm_id,
-            b.raw_material AS oil_type_rm,
-            a.oil_type_rm_no,
-            a.oil_type_rm_cr,
-            a.oil_type_rm_from_tank,
-            a.oil_type_rm_awal_jam,
-            a.oil_type_rm_awal_flowmeter,
-            a.oil_type_rm_akhir_jam,
-            a.oil_type_rm_akhir_flowmeter,
-            a.oil_type_rm_total,
-            a.oil_type_fgs AS oil_type_fgs_id,
-            b.finish_good AS oil_type_fgs,
-            a.oil_type_fgs_no,
-            a.oil_type_fgs_cr,
-            a.oil_type_fgs_awal_jam,
-            a.oil_type_fgs_awal_flowmeter,
-            a.oil_type_fgs_akhir_jam,
-            a.oil_type_fgs_akhir_flowmeter,
-            a.oil_type_fgs_total,
-            a.oil_type_fgs_to_tank,
-            a.oil_type_fgh AS oil_type_fgh_id,
-            b.by_product AS oil_type_bp,
-            a.oil_type_fgh_no,
-            a.oil_type_fgh_awal_jam,
-            a.oil_type_fgh_awal_flowmeter,
-            a.oil_type_fgh_akhir_jam,
-            a.oil_type_fgh_akhir_flowmeter,
-            a.oil_type_fgh_total,
-            a.oil_type_fgh_to_tank,
-            a.remarks,
-            a.flag,
-            a.uu_item,
-            a.uu_budget_ref_qty,
-            a.uu_flowmeter_before,
-            a.uu_flowmeter_after,
-            a.uu_flowmeter_total,
-            a.uu_yield_percent,
-            a.uu_listrik,
-            a.uu_air,
-            a.entry_by,
-            a.entry_date,
-            a.prepared_by,
-            a.prepared_date,
-            a.prepared_status,
-            a.prepared_status_remarks,
-            a.verified_by,
-            a.verified_date,
-            a.verified_status,
-            a.verified_status_remarks,
-            a.checked_by,
-            a.checked_date,
-            a.checked_status,
-            a.checked_status_remarks,
-            a.form_no,
-            a.date_issued,
-            a.revision_no,
-            a.revision_date
-        FROM
-            t_daily_production_fractionation AS a
-        JOIN 
-            m_product AS b
-        ON a.oil_type_rm = b.id 
-        WHERE a.prepared_status = 'Approved' AND a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
-        ORDER BY posting_date DESC
+      String baseQuery;
+      final Map<String, dynamic> params = {};
+
+      // 1. Definisikan kolom yang ingin diambil
+      // a.* mengambil semua data transaksi (termasuk ID tiket yang benar)
+      // b.* mengambil nama-nama produk dari master data
+      String selectColumns = """
+          a.*, 
+          b.raw_material AS oil_type_rm_name,
+          b.finish_good AS oil_type_fgs_name,
+          b.finish_good AS oil_type_fgh_name
       """;
-      final result = await connection!.execute(sql, {"plantCode": plantCode});
-      log("Fetched ${result.rows.length} reports for manager.");
+
+      // 2. Definisikan Base Query & Join
+      // Menggunakan LEFT JOIN agar jika data produk terhapus di master,
+      // tiket transaksi tetap muncul (hanya nama produknya null).
+      String fromAndJoin = """
+          FROM t_daily_production_fractionation AS a
+          LEFT JOIN m_product AS b ON a.oil_type_rm = b.id
+      """;
+
+      // 3. Logic Role (Switch Case hanya mengatur WHERE clause)
+      String whereClause = "";
+
+      whereClause =
+          "WHERE a.plant = :plantCode AND a.prepared_status = 'Approved' AND (a.flag IS NULL OR a.flag = 'T')";
+      params["plantCode"] = plantCode;
+
+      // 5. Susun Query Akhir
+      baseQuery =
+          "SELECT $selectColumns $fromAndJoin $whereClause ORDER BY a.transaction_date DESC";
+
+      final IResultSet result = await connection!.execute(baseQuery, params);
+
+      log('Fetched ${result.rows.length} reports for user manager.');
+
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
-      log('Error fetching reports for manager: $e');
+      log('Error fetching all reports: $e');
       return [];
     } finally {
       try {
         await closeMySQLConnection(connection);
       } catch (e) {
-        log("$e");
+        log('Error closing connection: $e');
       }
     }
   }
 
-  Future<bool> deleteTicket(String username, String shift, String plant, String transaction_date) async {
+  Future<bool> deleteTicket(
+    String username,
+    String shift,
+    String plant,
+    String transaction_date,
+  ) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
@@ -828,7 +897,7 @@ class DailyProductionFractionationMySQLService {
           "prepared_date": "${DateTime.now()}",
           "transaction_date": transaction_date,
           "plant": plant,
-          "shift": shift
+          "shift": shift,
         },
       );
       log('Ticket berhasil dihapus: ${result.affectedRows} row(s) affected.');

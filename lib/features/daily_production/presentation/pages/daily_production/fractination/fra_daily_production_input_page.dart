@@ -243,27 +243,45 @@ class _DailyProductionFractionPageState
     Function(TimeOfDay) onTimeSelected,
     TimeOfDay? selectedTime,
   ) {
-    showModalBottomSheet(
+    // showModalBottomSheet(
+    //   context: context,
+    //   backgroundColor: Colors.white,
+    //   shape: const RoundedRectangleBorder(
+    //     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    //   ),
+    //   builder:
+    //       (context) => CustomHourMinutePicker(
+    //         selectedTime: selectedTime,
+    //         onTimeSelected: (time) {
+    //           onTimeSelected(time);
+    //         },
+    //       ),
+    // );
+
+    showDialog(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      builder: (context) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // Takes only necessary height
+          children: [
+            // Optional: You might want to wrap this in a specific height or width 
+            // container if the picker doesn't have a defined size.
+            CustomHourMinutePicker(
+              selectedTime: selectedTime,
+              onTimeSelected: (time) {
+                onTimeSelected(time);
+                // If you want the dialog to close immediately after selection, uncomment the line below:
+                // Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
       ),
-      builder:
-          (context) => CustomHourMinutePicker(
-            selectedTime: selectedTime,
-            onTimeSelected: (time) {
-              onTimeSelected(time);
-            },
-          ),
-      // builder:
-      //     (context) => CustomHourPicker(
-      //       selectedHour: selectedHour,
-      //       onHourSelected: (hour) {
-      //         onHourSelected(hour);
-      //         // Navigator.pop(context);
-      //       },
-      //     ),
     );
   }
 
