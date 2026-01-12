@@ -138,7 +138,7 @@ class _DailyProductionPageState
   final TextEditingController bleachingTypeController = TextEditingController();
   final TextEditingController bleachingBatchController =
       TextEditingController();
-    final TextEditingController bleachingYieldPercentController =
+  final TextEditingController bleachingYieldPercentController =
       TextEditingController();
 
   // Phosphoric Acid
@@ -207,18 +207,43 @@ class _DailyProductionPageState
     TimeOfDay? selectedTime,
     Function(TimeOfDay) onTimeSelected,
   ) {
-    showModalBottomSheet(
+    // showModalBottomSheet(
+    //   context: context,
+    //   backgroundColor: Colors.white,
+    //   shape: const RoundedRectangleBorder(
+    //     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    //   ),
+    //   builder:
+    //       (context) => CustomHourMinutePicker(
+    //         selectedTime: selectedTime,
+    //         onTimeSelected: (time) {
+    //           onTimeSelected(time);
+    //         },
+    //       ),
+    // );
+
+    showDialog(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder:
-          (context) => CustomHourMinutePicker(
-            selectedTime: selectedTime,
-            onTimeSelected: (time) {
-              onTimeSelected(time);
-            },
+          (context) => Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // Takes only necessary height
+              children: [
+                // Optional: You might want to wrap this in a specific height or width
+                // container if the picker doesn't have a defined size.
+                CustomHourMinutePicker(
+                  selectedTime: selectedTime,
+                  onTimeSelected: (time) {
+                    onTimeSelected(time);
+                  },
+                ),
+              ],
+            ),
           ),
     );
   }
@@ -648,37 +673,37 @@ class _DailyProductionPageState
             DropdownButtonFormField<String>(
               value: selectedShift,
               items:
-                dummyShiftOptions.map((item) {
-                return DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(
-                  "${item}",
-                  style: const TextStyle(fontSize: 14),
-                  ),
-                );
-                }).toList(),
+                  dummyShiftOptions.map((item) {
+                    return DropdownMenuItem<String>(
+                      value: item,
+                      child: Text(
+                        "${item}",
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    );
+                  }).toList(),
               onChanged: (value) {
-              setState(() {
-                selectedShift = value;
-              });
+                setState(() {
+                  selectedShift = value;
+                });
               },
               decoration: InputDecoration(
-              filled: true,
-              fillColor: const Color(0xFFF0ECE9),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              labelText: 'Pilih Shift',
-              floatingLabelBehavior: FloatingLabelBehavior.auto,
-              prefixIcon: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: SvgPicture.asset(
-                'assets/icons/oil-refinery-tanks.svg',
-                height: 24,
-                width: 24,
+                filled: true,
+                fillColor: const Color(0xFFF0ECE9),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
                 ),
-              ),
+                labelText: 'Pilih Shift',
+                floatingLabelBehavior: FloatingLabelBehavior.auto,
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: SvgPicture.asset(
+                    'assets/icons/oil-refinery-tanks.svg',
+                    height: 24,
+                    width: 24,
+                  ),
+                ),
               ),
             ),
 
@@ -807,7 +832,8 @@ class _DailyProductionPageState
                   bleachingBagController: bleachingBagController,
                   bleachingTypeController: bleachingTypeController,
                   bleachingBatchController: bleachingBatchController,
-                  bleachingBatchYieldPercentController: bleachingYieldPercentController,
+                  bleachingBatchYieldPercentController:
+                      bleachingYieldPercentController,
                   ref500Bleaching: ref500Bleaching,
                   ref150Bleaching: ref150Bleaching,
                   phosphoricWeightController: phosphoricWeightController,
@@ -1075,14 +1101,32 @@ class _DailyProductionPageState
     double? flow1Awal, flow1Akhir, flow2Awal, flow2Akhir, flow3Awal, flow3Akhir;
 
     if (selectedRefineryMachine == "REF-01") {
-      flow1Awal = parseInt(flowmeter1AwalController.text) != null ? parseInt(flowmeter1AwalController.text)! / 1000 : null;
-      flow1Akhir = parseInt(flowmeter1AkhirController.text) != null ? parseInt(flowmeter1AkhirController.text)! / 1000 : null;
+      flow1Awal =
+          parseInt(flowmeter1AwalController.text) != null
+              ? parseInt(flowmeter1AwalController.text)! / 1000
+              : null;
+      flow1Akhir =
+          parseInt(flowmeter1AkhirController.text) != null
+              ? parseInt(flowmeter1AkhirController.text)! / 1000
+              : null;
 
-      flow2Awal = parseInt(flowmeter2AwalController.text) != null ? parseInt(flowmeter2AwalController.text)! / 1000 : null;
-      flow2Akhir = parseInt(flowmeter2AkhirController.text) != null ? parseInt(flowmeter2AkhirController.text)! / 1000 : null;
+      flow2Awal =
+          parseInt(flowmeter2AwalController.text) != null
+              ? parseInt(flowmeter2AwalController.text)! / 1000
+              : null;
+      flow2Akhir =
+          parseInt(flowmeter2AkhirController.text) != null
+              ? parseInt(flowmeter2AkhirController.text)! / 1000
+              : null;
 
-      flow3Awal = parseInt(flowmeter3AwalController.text) != null ? parseInt(flowmeter3AwalController.text)! / 1000 : null;
-      flow3Akhir = parseInt(flowmeter3AkhirController.text) != null ? parseInt(flowmeter3AkhirController.text)! / 1000 : null;
+      flow3Awal =
+          parseInt(flowmeter3AwalController.text) != null
+              ? parseInt(flowmeter3AwalController.text)! / 1000
+              : null;
+      flow3Akhir =
+          parseInt(flowmeter3AkhirController.text) != null
+              ? parseInt(flowmeter3AkhirController.text)! / 1000
+              : null;
     } else {
       flow1Awal = parseDouble(flowmeter1AwalController);
       flow1Akhir = parseDouble(flowmeter1AkhirController);

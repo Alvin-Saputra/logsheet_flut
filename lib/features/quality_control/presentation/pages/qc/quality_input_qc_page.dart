@@ -670,31 +670,113 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
   }
 
   // Hour Picker
+  // void _showHourPicker(BuildContext context) {
+  //   int initialHour = selectedHour ?? TimeOfDay.now().hour;
+
+  //   // Set default selectedHour sebelum picker tampil
+  //   selectedHour = initialHour;
+
+  //   showModalBottomSheet(
+  //     context: context,
+  //     backgroundColor: Colors.white,
+  //     shape: const RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  //     ),
+  //     builder: (BuildContext context) {
+  //       return SafeArea(
+  //         child: SizedBox(
+  //           height: 300,
+  //           child: Column(
+  //             children: [
+  //               const Padding(
+  //                 padding: EdgeInsets.symmetric(vertical: 12),
+  //                 child: Text(
+  //                   'Pilih Jam Input',
+  //                   style: TextStyle(
+  //                     fontWeight: FontWeight.bold,
+  //                     fontSize: 16,
+  //                     color: Color(0xFF655F5B),
+  //                   ),
+  //                 ),
+  //               ),
+  //               Expanded(
+  //                 child: CupertinoPicker(
+  //                   itemExtent: 40,
+  //                   scrollController: FixedExtentScrollController(
+  //                     initialItem: initialHour,
+  //                   ),
+  //                   onSelectedItemChanged: (int value) {
+  //                     selectedHour = value;
+  //                   },
+  //                   children: List.generate(
+  //                     24,
+  //                     (index) => Center(
+  //                       child: Text(
+  //                         '${index.toString().padLeft(2, '0')}:00',
+  //                         style: const TextStyle(
+  //                           fontSize: 16,
+  //                           color: Color(0xFF655F5B),
+  //                         ),
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ),
+  //               Padding(
+  //                 padding: const EdgeInsets.only(bottom: 12),
+  //                 child: ElevatedButton(
+  //                   onPressed: () {
+  //                     setState(() {}); // Refresh UI
+  //                     Navigator.pop(context);
+  //                   },
+  //                   style: ElevatedButton.styleFrom(
+  //                     backgroundColor: Color(0xFFAB2F2B),
+  //                     foregroundColor: Colors.white,
+  //                     padding: const EdgeInsets.symmetric(
+  //                       horizontal: 24,
+  //                       vertical: 12,
+  //                     ),
+  //                     shape: RoundedRectangleBorder(
+  //                       borderRadius: BorderRadius.circular(12),
+  //                     ),
+  //                   ),
+  //                   child: const Text('Pilih', style: TextStyle(fontSize: 16)),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
   void _showHourPicker(BuildContext context) {
     int initialHour = selectedHour ?? TimeOfDay.now().hour;
 
-    // Set default selectedHour sebelum picker tampil
+    // Set default selectedHour logic
     selectedHour = initialHour;
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder: (BuildContext context) {
-        return SafeArea(
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20), // Rounded all corners
+          ),
           child: SizedBox(
-            height: 300,
+            height: 300, // Height is still needed for CupertinoPicker
             child: Column(
+              mainAxisSize: MainAxisSize.min, // Ensures dialog fits content
               children: [
                 const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.only(top: 20, bottom: 10),
                   child: Text(
                     'Pilih Jam Input',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 18,
                       color: Color(0xFF655F5B),
                     ),
                   ),
@@ -706,6 +788,8 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
                       initialItem: initialHour,
                     ),
                     onSelectedItemChanged: (int value) {
+                      // Note: This updates the variable in real-time.
+                      // If user clicks outside (dismiss), the value remains changed.
                       selectedHour = value;
                     },
                     children: List.generate(
@@ -723,24 +807,29 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {}); // Refresh UI
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFAB2F2B),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
+                  padding: const EdgeInsets.all(20),
+                  child: SizedBox(
+                    width:
+                        double
+                            .infinity, // Makes button span full width of dialog
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {}); // Refresh UI
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFAB2F2B),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      child: const Text(
+                        'Pilih',
+                        style: TextStyle(fontSize: 16),
                       ),
                     ),
-                    child: const Text('Pilih', style: TextStyle(fontSize: 16)),
                   ),
                 ),
               ],

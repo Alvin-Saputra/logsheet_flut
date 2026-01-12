@@ -105,18 +105,31 @@ class _MaintenanceStartupProductionInputPageState
   }
 
   void _showHourPicker(BuildContext context) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder:
-          (context) => CustomHourPicker(
-            selectedHour: selectedHour,
-            onHourSelected: (hour) {
-              setState(() => selectedHour = hour);
-            },
+          (context) => Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                20,
+              ), // Rounded corners on all sides
+            ),
+            // Using a Column with mainAxisSize.min ensures the dialog
+            // wraps the content height rather than taking up the full screen.
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CustomHourPicker(
+                  selectedHour: selectedHour,
+                  onHourSelected: (hour) {
+                    setState(() => selectedHour = hour);
+                    // Optional: Close dialog immediately after selection
+                    // Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
           ),
     );
   }
@@ -365,12 +378,13 @@ class _MaintenanceStartupProductionInputPageState
                                       .langkahKerjaPreTreatmentList[index];
 
                               // cari item yang cocok di reportDetailList berdasarkan checkItem == code
-                              final detailIndex = startUpProduksiChecklistProvider
-                                  .reportDetailList
-                                  .indexWhere(
-                                    (detail) =>
-                                        detail.checkItem == langkah.code,
-                                  );
+                              final detailIndex =
+                                  startUpProduksiChecklistProvider
+                                      .reportDetailList
+                                      .indexWhere(
+                                        (detail) =>
+                                            detail.checkItem == langkah.code,
+                                      );
 
                               // ambil status dari reportDetailList (default 'F' kalau belum ada)
                               final isChecked =
@@ -425,12 +439,13 @@ class _MaintenanceStartupProductionInputPageState
                               final langkah =
                                   startUpProduksiChecklistProvider
                                       .langkahKerjaBleacherList[index];
-                              final detailIndex = startUpProduksiChecklistProvider
-                                  .reportDetailList
-                                  .indexWhere(
-                                    (detail) =>
-                                        detail.checkItem == langkah.code,
-                                  );
+                              final detailIndex =
+                                  startUpProduksiChecklistProvider
+                                      .reportDetailList
+                                      .indexWhere(
+                                        (detail) =>
+                                            detail.checkItem == langkah.code,
+                                      );
                               final isChecked =
                                   detailIndex != -1
                                       ? startUpProduksiChecklistProvider
@@ -482,12 +497,13 @@ class _MaintenanceStartupProductionInputPageState
                                   startUpProduksiChecklistProvider
                                       .langkahKerjaDeodorizationList[index];
 
-                              final detailIndex = startUpProduksiChecklistProvider
-                                  .reportDetailList
-                                  .indexWhere(
-                                    (detail) =>
-                                        detail.checkItem == langkah.code,
-                                  );
+                              final detailIndex =
+                                  startUpProduksiChecklistProvider
+                                      .reportDetailList
+                                      .indexWhere(
+                                        (detail) =>
+                                            detail.checkItem == langkah.code,
+                                      );
                               final isChecked =
                                   detailIndex != -1
                                       ? startUpProduksiChecklistProvider
@@ -547,12 +563,13 @@ class _MaintenanceStartupProductionInputPageState
                                   startUpProduksiChecklistProvider
                                       .langkahKerjaFractionationList[index];
 
-                              final detailIndex = startUpProduksiChecklistProvider
-                                  .reportDetailList
-                                  .indexWhere(
-                                    (detail) =>
-                                        detail.checkItem == langkah.code,
-                                  );
+                              final detailIndex =
+                                  startUpProduksiChecklistProvider
+                                      .reportDetailList
+                                      .indexWhere(
+                                        (detail) =>
+                                            detail.checkItem == langkah.code,
+                                      );
                               final isChecked =
                                   detailIndex != -1
                                       ? startUpProduksiChecklistProvider
@@ -747,14 +764,17 @@ class _MaintenanceStartupProductionInputPageState
       revisionDate: form?.revisionDate,
     );
 
-    context.read<MaintenanceStartUpProduksiChecklistProvider>().reportDetailList.forEach((
-      detail,
-    ) {
-      detail.idHdr = idHeader;
-    });
+    context
+        .read<MaintenanceStartUpProduksiChecklistProvider>()
+        .reportDetailList
+        .forEach((detail) {
+          detail.idHdr = idHeader;
+        });
 
     final details =
-        context.read<MaintenanceStartUpProduksiChecklistProvider>().reportDetailList;
+        context
+            .read<MaintenanceStartUpProduksiChecklistProvider>()
+            .reportDetailList;
 
     var isSuccess = context
         .read<MaintenanceStartUpProduksiChecklistProvider>()
@@ -779,6 +799,4 @@ class _MaintenanceStartupProductionInputPageState
 
     return selected.id ?? '';
   }
-
- 
 }
