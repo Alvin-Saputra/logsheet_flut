@@ -258,7 +258,8 @@ class DailyProductionFractionationProvider with ChangeNotifier {
     String shift,
     String? remark,
     String plantCode,
-    String transaction_date
+    String transaction_date,
+    String work_center
   ) async {
     _setLoading(true);
     _setErrorMessage(null);
@@ -272,7 +273,8 @@ class DailyProductionFractionationProvider with ChangeNotifier {
         shift,
         remark,
         plantCode,
-        transaction_date
+        transaction_date,
+        work_center
       );
       log("status from provider: $result");
       fetchAllTickets(null, null, username, userRole, plantCode);

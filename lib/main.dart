@@ -12,7 +12,7 @@ import 'package:logsheet_app/features/master_data/data/datasources/master/cryzta
 import 'package:logsheet_app/features/master_data/data/model/master/crystallizer_entity.dart';
 import 'package:logsheet_app/features/master_data/data/repository/master/crystallizer_repository.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/crystallizer_provider.dart';
-import 'package:logsheet_app/features/production/data/repository/dry_fractionation/dry_fractionation_repository.dart';
+import 'package:logsheet_app/features/production/data/repository/dry_fractionation_old/dry_fractionation_repository.dart';
 import 'package:logsheet_app/features/production/data/repository/logsheet/deodorizing_filtration_repository.dart';
 import 'package:logsheet_app/features/production/data/repository/logsheet/pretreatment_bleaching_filtration_repository.dart';
 import 'package:logsheet_app/features/maintenance/data/repository/change_product_checklist_repository/change_product_checklist_repository.dart';
@@ -37,7 +37,7 @@ import 'package:logsheet_app/features/quality_control/data/repositories/quality_
 import 'package:logsheet_app/features/master_data/data/repository/master/value_repository.dart';
 import 'package:logsheet_app/features/daily_production/data/datasources/daily_production/daily_production_fractionation_mysql_service.dart';
 import 'package:logsheet_app/features/daily_production/data/datasources/daily_production/daily_production_refinery_mysql_service.dart';
-import 'package:logsheet_app/features/production/data/datasources/dry_fractionation/dry_fractionation_mysql_service.dart';
+import 'package:logsheet_app/features/production/data/datasources/dry_fractionation_old/dry_fractionation_mysql_service.dart';
 import 'package:logsheet_app/features/production/data/datasources/logsheet/deodorizing_filtration_mysql_service.dart';
 import 'package:logsheet_app/features/production/data/datasources/logsheet/pretreatment_bleaching_filtration_mysql_service.dart';
 import 'package:logsheet_app/features/maintenance/data/datasources/change_product_checklist/change_product_checklist_mysql_service.dart';
@@ -57,7 +57,7 @@ import 'package:logsheet_app/features/master_data/data/datasources/master/value_
 import 'package:logsheet_app/features/auth/presentation/pages/login_page.dart';
 import 'package:logsheet_app/features/daily_production/presentation/provider/daily_production/daily_production_fractionation_provider.dart';
 import 'package:logsheet_app/features/daily_production/presentation/provider/daily_production/daily_production_refinery_provider.dart';
-import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation/dry_fractionation_provider.dart';
+import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation_old/dry_fractionation_provider.dart';
 import 'package:logsheet_app/features/production/presentation/provider/logsheet/deodorizing_filtration_provider.dart';
 import 'package:logsheet_app/features/production/presentation/provider/logsheet/pretreatment_bleaching_filtration_provider.dart';
 import 'package:logsheet_app/features/maintenance/presentation/provider/change_product_checklist/maintenance_change_product_checklist_provider.dart';

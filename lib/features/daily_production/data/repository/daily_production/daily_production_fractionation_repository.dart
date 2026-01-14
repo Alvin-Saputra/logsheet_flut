@@ -80,7 +80,8 @@ class DailyProductionFractionationRepository {
     String shift,
     String? remark,
     String plant,
-    String transaction_date
+    String transaction_date,
+    String work_center
   ) async {
     return await _mySQLService.sendApproveRejectTicket(
       username,
@@ -89,7 +90,8 @@ class DailyProductionFractionationRepository {
       shift,
       remark,
       plant,
-      transaction_date
+      transaction_date,
+      work_center
     );
   }
 

@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
-import 'package:logsheet_app/features/production/data/model/dry_fractionation/dry_fractionation_entity.dart';
+import 'package:logsheet_app/features/production/data/model/dry_fractionation_old/dry_fractionation_entity.dart';
 import 'package:mysql_client/mysql_client.dart';
 
 class DryFractionationMySQLService {

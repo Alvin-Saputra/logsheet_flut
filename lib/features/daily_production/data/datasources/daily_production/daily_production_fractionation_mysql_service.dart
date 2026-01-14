@@ -95,7 +95,7 @@ class DailyProductionFractionationMySQLService {
             "transaction_date": DateFormat(
               'yyyy-MM-dd',
             ).format(item.transactionDate ?? DateTime.now()),
-            "work_center":item.workCenter,
+            "work_center": item.workCenter,
             "shift": item.shift,
             "no": item.no, // ⚠️ sesuaikan nama kolom
           });
@@ -282,8 +282,8 @@ class DailyProductionFractionationMySQLService {
       String selectColumns = """
           a.*, 
           b.raw_material AS oil_type_rm_name,
-          b.finish_good AS oil_type_fgs_name,
-          b.finish_good AS oil_type_fgh_name
+          c.finish_good AS oil_type_fgs_name,
+          d.finish_good AS oil_type_fgh_name
       """;
 
       // 2. Definisikan Base Query & Join
@@ -292,6 +292,8 @@ class DailyProductionFractionationMySQLService {
       String fromAndJoin = """
           FROM t_daily_production_fractionation AS a
           LEFT JOIN m_product AS b ON a.oil_type_rm = b.id
+          LEFT JOIN m_product AS c ON a.oil_type_fgs = c.id
+          LEFT JOIN m_product AS d ON a.oil_type_fgh = d.id
       """;
 
       // 3. Logic Role (Switch Case hanya mengatur WHERE clause)
@@ -636,7 +638,8 @@ class DailyProductionFractionationMySQLService {
     final String shift,
     final String? remark,
     final String plant,
-    final String transaction_date, // Assumes format 'YYYY-MM-DD'
+    final String transaction_date,
+    final String work_center, // Assumes format 'YYYY-MM-DD'
   ) async {
     MySQLConnection? connection;
     try {
@@ -660,6 +663,7 @@ class DailyProductionFractionationMySQLService {
         "plant": plant,
         "shift": shift,
         "transaction_date": transaction_date,
+        "work_center": work_center,
       };
 
       if (AppRoles.managerProd.contains(userRole)) {
@@ -678,6 +682,7 @@ class DailyProductionFractionationMySQLService {
           plant = :plant 
           AND shift = :shift 
           AND DATE(transaction_date) = :transaction_date
+          AND work_center = :work_center
       """;
       } else {
         // Logic for Operator/Lead: Updates Prepared columns
@@ -692,6 +697,7 @@ class DailyProductionFractionationMySQLService {
           plant = :plant 
           AND shift = :shift 
           AND DATE(transaction_date) = :transaction_date
+          AND work_center = :work_center
       """;
       }
 
@@ -835,8 +841,8 @@ class DailyProductionFractionationMySQLService {
       String selectColumns = """
           a.*, 
           b.raw_material AS oil_type_rm_name,
-          b.finish_good AS oil_type_fgs_name,
-          b.finish_good AS oil_type_fgh_name
+          c.finish_good AS oil_type_fgs_name,
+          d.finish_good AS oil_type_fgh_name
       """;
 
       // 2. Definisikan Base Query & Join
@@ -845,6 +851,8 @@ class DailyProductionFractionationMySQLService {
       String fromAndJoin = """
           FROM t_daily_production_fractionation AS a
           LEFT JOIN m_product AS b ON a.oil_type_rm = b.id
+          LEFT JOIN m_product AS c ON a.oil_type_fgs = c.id
+          LEFT JOIN m_product AS d ON a.oil_type_fgh = d.id
       """;
 
       // 3. Logic Role (Switch Case hanya mengatur WHERE clause)

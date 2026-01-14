@@ -251,7 +251,6 @@ class _DailyProductionFractionationDetailPageState
             ),
 
             CustomSectionCard('ID & General Info', [
-              CustomSectionCardData('Ticket ID', _listCurrentReport[0].id),
               CustomSectionCardData(
                 'Company',
                 _displayValue(_listCurrentReport[0].company),
@@ -290,6 +289,11 @@ class _DailyProductionFractionationDetailPageState
                 itemBuilder: (context, pageIndex) {
                   return Column(
                     children: [
+                      SizedBox(height: 12.0),
+                      CustomSectionCardData(
+                        'Ticket ID',
+                        _listCurrentReport[pageIndex].id,
+                      ),
                       SizedBox(height: 12.0),
                       CustomSectionCard('Raw Material (RM)', [
                         CustomSectionCardData(
@@ -680,9 +684,7 @@ class _DailyProductionFractionationDetailPageState
           builder:
               (context, provider, userProvider, child) => AlertDialog(
                 title: const Text('Hapus Ticket'),
-                content: Text(
-                  "Apakah anda yakin ingin menghapus Ticket ",
-                ),
+                content: Text("Apakah anda yakin ingin menghapus Ticket "),
                 actions: <Widget>[
                   TextButton(
                     child: const Text("Tidak"),
@@ -711,13 +713,20 @@ class _DailyProductionFractionationDetailPageState
                         userProvider.currentUser?.username ?? "",
                         _listCurrentReport[0].shift ?? "",
                         _listCurrentReport[0].plant ?? "",
-                        formatDatetoString(_listCurrentReport[0].transactionDate, 'yyyy-MM-dd HH:mm:ss') ?? "",
+                        formatDatetoString(
+                              _listCurrentReport[0].transactionDate,
+                              'yyyy-MM-dd HH:mm:ss',
+                            ) ??
+                            "",
                       );
 
                       if (result) {
                         if (!context.mounted) return;
                         Navigator.pop(context); // Close dialog
                         Navigator.pop(context); // Go back from detail page
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Report berhasil di-delete")),
+                        );
                       }
                       // if (!context.mounted) return;
                       // Navigator.pop(context); // Close dialog
@@ -782,7 +791,12 @@ class _DailyProductionFractionationDetailPageState
                           _listCurrentReport[0].shift ?? "",
                           isApproved ? null : _remarkController.text,
                           _listCurrentReport[0].plant ?? "",
-                          formatDatetoString(_listCurrentReport[0].transactionDate, 'yyyy-MM-dd HH:mm:ss') ?? "",
+                          formatDatetoString(
+                                _listCurrentReport[0].transactionDate,
+                                'yyyy-MM-dd HH:mm:ss',
+                              ) ??
+                              "",
+                          _listCurrentReport[0].workCenter ?? "",
                         );
 
                     if (result) {

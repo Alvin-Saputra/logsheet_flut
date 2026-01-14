@@ -1,8 +1,8 @@
 import 'dart:developer';
 
 import 'package:flutter/widgets.dart';
-import 'package:logsheet_app/features/production/data/model/dry_fractionation/dry_fractionation_entity.dart';
-import 'package:logsheet_app/features/production/data/repository/dry_fractionation/dry_fractionation_repository.dart';
+import 'package:logsheet_app/features/production/data/model/dry_fractionation_old/dry_fractionation_entity.dart';
+import 'package:logsheet_app/features/production/data/repository/dry_fractionation_old/dry_fractionation_repository.dart';
 
 class DryFractionationProvider with ChangeNotifier {
   final className = "Dry Fractionation";

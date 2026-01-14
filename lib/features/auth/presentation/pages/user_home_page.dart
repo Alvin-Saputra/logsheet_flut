@@ -12,9 +12,10 @@ import 'package:logsheet_app/features/daily_production/presentation/pages/daily_
 import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/refinery/approval/ref_daily_production_approval_list_page.dart';
 import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/refinery/ref_daily_production_list_page.dart';
 import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/refinery/ref_daily_production_reports_list.dart';
-import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_approval_list_page.dart';
 import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_list_page.dart';
-import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_report_list_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_approval_list_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_list_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_report_list_page.dart';
 import 'package:logsheet_app/features/production/presentation/pages/logsheet/deodorizing_filtration/deodorizing_filtration_approval_list_page.dart';
 import 'package:logsheet_app/features/production/presentation/pages/logsheet/deodorizing_filtration/deodorizing_filtration_list_page.dart';
 import 'package:logsheet_app/features/production/presentation/pages/logsheet/deodorizing_filtration/deodorizing_filtration_report_list_page.dart';
@@ -490,7 +491,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.23"), Text("Build 2026-01-09")],
+              children: [Text("Version 1.0.23"), Text("Build 2026-01-12")],
             ),
           ],
         ),
@@ -1331,69 +1332,69 @@ class _UserHomePageState extends State<UserHomePage> {
               ],
             ),
           ],
-          if (AppRoles.logsheetAccess.contains(userRole)) ...[
-            ExpansionTile(
-              leading: const Icon(
-                Icons.article_rounded,
-                color: Color(0xFF655F5B),
-              ),
-              title: Text(
-                '${formDryFractionation?.treeMenu}\n (${formDryFractionation?.name})',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              childrenPadding: const EdgeInsets.only(left: 20.0),
-              iconColor: const Color(0xFFAB2F2B),
-              collapsedIconColor: Colors.grey,
-              children: [
-                _buildDrawerItem(
-                  icon: Icons.list_alt_outlined,
-                  title: 'List ${formDryFractionation?.name})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => DryFractionationListPage(),
-                      ),
-                    );
-                  },
-                ),
-                // Manager-only Approval item
-                if (AppRoles.logsheetManagerApproval.contains(userRole)) ...[
-                  _buildDrawerItem(
-                    icon: Icons.check_circle_outline,
-                    title: 'Approval (${formDryFractionation?.name})',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => DryFractionationApprovalListPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-                _buildDrawerItem(
-                  icon: Icons.receipt_long_outlined,
-                  title: 'Reports (${formDryFractionation?.name})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => DryFractionationReportListPage(
-                              userName: user.username,
-                              role: user.role,
-                            ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
+          // if (AppRoles.logsheetAccess.contains(userRole)) ...[
+          //   ExpansionTile(
+          //     leading: const Icon(
+          //       Icons.article_rounded,
+          //       color: Color(0xFF655F5B),
+          //     ),
+          //     title: Text(
+          //       '${formDryFractionation?.treeMenu}\n (${formDryFractionation?.name})',
+          //       style: TextStyle(
+          //         color: Colors.black87,
+          //         fontWeight: FontWeight.w600,
+          //       ),
+          //     ),
+          //     childrenPadding: const EdgeInsets.only(left: 20.0),
+          //     iconColor: const Color(0xFFAB2F2B),
+          //     collapsedIconColor: Colors.grey,
+          //     children: [
+          //       _buildDrawerItem(
+          //         icon: Icons.list_alt_outlined,
+          //         title: 'List ${formDryFractionation?.name})',
+          //         onTap: () {
+          //           Navigator.push(
+          //             context,
+          //             MaterialPageRoute(
+          //               builder: (_) => DryFractionationListPage(),
+          //             ),
+          //           );
+          //         },
+          //       ),
+          //       // Manager-only Approval item
+          //       if (AppRoles.logsheetManagerApproval.contains(userRole)) ...[
+          //         // _buildDrawerItem(
+          //         //   icon: Icons.check_circle_outline,
+          //         //   title: 'Approval (${formDryFractionation?.name})',
+          //         //   onTap: () {
+          //         //     Navigator.push(
+          //         //       context,
+          //         //       MaterialPageRoute(
+          //         //         builder: (_) => DryFractionationApprovalListPage(),
+          //         //       ),
+          //         //     );
+          //         //   },
+          //         // ),
+          //       ],
+          //       // _buildDrawerItem(
+          //       //   icon: Icons.receipt_long_outlined,
+          //       //   title: 'Reports (${formDryFractionation?.name})',
+          //       //   onTap: () {
+          //       //     Navigator.push(
+          //       //       context,
+          //       //       MaterialPageRoute(
+          //       //         builder:
+          //       //             (_) => DryFractionationReportListPage(
+          //       //               userName: user.username,
+          //       //               role: user.role,
+          //       //             ),
+          //       //       ),
+          //       //     );
+          //       //   },
+          //       // ),
+          //     ],
+          //   ),
+          // ],
 
           // Daily Productions
           if (AppRoles.logsheetAccess.contains(userRole)) ...[

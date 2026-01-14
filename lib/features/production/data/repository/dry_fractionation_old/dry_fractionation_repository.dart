@@ -1,7 +1,7 @@
 import 'dart:developer';
 
-import 'package:logsheet_app/features/production/data/model/dry_fractionation/dry_fractionation_entity.dart';
-import 'package:logsheet_app/features/production/data/datasources/dry_fractionation/dry_fractionation_mysql_service.dart';
+import 'package:logsheet_app/features/production/data/model/dry_fractionation_old/dry_fractionation_entity.dart';
+import 'package:logsheet_app/features/production/data/datasources/dry_fractionation_old/dry_fractionation_mysql_service.dart';
 
 class DryFractionationRepository {
   final DryFractionationMySQLService _mySQLService;

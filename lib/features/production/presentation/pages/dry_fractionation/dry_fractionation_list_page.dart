@@ -6,11 +6,12 @@ import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/display.dart';
 import 'package:logsheet_app/core/utils/get_status_color.dart';
 import 'package:logsheet_app/core/utils/get_status_text.dart';
-import 'package:logsheet_app/features/production/data/model/dry_fractionation/dry_fractionation_entity.dart';
+import 'package:logsheet_app/features/production/data/model/dry_fractionation_old/dry_fractionation_entity.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
-import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_detail_page.dart';
-import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_input_page.dart';
-import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation/dry_fractionation_provider.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_input.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_detail_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_input_page.dart';
+import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation_old/dry_fractionation_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
@@ -65,7 +66,7 @@ class _DryFractionationListPageState extends State<DryFractionationListPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DryFractionationInputPage(form: form),
+              builder: (context) => DryFractionationInputPage(dataForm: form),
             ),
           );
         },
@@ -172,16 +173,16 @@ class _DryFractionationListPageState extends State<DryFractionationListPage> {
               return Card(
                 child: InkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => DryFractionationDetailPage(
-                              item: item,
-                              isDisplayed: true,
-                            ),
-                      ),
-                    );
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder:
+                    //         (context) => DryFractionationDetailPage(
+                    //           item: item,
+                    //           isDisplayed: true,
+                    //         ),
+                    //   ),
+                    // );
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(

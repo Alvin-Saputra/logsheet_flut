@@ -100,7 +100,8 @@ class _DailyProductionFractionationListPageState
             String dateKey = DateFormat(
               'yyyy-MM-dd',
             ).format(item.transactionDate!);
-            String compositeKey = "$dateKey-${item.plant}-${item.shift}";
+            String wc = item.workCenter ?? "UNKNOWN";
+            String compositeKey = "$dateKey-${item.plant}-$wc-${item.shift}";
 
             // Jika key belum ada, inisialisasi list kosong
             if (!groupedMap.containsKey(compositeKey)) {
