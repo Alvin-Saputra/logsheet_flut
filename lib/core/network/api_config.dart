@@ -9,8 +9,8 @@ class DioClient {
     : _dio = Dio(
         BaseOptions(
           // baseUrl: 'http://10.0.2.2:8000/api',
-           baseUrl: 'https://logsheet-dev.gamasap.com/api',
-          // baseUrl: dotenv.env['API_URL']!,
+          //  baseUrl: 'https://logsheet-dev.gamasap.com/api',
+          baseUrl: dotenv.env['API_URL']!,
           connectTimeout: const Duration(seconds: 60),
           receiveTimeout: const Duration(seconds: 60),
           headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},

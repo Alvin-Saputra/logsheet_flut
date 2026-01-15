@@ -1,20 +1,20 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
-import 'package:logsheet_app/core/utils/display.dart';
-import 'package:logsheet_app/core/utils/get_status_color.dart';
-import 'package:logsheet_app/core/utils/get_status_text.dart';
-import 'package:logsheet_app/features/production/data/model/dry_fractionation_old/dry_fractionation_entity.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
+import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
-import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_input.dart';
-import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_detail_page.dart';
-import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_input_page.dart';
-import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation_old/dry_fractionation_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
+import 'package:logsheet_app/core/widgets/custom_date_field.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_detail_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_input.dart';
+import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation/dry_fractionation_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_detail_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_input_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_provider.dart';
 import 'package:provider/provider.dart';
 
 class DryFractionationListPage extends StatefulWidget {
@@ -26,337 +26,292 @@ class DryFractionationListPage extends StatefulWidget {
 }
 
 class _DryFractionationListPageState extends State<DryFractionationListPage> {
-  DataFormNoEntity? form;
-  @override
-  void initState() {
-    super.initState();
-    final username = context.read<UserProvider>().currentUser?.username;
-    final role = context.read<UserProvider>().currentUser?.role;
-    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
+  DataFormNoEntity? formData;
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (timeStamp) => context.read<DryFractionationProvider>().fetchAllTickets(
-        null,
-        null,
-        username ?? "",
-        role ?? "",
-        plantCode,
-      ),
-    );
+  final TextEditingController dateEntryController = TextEditingController();
+  @override
+  initState() {
+    super.initState();
+    context
+        .read<DryFractionationProvider>()
+        .clearReports();
   }
 
   @override
   Widget build(BuildContext context) {
-    form =
-        context
-            .read<DataFormNoProvider>()
-            .dataFormNoList
-            .where(
-              (form) =>
-                  form.isMenu == "Logsheet_Dry_Fractionation" &&
-                  form.isActive == "T",
-            )
-            .first;
+    final userRole = context.read<UserProvider>().currentUser?.role;
     return Scaffold(
       appBar: _buildAppBar(),
-      body: _buildBody(),
+      body: _buildBody(userRole ?? ''),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          log("Tombol tambah Dry Fractionation Ticket diklik");
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DryFractionationInputPage(dataForm: form),
+              builder:
+                  (context) =>
+                      DryFractionationInputPage(form: formData,),
             ),
-          );
+          ).then((_) async {
+            if (!mounted) return;
+
+            final plant = context.read<PlantProvider>().currentPlant;
+            final plantId = plant?.code ?? '';
+            final formattedDate = changeStringDateFormat(
+              dateEntryController.text,
+              'dd-MM-yyyy',
+              'yyyy-MM-dd',
+            );
+            await context.read<DryFractionationProvider>().fetchReport(
+              plantId,
+              formattedDate,
+            );
+          });
         },
-        label: const Text("Tambah Ticket"),
+        label: const Text("Tambah Report"),
         icon: Icon(Icons.add),
+        backgroundColor: Color(0xFFB91C1C),
+        foregroundColor: Colors.white,
       ),
     );
   }
 
-  Widget _buildBody() {
-    return Consumer<DryFractionationProvider>(
-      builder: (context, provider, child) {
-        List<DryFractionationEntity> filteredList = provider.reportsList;
-        if (provider.isLoadingFetchTickets) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (provider.errorMessage != null) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Error: ${provider.errorMessage!}',
-                    style: const TextStyle(color: Colors.red, fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                  OutlinedButton(
-                    onPressed: () async {
-                      final username =
-                          context.read<UserProvider>().currentUser?.username;
-                      final role =
-                          context.read<UserProvider>().currentUser?.role;
-                      final plantCode =
-                          context.read<PlantProvider>().currentPlant?.code ??
-                          "";
-
-                      await context
-                          .read<DryFractionationProvider>()
-                          .fetchAllTickets(
-                            null,
-                            null,
-                            username ?? "",
-                            role ?? "",
-                            plantCode,
-                          );
-                    },
-                    child: const Text("Refresh"),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        if (filteredList.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'No data',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                  OutlinedButton(
-                    onPressed: () async {
-                      final username =
-                          context.read<UserProvider>().currentUser?.username ??
-                          "";
-                      final role =
-                          context.read<UserProvider>().currentUser?.role ?? "";
-                      final plantCode =
-                          context.read<PlantProvider>().currentPlant?.code ??
-                          "";
-
-                      await context
-                          .read<DryFractionationProvider>()
-                          .fetchAllTickets(
-                            null,
-                            null,
-                            username,
-                            role,
-                            plantCode,
-                          );
-                    },
-                    child: const Text("Refresh"),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        return Padding(
-          padding: EdgeInsetsGeometry.symmetric(horizontal: 8, vertical: 4),
-          child: ListView.builder(
-            itemCount: filteredList.length,
-            itemBuilder: (context, index) {
-              final item = filteredList[index];
-              log("list from provider length ${provider.reportsList.length}");
-              return Card(
-                child: InkWell(
-                  onTap: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder:
-                    //         (context) => DryFractionationDetailPage(
-                    //           item: item,
-                    //           isDisplayed: true,
-                    //         ),
-                    //   ),
-                    // );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 18.0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                item.id,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blueGrey,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: getStatusColor(item),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                getStatusText(item),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Divider(height: 16),
-
-                        // Transaction Date and Time
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.calendar_today,
-                              size: 16,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              DateFormat(
-                                'yyyy-MM-dd',
-                              ).format(item.transactionDate!),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            SizedBox(width: 16),
-                            const Icon(
-                              Icons.schedule,
-                              size: 18,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              timeOfDayToString(
-                                item.fillingStartTime ?? TimeOfDay.now(),
-                              ),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            SizedBox(width: 16),
-                            const Icon(
-                              Icons.timelapse,
-                              size: 18,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              "Shift ${item.shift}",
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            SvgPicture.asset(
-                              'assets/icons/oil-refinery-tanks.svg',
-                              height: 20,
-                              width: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text("${item.workCenter}"),
-                            const SizedBox(width: 50),
-
-                            Icon(Icons.oil_barrel_rounded),
-                            const SizedBox(width: 6),
-                            Text(
-                              item.oilType == null ? "N/A" : "${item.oilType}",
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        // Entered By
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.person,
-                              size: 16,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Entried by: ${item.entryBy}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      },
+  AppBar _buildAppBar() {
+    formData =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where((form) => form.isMenu == "Logsheet_Dry_Fractionation")
+            .first;
+    return AppBar(title: Text("List (${formData!.code})"), actions: [
+        
+      ],
     );
   }
 
-  AppBar _buildAppBar() {
-    return AppBar(
-      title: Text("Dry Frac. List (${form?.code})"),
-      actions: [
-        context.watch<DryFractionationProvider>().isLoadingFetchTickets
-            ? CircularProgressIndicator()
-            : IconButton(
-              onPressed: () async {
-                final username =
-                    context.read<UserProvider>().currentUser?.username;
-                final role = context.read<UserProvider>().currentUser?.role;
-                final plantCode =
-                    context.read<PlantProvider>().currentPlant?.code ?? "";
-                await context.read<DryFractionationProvider>().fetchAllTickets(
-                  null,
-                  null,
-                  username ?? "",
-                  role ?? "",
-                  plantCode,
+  Widget _buildBody(String role) {
+    return Column(
+      children: [
+        _buildFilterSection(context, role),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Builder(
+              builder: (context) {
+                return Consumer<DryFractionationProvider>(
+                  builder: (
+                    BuildContext context,
+                    DryFractionationProvider provider,
+                    Widget? child,
+                  ) {
+                    return (provider.isLoading)
+                        ? Center(child: CircularProgressIndicator())
+                        : (provider.reportList.isEmpty)
+                        ? Center(child: Text('No data'))
+                        : ListView.builder(
+                          itemCount: provider.reportList.length,
+                          itemBuilder: (context, index) {
+                            final item = provider.reportList[index];
+                            return _cardItem(
+                              id: item.id ?? '',
+                              date: item.entryDate?.toString() ?? '',
+                              entryBy: item.entryBy ?? '',
+                              material: item.crystallizer,
+                              role: role,
+                            );
+                          },
+                        );
+                  },
                 );
               },
-              icon: Consumer<DryFractionationProvider>(
-                builder: (context, provider, child) {
-                  if (provider.isLoadingFetchTickets) {
-                    return const CircularProgressIndicator();
-                  }
-                  return const Icon(Icons.replay);
-                },
-              ),
             ),
+          ),
+        ),
       ],
     );
+  }
+
+  Widget _buildFilterSection(BuildContext context, String role) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: CustomDateField(
+              controller: dateEntryController,
+              label: 'Tanggal',
+              icon: Icons.event,
+            ),
+          ),
+          SizedBox(width: 16),
+          ElevatedButton.icon(
+            onPressed: () async {
+              if (dateEntryController.text != "") {
+                final formattedDate = changeStringDateFormat(
+                  dateEntryController.text,
+                  'dd-MM-yyyy',
+                  'yyyy-MM-dd',
+                );
+                log('Searching for date: $formattedDate');
+
+                final plant = context.read<PlantProvider>().currentPlant;
+                final plantId = plant?.code ?? '';
+                await context.read<DryFractionationProvider>().fetchReport(
+                  plantId,
+                  formattedDate,
+                  role: role,
+                );
+              } else if (dateEntryController.text == "") {
+                showSnackBar("Silahkan Pilih Tanggal", this.context);
+              }
+
+              // }
+            },
+            icon: const Icon(Icons.search),
+            label: const Text('Cari'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFAB2F2B),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _cardItem({
+    required String id,
+    required String date,
+    required String? material,
+    required String? entryBy,
+    required String? role,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => DryFractionationDetailPage(
+                  data: context
+                      .read<DryFractionationProvider>()
+                      .reportList
+                      .firstWhere((element) => element.id == id),
+                ),
+          ),
+        ).then((_) async {
+          if (!mounted) return;
+
+          final plant = context.read<PlantProvider>().currentPlant;
+          final plantId = plant?.code ?? '';
+          final formattedDate = changeStringDateFormat(
+            dateEntryController.text,
+            'dd-MM-yyyy',
+            'yyyy-MM-dd',
+          );
+          await context.read<DryFractionationProvider>().fetchReport(
+            plantId,
+            formattedDate,
+          );
+        });
+      },
+      child: Card(
+        child: Padding(
+          padding: EdgeInsetsGeometry.all(16.0),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      "$id",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueGrey,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Divider(height: 16),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.calendar_today,
+                    size: 16,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    "${_formatDateString(date)}",
+                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                  ),
+                  SizedBox(width: 8),
+
+                  SizedBox(width: 8),
+                  const Icon(Icons.storage, size: 18, color: Colors.grey),
+                  SizedBox(width: 8),
+                  Text(
+                    "$material",
+                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                  ),
+                  SizedBox(width: 16),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.person, size: 16, color: Colors.grey),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Entried by: $entryBy',
+                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                  ),
+                ],
+              ),
+              // Row(
+              //   children: [
+              //     const Icon(
+              //       Icons.car_repair_outlined,
+              //       size: 18,
+              //       color: Colors.grey,
+              //     ),
+              //     SizedBox(width: 8),
+              //     Text(
+              //       'Vessel/Vechicle: $vesselVehicle',
+              //       style: const TextStyle(fontSize: 14, color: Colors.black87),
+              //     ),
+              //   ],
+              // ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatDateString(String? s) {
+    if (s == null || s.isEmpty) return '-';
+    final dt = DateTime.tryParse(s);
+    if (dt != null) {
+      return DateFormat('dd-MM-yyyy').format(dt);
+    }
+    // If parsing fails, return the original string as a fallback
+    return s;
   }
 }

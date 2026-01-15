@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/core/widgets/custom_app_bar.dart';
 import 'package:logsheet_app/core/widgets/custom_date_field.dart';
-import 'package:logsheet_app/core/widgets/custom_hour_field.dart';
 import 'package:logsheet_app/core/widgets/custom_hour_minute_field.dart';
 import 'package:logsheet_app/core/widgets/custom_hour_minute_picker.dart';
-import 'package:logsheet_app/core/widgets/custom_hour_picker.dart';
 import 'package:logsheet_app/core/widgets/custom_save_button.dart';
 import 'package:logsheet_app/core/widgets/custom_text.dart';
 import 'package:logsheet_app/core/widgets/custom_text_field.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
 import 'package:logsheet_app/features/production/data/model/dry_fractionation/local/dry_fractionation_detail_entity.dart';
 import 'package:logsheet_app/features/production/data/model/dry_fractionation/local/dry_fractionation_header_entity.dart';
@@ -17,16 +17,18 @@ import 'package:logsheet_app/features/production/presentation/pages/dry_fraction
 import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation/dry_fractionation_provider.dart';
 import 'package:provider/provider.dart';
 
-class DryFractionationInputPage extends StatefulWidget {
-  const DryFractionationInputPage({super.key, required this.form});
-  final DataFormNoEntity? form;
+class DryFractionationEditPage extends StatefulWidget {
+  const DryFractionationEditPage({super.key, required this.data});
+
+  final DryFractionationHeaderEntity data;
 
   @override
-  State<DryFractionationInputPage> createState() =>
-      _DryFractionationInputPageState();
+  State<DryFractionationEditPage> createState() =>
+      _DryFractionationEditPageState();
 }
 
-class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
+class _DryFractionationEditPageState extends State<DryFractionationEditPage> {
+  DataFormNoEntity? formData;
   final TextEditingController dateController = TextEditingController();
   final TextEditingController feedOilIvController = TextEditingController();
 
@@ -60,15 +62,93 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
   @override
   void initState() {
     super.initState();
-    _addNewRow();
+    if (widget.data.id.isNotEmpty) {
+      _populateData();
+    } else {
+      // Jika mode Create Baru, set tanggal hari ini & tambah 1 baris kosong
+      dateController.text =
+          formatDatetoString(DateTime.now(), 'dd-MM-yyyy') ?? '';
+      _addNewRow();
+    }
+  }
+
+  void _populateData() {
+    final data = widget.data;
+
+    // --- 1. POPULATE HEADER ---
+
+    // Date (Convert DateTime ke String format dd-MM-yyyy)
+    if (data.date != null) {
+      dateController.text =
+          formatDatetoString(DateTime.now(), 'dd-MM-yyyy') ?? '';
+    }
+
+    // Dropdown
+    selectedCrystallizer = data.crystallizer;
+
+    // Numeric Fields (Pastikan handle null dengan '??')
+    feedOilIvController.text = data.feedOilIv?.toString() ?? '';
+    initialOilLevelController.text = data.initialOilLevel?.toString() ?? '';
+    coolingStartTempController.text = data.coolingStartTemp?.toString() ?? '';
+    agitatorSpeedController.text = data.agitatorSpeed?.toString() ?? '';
+    waterPumpPresController.text = data.waterPumpPres?.toString() ?? '';
+
+    // Time Pickers (Entity Anda sudah TimeOfDay, jadi tinggal assign)
+    selectedFillingStartTime = data.fillingStartTime;
+    selectedFillingEndTime = data.fillingEndTime;
+    selectedCoolingStartTime = data.coolingStartTime;
+
+    // --- 2. POPULATE DETAILS ---
+
+    if (data.details.isNotEmpty) {
+      // Bersihkan list bawaan jika ada
+      inputItems.clear();
+
+      for (var detail in data.details) {
+        // Buat object Input Item baru (yang berisi controller2 kosong)
+        var item = DryFractionationInputItem();
+        item.id = detail.id;
+        // Isi controller di dalam item tersebut dengan data detail
+        item.filtrationTempController.text =
+            detail.filtrationTemp?.toString() ?? '';
+        item.loadController.text = detail.load?.toString() ?? '';
+        item.oleinIvController.text = detail.oleinIv?.toString() ?? '';
+        item.oleinCpController.text = detail.oleinCp?.toString() ?? '';
+        item.oleinFfaController.text = detail.oleinFfa?.toString() ?? '';
+        item.oleinColorRedController.text =
+            detail.oleinColorRed?.toString() ?? '';
+        item.stearinIvController.text = detail.stearinIv?.toString() ?? '';
+        item.stearinFfaController.text = detail.stearinFfa?.toString() ?? '';
+        item.stearinColorRedController.text =
+            detail.stearinColorRed?.toString() ?? '';
+        item.stearinPvController.text = detail.stearinPv?.toString() ?? '';
+
+        // Isi TimeOfDay untuk detail
+        item.timeStartFiltration = detail.timeStartFiltration;
+        item.timeEndFiltration = detail.timeEndFiltration;
+
+        // Masukkan item yang sudah terisi ke list utama
+        inputItems.add(item);
+      }
+    } else {
+      // Jika header ada tapi detail kosong (jarang terjadi), kasih 1 baris kosong
+      _addNewRow();
+    }
+
+    // Trigger rebuild UI agar data tampil
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    formData =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where((form) => form.isMenu == "Logsheet_Dry_Fractionation")
+            .first;
     return Scaffold(
-      appBar: CustomAppBar(
-        title: 'Dry Fractionation (${widget.form?.code})',
-      ),
+      appBar: CustomAppBar(title: 'Dry Fractionation (${formData?.code})'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: Column(
@@ -566,29 +646,6 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
                                   },
                                 ),
                           ),
-
-
-                          CustomText(
-                            text: "Time End Filtration",
-                            size: 16,
-                            weight: FontWeight.w600,
-                            color: Colors.black,
-                          ),
-                          const SizedBox(height: 8.0),
-                          CustomHourMinuteField(
-                            selectedTime: inputItems[index].timeEndFiltration,
-                            onTap:
-                                () => _showHourPicker(
-                                  context,
-                                  inputItems[index].timeEndFiltration,
-                                  (val) {
-                                    setState(() {
-                                      inputItems[index].timeEndFiltration =
-                                          val;
-                                    });
-                                  },
-                                ),
-                          ),
                         ],
                       ),
                     ),
@@ -665,6 +722,7 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
 
       detailEntities.add(
         DryFractionationDetailEntity(
+          id: item.id ?? '',
           filtrationCycleNumber: i + 1, // Otomatis 1, 2, 3...
           // Asumsi inputItems menyimpan DateTime di variabel terpisah atau parsing controller
           filtrationDate:
@@ -681,7 +739,6 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
           stearinFfa: parseDouble(item.stearinFfaController.text),
           stearinColorRed: parseDouble(item.stearinColorRedController.text),
           stearinPv: parseDouble(item.stearinPvController.text),
-          id: '',
           idHdr: '',
         ),
       );
@@ -689,6 +746,7 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
 
     // 3. Mapping Header
     DryFractionationHeaderEntity headerData = DryFractionationHeaderEntity(
+      id: widget.data.id.isNotEmpty ? widget.data.id : '',
       date: changeStringDateFormat(
         dateController.text,
         'dd-MM-yyyy',
@@ -709,7 +767,6 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
       waterPumpPres: parseDouble(waterPumpPresController.text),
       remarks: "", // Tambahkan controller remarks jika perlu
       details: detailEntities,
-      id: '',
       flag: '',
       entryBy: '',
       entryDate: null,
@@ -737,9 +794,9 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
     );
 
     // Asumsi provider Anda memiliki parameter menuId
-    final isSuccess = await provider.insertReport(
+    final isSuccess = await provider.updateReport(
       headerInput: headerData,
-      menuId: widget.form?.id.toString() ?? '0',
+      menuId: formData?.id.toString() ?? '0',
     );
 
     if (mounted) {
@@ -751,7 +808,10 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Gagal menyimpan data ${provider.errorMessage}" ?? "Gagal menyimpan data"),
+            content: Text(
+              "Gagal menyimpan data ${provider.errorMessage}" ??
+                  "Gagal menyimpan data",
+            ),
           ),
         );
       }

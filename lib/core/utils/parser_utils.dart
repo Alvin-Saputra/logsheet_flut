@@ -53,6 +53,7 @@ String? formatTimeOfDay(TimeOfDay? time, {bool showSecond = true}) {
 
 String? formatDatetoString(DateTime? date, String format) {
   if (date == null) {
+    return null;
     return "";
   }
   try {

@@ -51,7 +51,7 @@
 //             .read<DataFormNoProvider>()
 //             .dataFormNoList
 //             .where(
-//               (form) =>
+//               (forfloatingm) =>
 //                   form.isMenu == "Logsheet_Dry_Fractionation" &&
 //                   form.isActive == "T",
 //             )
@@ -59,7 +59,7 @@
 //     return Scaffold(
 //       appBar: _buildAppBar(),
 //       body: _buildBody(),
-//       floatingActionButton: FloatingActionButton.extended(
+//       ActionButton: FloatingActionButton.extended(
 //         onPressed: () {
 //           log("Tombol tambah Dry Fractionation Ticket diklik");
 //           Navigator.push(
