@@ -11,23 +11,23 @@ import 'package:logsheet_app/features/production/presentation/pages/dry_fraction
 import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation/dry_fractionation_provider.dart';
 import 'package:provider/provider.dart';
 
-class DryFractionationApprovalDetailPage extends StatefulWidget {
+class DryFractionationReportDetailPage extends StatefulWidget {
   final List<DryFractionationHeaderEntity> reportEntities;
   final String title;
 
-  const DryFractionationApprovalDetailPage({
+  const DryFractionationReportDetailPage({
     super.key,
     required this.reportEntities,
     required this.title,
   });
 
   @override
-  State<DryFractionationApprovalDetailPage> createState() =>
-      _DryFractionationApprovalDetailPageState();
+  State<DryFractionationReportDetailPage> createState() =>
+      _DryFractionationReportDetailPageState();
 }
 
-class _DryFractionationApprovalDetailPageState
-    extends State<DryFractionationApprovalDetailPage> {
+class _DryFractionationReportDetailPageState
+    extends State<DryFractionationReportDetailPage> {
   final TextEditingController remarkController = TextEditingController();
   final PageController detailPageControllers = PageController();
 
@@ -199,10 +199,6 @@ class _DryFractionationApprovalDetailPageState
                                 const SizedBox(height: 16),
 
                                 // 3. Approval Actions (Only if leadProd & not finalized)
-                                if (AppRoles.productionQualityManagerApproval.contains(user?.role) &&
-                                    report.approvedStatus == null)
-                                  _buildActionButtons(context, report),
-
                                 const SizedBox(height: 8),
                               ],
                             ),
@@ -213,55 +209,6 @@ class _DryFractionationApprovalDetailPageState
                   },
                 ),
               ),
-              if (AppRoles.productionQualityManagerApproval.contains(user?.role) &&
-                  widget.reportEntities.every(
-                    (report) => report.preparedStatus == null,
-                  ))
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: ElevatedButton.icon(
-                            icon: const Icon(Icons.close, size: 16),
-                            label: const Text("Reject All"),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red[700],
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            onPressed:
-                                () => _showApprovePerDateConfirmationDialog(
-                                  context,
-                                  false,
-                                ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: ElevatedButton.icon(
-                            icon: const Icon(Icons.check, size: 16),
-                            label: const Text("Approve All"),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green[700],
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            onPressed:
-                                () => _showApprovePerDateConfirmationDialog(
-                                  context,
-                                  true,
-                                ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
             ],
           );
         },
@@ -296,198 +243,6 @@ class _DryFractionationApprovalDetailPageState
   }
 
   // Tombol Approve/Reject
-  Widget _buildActionButtons(
-    BuildContext context,
-    DryFractionationHeaderEntity report,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            icon: const Icon(Icons.close, size: 16),
-            label: const Text("Reject"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[700],
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-            onPressed:
-                () => _showApproveConfirmationDialog(context, report, false),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ElevatedButton.icon(
-            icon: const Icon(Icons.check, size: 16),
-            label: const Text("Approve"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green[700],
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-            onPressed:
-                () => _showApproveConfirmationDialog(context, report, true),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showApproveConfirmationDialog(
-    BuildContext context,
-    DryFractionationHeaderEntity report,
-    bool isApproved,
-  ) {
-    remarkController.clear();
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(isApproved ? "Approve Batch" : "Reject Batch"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text("Crystallizer: ${report.crystallizer}"),
-              const SizedBox(height: 12),
-              if (!isApproved)
-                TextField(
-                  controller: remarkController,
-                  decoration: const InputDecoration(
-                    labelText: "Rejection Remarks",
-                    border: OutlineInputBorder(),
-                  ),
-                  maxLines: 3,
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isApproved ? Colors.green : Colors.red,
-              ),
-              onPressed: () async {
-                if (!isApproved && remarkController.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Remarks required.")),
-                  );
-                  return;
-                }
-                Navigator.pop(dialogContext);
-
-                final success = await context
-                    .read<DryFractionationProvider>()
-                    .updateApproveRejectReport(
-                      status: isApproved ? 'Approved' : 'Rejected',
-                      plant: report.plant ?? '',
-                      date: report.date!,
-                      crystallizer: report.crystallizer!,
-                    );
-
-                if (success && mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Success!"),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                  setState(() {
-                    // 1. Cari posisi (index) item yang sedang diproses di dalam list
-                    final index = widget.reportEntities.indexOf(report);
-
-                    // 2. Jika item ditemukan, ganti dengan versi baru hasil copyWith
-                    if (index != -1) {
-                      widget.reportEntities[index] = report.copyWith(
-                        approvedStatus: isApproved ? 'Approved' : 'Rejected',
-                      );
-                    }
-                  });
-                }
-              },
-              child: const Text(
-                "Confirm",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showApprovePerDateConfirmationDialog(
-    BuildContext context,
-    bool isApproved,
-  ) {
-    remarkController.clear();
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(isApproved ? "Approve All" : "Reject All"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (!isApproved)
-                TextField(
-                  controller: remarkController,
-                  decoration: const InputDecoration(
-                    labelText: "Rejection Remarks",
-                    border: OutlineInputBorder(),
-                  ),
-                  maxLines: 3,
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isApproved ? Colors.green : Colors.red,
-              ),
-              onPressed: () async {
-                if (!isApproved && remarkController.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Remarks required.")),
-                  );
-                  return;
-                }
-                Navigator.pop(dialogContext);
-
-                final success = await context
-                    .read<DryFractionationProvider>()
-                    .updateApproveRejectPerDateReport(
-                      status: isApproved ? 'Approved' : 'Rejected',
-                      plant: widget.reportEntities[0].plant ?? '',
-                      date: widget.reportEntities[0].date!,
-                    );
-
-                if (success && mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Success!"),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                  Navigator.pop(this.context);
-                }
-              },
-              child: const Text(
-                "Confirm",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   void _showDetailBottomSheet(
     BuildContext context,

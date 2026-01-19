@@ -264,6 +264,88 @@ class DryFractionationProvider with ChangeNotifier {
     }
   }
 
+  Future<void> fetchReportForManager(
+    String plantId,
+    String? date, {
+    String? role,
+  }) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      String token = await _storageService.readSessionToken() ?? '';
+
+      // DEBUG LOG 1
+      print('DEBUG: Start fetching...');
+
+      final response = await _apiService.fetchReports(
+        'Bearer $token',
+        plantId ?? '',
+        date ?? '',
+      );
+
+      // DEBUG LOG 2
+      print('DEBUG: Response received. Success: ${response?.success}');
+
+      if (response != null && response.success == true) {
+        final data = response.data;
+
+        // DEBUG LOG 3
+        print('DEBUG: Data raw length: ${data?.length}');
+
+        // PERBAIKAN: Gunakan List.from untuk keamanan tipe data
+        _reportList = data ?? [];
+
+        if (AppRoles.productionQualityManagerApproval.contains(role)) {
+          // DEBUG LOG: Cek data sebelum di-filter
+          print(
+            "DEBUG FILTER: Total data sebelum filter: ${_reportList.length}",
+          );
+          if (_reportList.isNotEmpty) {
+            print(
+              "DEBUG FILTER: Sample Status 1: '${_reportList.first.preparedStatus}'",
+            );
+          }
+
+          _reportList =
+              _reportList.where((report) {
+                // Ambil status, trim spasi, dan ubah ke huruf kecil untuk perbandingan aman
+                final status = report.preparedStatus?.trim().toLowerCase();
+                return status == "approved";
+              }).toList();
+
+          // DEBUG LOG: Cek hasil setelah filter
+          print(
+            "DEBUG FILTER: Total data SETELAH filter: ${_reportList.length}",
+          );
+
+          notifyListeners();
+        }
+
+        // DEBUG LOG 4
+        print('DEBUG: _reportList updated. Length: ${_reportList.length}');
+
+        notifyListeners();
+      } else {
+        print('DEBUG: Fetch failed logic triggered');
+        _setErrorMessage('Fetch report failed.');
+      }
+      // Hapus notifyListeners() kedua disini karena sudah ada di dalam if dan finally
+      // notifyListeners();
+    } catch (e, stacktrace) {
+      // Tambahkan stacktrace
+      // DEBUG LOG ERROR
+      print('DEBUG ERROR: $e');
+      print('DEBUG STACKTRACE: $stacktrace');
+
+      _setErrorMessage("$e");
+      notifyListeners();
+    } finally {
+      _setLoading(false);
+      // notifyListeners(); // Ini sebenarnya redundant karena _setLoading sudah memanggil notifyListeners
+    }
+  }
+
   Future<bool> deleteReport({required String id}) async {
     _setLoadingDelete(true);
     _setErrorMessage(null);
@@ -444,6 +526,46 @@ class DryFractionationProvider with ChangeNotifier {
 
       String token = await _storageService.readSessionToken() ?? '';
       final response = await _apiService.updateApproveRejectReport(
+        'Bearer $token',
+        body,
+      );
+
+      if (response != null && response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage('Update Approve/Reject Report Failed');
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage(e.toString());
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoadingEdit(false);
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateApproveRejectPerDateReport({
+    required String status,
+    String? remarks,
+    required String plant,
+    required DateTime date,
+  }) async {
+    _setLoadingEdit(true);
+    _setErrorMessage(null);
+    try {
+      final body = {
+        "approve_status": status,
+        "remark": remarks,
+        "plant": plant,
+        "date": formatDatetoString(date, 'yyyy-MM-dd'),
+      };
+
+      String token = await _storageService.readSessionToken() ?? '';
+      final response = await _apiService.updateApproveRejectReportPerDate(
         'Bearer $token',
         body,
       );

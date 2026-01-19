@@ -1,32 +1,25 @@
-import 'dart:developer';
-
-import 'package:expandable_page_view/expandable_page_view.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
-import 'package:logsheet_app/core/widgets/custom_info_card.dart';
 import 'package:logsheet_app/core/widgets/custom_section_card.dart';
 import 'package:logsheet_app/core/widgets/custom_section_card_data.dart';
-import 'package:logsheet_app/features/master_data/data/model/master/user_entity.dart';
+import 'package:logsheet_app/core/widgets/custom_section_title.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:logsheet_app/features/production/data/model/dry_fractionation/local/dry_fractionation_detail_entity.dart';
 import 'package:logsheet_app/features/production/data/model/dry_fractionation/local/dry_fractionation_header_entity.dart';
-import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_edit_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_edit_page.dart'; // Pastikan import ini ada
 import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation/dry_fractionation_provider.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_header_entity.dart';
-import 'package:logsheet_app/core/widgets/custom_remark_field.dart';
-import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_edit_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class DryFractionationDetailPage extends StatefulWidget {
-  DryFractionationDetailPage({super.key, required this.data});
+  final List<DryFractionationHeaderEntity> reportEntities;
+  final String title;
 
-  final DryFractionationHeaderEntity data;
+  const DryFractionationDetailPage({
+    super.key,
+    required this.reportEntities,
+    required this.title,
+  });
 
   @override
   State<DryFractionationDetailPage> createState() =>
@@ -36,395 +29,555 @@ class DryFractionationDetailPage extends StatefulWidget {
 class _DryFractionationDetailPageState
     extends State<DryFractionationDetailPage> {
   final TextEditingController remarkController = TextEditingController();
-  final PageController detailPageControllers = PageController();
-  late DryFractionationHeaderEntity _data;
-  @override
-  @override
+
+  List<DryFractionationHeaderEntity> _localReports = [];
+
   void initState() {
     super.initState();
-    _data = widget.data;
+    // --- [CHANGE 2] Initialize local list from widget data ---
+    _localReports = List.from(widget.reportEntities);
+  }
+
+  Future<void> _refreshPageData() async {
+    if (_localReports.isEmpty) return;
+
+    // Get parameters from the first item (Date & Plant)
+    final firstItem = _localReports.first;
+    final plant = firstItem.plant ?? '';
+    final role = context.read<UserProvider>().currentUser?.role ?? '';
+
+    // Format Date to String (yyyy-MM-dd) for the API
+    final dateString =
+        firstItem.date != null
+            ? formatDatetoString(firstItem.date, 'yyyy-MM-dd')
+            : '';
+
+    // Call Provider to fetch data
+    await context.read<DryFractionationProvider>().fetchReport(
+      plant,
+      dateString,
+      role: role,
+    );
+
+    // Update local list with the result from Provider
+    if (mounted) {
+      setState(() {
+        _localReports = context.read<DryFractionationProvider>().reportList;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().currentUser;
+
     return Scaffold(
-      appBar: _buildAppBar(context),
-      body: Consumer<DailyQualityCompositeFractionationProvider>(
-        builder: (
-          BuildContext context,
-          DailyQualityCompositeFractionationProvider value,
-          Widget? child,
-        ) {
-          return (value.isLoadingApproval)
-              ? const Center(child: CircularProgressIndicator())
-              : _buildBody(context, user);
+      appBar: AppBar(title: Text(widget.title)),
+      body: Consumer<DryFractionationProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoadingApproval || provider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(8.0),
+                  itemCount: _localReports.length,
+                  itemBuilder: (context, index) {
+                    final report = _localReports[index];
+
+                    IconData? icon;
+                    Color? iconColor;
+                    Color? cardColor;
+
+                    String? showedStatus = '';
+
+                    if (report.preparedStatus == "Approved" &&
+                        report.approvedStatus == "Approved") {
+                      icon = Icons.check_circle;
+                      iconColor = Colors.green;
+                      cardColor = Colors.green[50];
+                      showedStatus = "Approved";
+                    } else if (report.preparedStatus == "Rejected" ||
+                        report.approvedStatus == "Rejected") {
+                      icon = Icons.cancel;
+                      iconColor = Colors.red;
+                      cardColor = Colors.red[50];
+                      showedStatus = "Rejected";
+                    } else if (report.preparedStatus != null) {
+                      icon = Icons.hourglass_empty;
+                      iconColor = Colors.orange;
+                      cardColor = Colors.orange[50];
+                      showedStatus = "Prepared";
+                    } else if (report.preparedStatus == null &&
+                        report.approvedStatus == null) {
+                      icon = Icons.hourglass_empty;
+                      iconColor = Colors.blue;
+                      cardColor = Colors.blue[50];
+                      showedStatus = "Submitted";
+                    }
+
+                    return Card(
+                      color: cardColor,
+                      elevation: 2,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ExpansionTile(
+                        initiallyExpanded: false,
+                        leading: Icon(icon, color: iconColor),
+                        // Modifikasi Trailing untuk menampilkan Status & Tombol Edit
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              showedStatus ?? '',
+                              style: TextStyle(
+                                color: iconColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                            // Tampilkan tombol edit jika status masih awal (Submitted / null)
+                            if (report.preparedStatus == null &&
+                                report.isCompleted == false) ...[
+                              const SizedBox(width: 4),
+                              IconButton(
+                                icon: const Icon(Icons.edit, size: 20),
+                                tooltip: 'Edit Report',
+                                onPressed: () async {
+                                  // Navigasi ke halaman edit
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => DryFractionationEditPage(
+                                            data: report,
+                                          ),
+                                    ),
+                                  );
+                                  // Refresh UI setelah kembali dari edit page (jika ada perubahan)
+                                  if (result == true) {
+                                    await _refreshPageData();
+                                  }
+                                },
+                              ),
+
+                              IconButton(
+                                icon: const Icon(Icons.delete, size: 20),
+                                tooltip: 'Delete Report',
+                                onPressed: () async {
+                                  return _showDeleteConfirmationDialog(
+                                    context,
+                                    id: report.id,
+                                  );
+                                },
+                              ),
+                            ],
+                          ],
+                        ),
+                        title: Text(
+                          'Crystallizer: ${report.crystallizer}',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text('ID: ${report.id}'),
+
+                        children: [
+                          Container(
+                            color: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // 1. Header Information (Process Parameters)
+                                CustomSectionCard("Process Parameters", [
+                                  CustomSectionCardData(
+                                    "Feed Oil IV",
+                                    "${report.feedOilIv ?? '-'}",
+                                  ),
+                                  CustomSectionCardData(
+                                    "Filling Start",
+                                    formatTimeOfDay(report.fillingStartTime) ??
+                                        '-',
+                                  ),
+                                  CustomSectionCardData(
+                                    "Filling End",
+                                    formatTimeOfDay(report.fillingEndTime) ??
+                                        '-',
+                                  ),
+                                  CustomSectionCardData(
+                                    "Cooling Start Temp",
+                                    "${report.coolingStartTemp ?? '-'}",
+                                  ),
+                                ]),
+
+                                const Divider(),
+
+                                // 2. Detail Data (Filtration Cycles)
+                                CustomSectionTitle(
+                                  title:
+                                      "Filtration Details (${report.details.length} Cycles)",
+                                ),
+                                if (report.details.isEmpty)
+                                  const Padding(
+                                    padding: EdgeInsets.all(8),
+                                    child: Text("No details recorded."),
+                                  ),
+
+                                ...report.details.map((detail) {
+                                  return _buildDetailRowItem(detail);
+                                }).toList(),
+
+                                const SizedBox(height: 16),
+
+                                // 3. Approval Actions (Only if leadProd & not finalized)
+                                if (AppRoles.leadProd.contains(user?.role) &&
+                                    report.preparedStatus == null)
+                                  _buildActionButtons(context, report),
+
+                                const SizedBox(height: 8),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              if (AppRoles.leadProd.contains(user?.role) &&
+                  widget.reportEntities.every(
+                    (report) => report.preparedStatus == null,
+                  ))
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.close, size: 16),
+                            label: const Text("Reject All"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red[700],
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            onPressed:
+                                () => _showApprovePerDateConfirmationDialog(
+                                  context,
+                                  false,
+                                ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.check, size: 16),
+                            label: const Text("Approve All"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green[700],
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            onPressed:
+                                () => _showApprovePerDateConfirmationDialog(
+                                  context,
+                                  true,
+                                ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          );
         },
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context, UserEntity? user) {
-    final userProvider = context.read<UserProvider>();
-    return Consumer<AnalyticalResultIncomingMaterialByVesselProvider>(
-      builder: (
-        BuildContext context,
-        AnalyticalResultIncomingMaterialByVesselProvider provider,
-        Widget? child,
-      ) {
-        return (provider.isLoadingEdit)
-            ? Center(child: CircularProgressIndicator())
-            : SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.only(
-                  top: 16,
-                  bottom: 36,
-                  right: 16,
-                  left: 16,
+  Widget _buildDetailRowItem(DryFractionationDetailEntity detail) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListTile(
+        dense: true,
+        title: Text(
+          "Cycle #${detail.filtrationCycleNumber}",
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          "Time: ${formatTimeOfDay(detail.timeStartFiltration)} - ${formatTimeOfDay(detail.timeEndFiltration)}\n"
+          "Olein IV: ${detail.oleinIv ?? '-'} | CP: ${detail.oleinCp ?? '-'}",
+        ),
+        trailing: const Icon(Icons.keyboard_arrow_right, size: 20),
+        onTap: () {
+          _showDetailBottomSheet(context, detail);
+        },
+      ),
+    );
+  }
+
+  // Tombol Approve/Reject
+  Widget _buildActionButtons(
+    BuildContext context,
+    DryFractionationHeaderEntity report,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.close, size: 16),
+            label: const Text("Reject"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red[700],
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            onPressed:
+                () => _showApproveConfirmationDialog(context, report, false),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.check, size: 16),
+            label: const Text("Approve"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green[700],
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            onPressed:
+                () => _showApproveConfirmationDialog(context, report, true),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showApproveConfirmationDialog(
+    BuildContext context,
+    DryFractionationHeaderEntity report,
+    bool isApproved,
+  ) {
+    remarkController.clear();
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(isApproved ? "Approve Batch" : "Reject Batch"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Crystallizer: ${report.crystallizer}"),
+              const SizedBox(height: 12),
+              if (!isApproved)
+                TextField(
+                  controller: remarkController,
+                  decoration: const InputDecoration(
+                    labelText: "Rejection Remarks",
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
                 ),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFAB2F2B),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          CustomInfoCard(
-                            'Date',
-                            formatDatetoString(_data.date, 'dd MMMM yyyy') ??
-                                '-',
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    CustomSectionCard('General Information', [
-                      CustomSectionCardData('ID', _data.id),
-                      CustomSectionCardData('Company', _data.company ?? '-'),
-                      CustomSectionCardData('Plant', _data.plant ?? '-'),
-                      CustomSectionCardData(
-                        'Crystallizer',
-                        _data.crystallizer ?? '-',
-                      ),
-                    ]),
-
-                    CustomSectionCard('Process Parameters', [
-                      CustomSectionCardData(
-                        'Feed Oil IV',
-                        '${_data.feedOilIv ?? '-'}',
-                      ),
-                      CustomSectionCardData(
-                        'Initial Oil Level',
-                        '${_data.initialOilLevel ?? '-'}',
-                      ),
-                      CustomSectionCardData(
-                        'Filling Start',
-                        formatTimeOfDay(_data.fillingStartTime) ?? '-',
-                      ),
-                      CustomSectionCardData(
-                        'Filling End',
-                        formatTimeOfDay(_data.fillingEndTime) ?? '-',
-                      ),
-                      CustomSectionCardData(
-                        'Cooling Start Temp',
-                        '${_data.coolingStartTemp ?? '-'}',
-                      ),
-                      CustomSectionCardData(
-                        'Cooling Start Time',
-                        formatTimeOfDay(_data.coolingStartTime),
-                      ),
-                      CustomSectionCardData(
-                        'Agitator Speed',
-                        '${_data.agitatorSpeed ?? '-'}',
-                      ),
-                      CustomSectionCardData(
-                        'Water Pump Pres',
-                        '${_data.waterPumpPres ?? '-'}',
-                      ),
-                    ]),
-
-                    SizedBox(height: 12.0),
-                    if (_data.details.isNotEmpty) ...[
-                      CustomSectionCard('Details', [
-                        // Indikator Halaman (Dots)
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 12.0),
-                            child: SmoothPageIndicator(
-                              controller: detailPageControllers,
-                              count: _data.details.length,
-                              effect: const WormEffect(
-                                dotHeight: 8,
-                                dotWidth: 8,
-                                activeDotColor: Color(0xFFAB2F2B),
-                                dotColor: Colors.grey,
-                              ),
-                              onDotClicked: (index) {
-                                detailPageControllers.animateToPage(
-                                  index,
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-
-                        // Expandable Page View
-                        ExpandablePageView.builder(
-                          controller: detailPageControllers,
-                          itemCount: _data.details.length,
-                          itemBuilder: (context, index) {
-                            final detail = _data.details[index];
-                            return _buildDetailItem(detail, index);
-                          },
-                        ),
-                      ]),
-                    ] else
-                      CustomSectionCard('Details', [
-                        Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text("No details available."),
-                        ),
-                      ]),
-
-                    CustomSectionCard('Metadata & Remarks', [
-                      CustomSectionCardData(
-                        'Posting Date',
-                        formatDatetoString(_data.postingDate, 'dd-MM-yyyy') ??
-                            '-',
-                      ),
-                      CustomSectionCardData('Remarks', _data.remarks ?? '-'),
-                      CustomSectionCardData('Flag', _data.flag),
-                    ]),
-
-                    CustomSectionCard('Status & History', [
-                      CustomSectionCardData('Entried By', _data.entryBy ?? '-'),
-                      CustomSectionCardData(
-                        'Entry Date',
-                        formatDatetoString(_data.entryDate, 'dd-MM-yyyy') ??
-                            '-',
-                      ),
-                      const Divider(),
-                      CustomSectionCardData(
-                        'Prepared By',
-                        _data.preparedBy ?? '-',
-                      ),
-                      CustomSectionCardData(
-                        'Prepared Date',
-                        formatDatetoString(_data.preparedDate, 'dd-MM-yyyy') ??
-                            '-',
-                      ),
-                      CustomSectionCardData(
-                        'Prepared Status',
-                        _data.preparedStatus ?? '-',
-                      ),
-                      CustomSectionCardData(
-                        'Prepared Remarks',
-                        _data.preparedStatusRemarks ?? '-',
-                      ),
-                      const Divider(),
-                      CustomSectionCardData(
-                        'Approved By',
-                        _data.approvedBy ?? '-',
-                      ),
-                      CustomSectionCardData(
-                        'Approved Date',
-                        formatDatetoString(_data.approvedDate, 'dd-MM-yyyy') ??
-                            '-',
-                      ),
-                      CustomSectionCardData(
-                        'Approved Status',
-                        _data.approvedStatus ?? '-',
-                      ),
-                      CustomSectionCardData(
-                        'Approved Remarks',
-                        _data.approvedStatusRemarks ?? '-',
-                      ),
-                    ]),
-
-                    CustomSectionCard('Form Info', [
-                      CustomSectionCardData('Form No', _data.formNo ?? '-'),
-                      CustomSectionCardData(
-                        'Date Issued',
-                        formatDatetoString(_data.dateIssued, 'dd-MM-yyyy') ??
-                            '-',
-                      ),
-                      CustomSectionCardData(
-                        'Revision No',
-                        _data.revisionNo ?? '-',
-                      ),
-                      CustomSectionCardData(
-                        'Revision Date',
-                        formatDatetoString(_data.revisionDate, 'dd-MM-yyyy') ??
-                            '-',
-                      ),
-                    ]),
-                    if (AppRoles.leadProd.contains(user?.role))
-                      Row(
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 62,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    _showApprovedRejectedBottomSheet(
-                                      context,
-                                      false,
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red[700],
-                                    foregroundColor: Colors.white,
-                                  ),
-                                  child: Text(
-                                    "Reject Batch ${_data.crystallizer}",
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: SizedBox(
-                              height: 62,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    _showApprovedRejectedBottomSheet(
-                                      context,
-                                      true,
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green[700],
-                                    foregroundColor: Colors.white,
-                                  ),
-                                  child: Text(
-                                    "Approve Batch ${_data.crystallizer}",
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isApproved ? Colors.green : Colors.red,
               ),
-            );
+              onPressed: () async {
+                if (!isApproved && remarkController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Remarks required.")),
+                  );
+                  return;
+                }
+                Navigator.pop(dialogContext);
+
+                final success = await context
+                    .read<DryFractionationProvider>()
+                    .updateApproveRejectReport(
+                      status: isApproved ? 'Approved' : 'Rejected',
+                      plant: report.plant ?? '',
+                      date: report.date!,
+                      crystallizer: report.crystallizer!,
+                    );
+
+                if (success && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Success!"),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  setState(() {
+                    // 1. Cari posisi (index) item yang sedang diproses di dalam list
+                    final index = widget.reportEntities.indexOf(report);
+
+                    // 2. Jika item ditemukan, ganti dengan versi baru hasil copyWith
+                    if (index != -1) {
+                      widget.reportEntities[index] = report.copyWith(
+                        preparedStatus: isApproved ? 'Approved' : 'Rejected',
+                      );
+                    }
+                  });
+                }
+              },
+              child: const Text(
+                "Confirm",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
       },
     );
   }
 
-  Widget _buildDetailItem(DryFractionationDetailEntity detail, int index) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Center(
-          child: Text(
-            "Filtration Cycle #${detail.filtrationCycleNumber}",
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-        ),
-        const Divider(),
-        CustomSectionCardData(
-          'Filtration Date',
-          formatDatetoString(_data.date, 'dd MMMM yyyy') ?? '',
-        ),
-        CustomSectionCardData(
-          'Filtration Temp',
-          '${detail.filtrationTemp ?? '-'}',
-        ),
-        CustomSectionCardData(
-          'Time Start',
-          formatTimeOfDay(detail.timeStartFiltration),
-        ),
-        CustomSectionCardData(
-          'Time End',
-          formatTimeOfDay(detail.timeEndFiltration) ?? '-',
-        ),
-        CustomSectionCardData('Load', '${detail.load ?? '-'}'),
-
-        const SizedBox(height: 8),
-        const Text(
-          "Olein Analysis",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
-        ),
-        const Divider(height: 4),
-        CustomSectionCardData('Olein IV', '${detail.oleinIv ?? '-'}'),
-        CustomSectionCardData('Olein CP', '${detail.oleinCp ?? '-'}'),
-        CustomSectionCardData('Olein FFA', '${detail.oleinFfa ?? '-'}'),
-        CustomSectionCardData('Olein Color', '${detail.oleinColorRed ?? '-'}'),
-
-        const SizedBox(height: 8),
-        const Text(
-          "Stearin Analysis",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
-        ),
-        const Divider(height: 4),
-        CustomSectionCardData('Stearin IV', '${detail.stearinIv ?? '-'}'),
-        CustomSectionCardData('Stearin FFA', '${detail.stearinFfa ?? '-'}'),
-        CustomSectionCardData(
-          'Stearin Color',
-          '${detail.stearinColorRed ?? '-'}',
-        ),
-        CustomSectionCardData('Stearin PV', '${detail.stearinPv ?? '-'}'),
-      ],
-    );
-  }
-
-  AppBar _buildAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 1,
-      title: const Text(
-        'Detail',
-        style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
-      ),
-      centerTitle: true,
-      iconTheme: const IconThemeData(color: Colors.black),
-      actions: [
-        if (_data?.preparedStatus == null && _data.isCompleted == false)
-          IconButton(
-            onPressed: () async {
-              final result = await Navigator.push<DryFractionationHeaderEntity>(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DryFractionationEditPage(data: _data!),
+  void _showApprovePerDateConfirmationDialog(
+    BuildContext context,
+    bool isApproved,
+  ) {
+    remarkController.clear();
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(isApproved ? "Approve All" : "Reject All"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!isApproved)
+                TextField(
+                  controller: remarkController,
+                  decoration: const InputDecoration(
+                    labelText: "Rejection Remarks",
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
                 ),
-              );
-              if (!mounted) return;
-              if (result != null) {
-                setState(() {
-                  _data = result;
-                });
-              }
-            },
-            icon: const Icon(Icons.edit),
+            ],
           ),
-        if (_data?.preparedStatus == null && _data.isCompleted == false)
-          IconButton(
-            onPressed: () async {
-              return _showDeleteConfirmationDialog(context);
-            },
-            icon: const Icon(Icons.delete_rounded, color: Colors.red),
-          ),
-      ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isApproved ? Colors.green : Colors.red,
+              ),
+              onPressed: () async {
+                if (!isApproved && remarkController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Remarks required.")),
+                  );
+                  return;
+                }
+                Navigator.pop(dialogContext);
+
+                final success = await context
+                    .read<DryFractionationProvider>()
+                    .updateApproveRejectPerDateReport(
+                      status: isApproved ? 'Approved' : 'Rejected',
+                      plant: widget.reportEntities[0].plant ?? '',
+                      date: widget.reportEntities[0].date!,
+                    );
+
+                if (success && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Success!"),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  Navigator.pop(this.context);
+                }
+              },
+              child: const Text(
+                "Confirm",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
+  void _showDetailBottomSheet(
+    BuildContext context,
+    DryFractionationDetailEntity detail,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Detail Cycle #${detail.filtrationCycleNumber}",
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const Divider(),
+              CustomSectionCardData(
+                "Filtration Temp",
+                "${detail.filtrationTemp ?? '-'}",
+              ),
+              CustomSectionCardData("Load", "${detail.load ?? '-'}"),
+              const SizedBox(height: 8),
+              const Text(
+                "Olein",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              CustomSectionCardData("IV", "${detail.oleinIv ?? '-'}"),
+              CustomSectionCardData("CP", "${detail.oleinCp ?? '-'}"),
+              CustomSectionCardData("Color", "${detail.oleinColorRed ?? '-'}"),
+              const SizedBox(height: 8),
+              const Text(
+                "Stearin",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              CustomSectionCardData("IV", "${detail.stearinIv ?? '-'}"),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showDeleteConfirmationDialog(
+    BuildContext context, {
+    required String id,
+  }) async {
     // Simpan context utama ke variabel
     final parentContext = context;
 
@@ -470,7 +623,7 @@ class _DryFractionationDetailPageState
                             parentContext.read<DryFractionationProvider>();
 
                         final isSuccess = await provider.deleteReport(
-                          id: _data.id ?? '',
+                          id: id ?? '',
                         );
 
                         if (isSuccess) {
@@ -501,190 +654,6 @@ class _DryFractionationDetailPageState
               },
             ),
           ],
-        );
-      },
-    );
-  }
-
-  Future<bool> _approveRejectReport(String status) async {
-    final user = context.read<UserProvider>();
-
-    var isSuccess = await context
-        .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-        .updateApproveRejectReport(
-          id: _data.id,
-          userName: user.currentUser!.username,
-          status: status,
-          remarks: remarkController.text,
-        );
-    return isSuccess;
-  }
-
-  void _showRejectBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            top: 20,
-            left: 20,
-            right: 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[400],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Text(
-                'Reject Checklist',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: Colors.red[800],
-                ),
-              ),
-              const SizedBox(height: 12),
-              CustomRemarkField(controller: remarkController),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        if (remarkController.text.isEmpty) {
-                          showSnackBar(
-                            "Harap isi remark sebelum reject",
-                            context,
-                          );
-                          return;
-                        }
-                        Navigator.of(context).pop();
-                        bool isSuccess = await _approveRejectReport("Rejected");
-                        if (isSuccess) {
-                          Navigator.of(
-                            this.context,
-                          ).pop(); // Tutup bottom sheet
-                          showSnackBar(
-                            "Berhasil Reject Checklist",
-                            this.context,
-                          );
-                        } else {
-                          Navigator.of(this.context).pop();
-                          showSnackBar("Gagal Reject Checklist", this.context);
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red[700],
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: const Text(
-                        'Confirm Reject',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showApprovedRejectedBottomSheet(BuildContext context, bool isApproved) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (BuildContext context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Text(
-                  isApproved ? "Approve Report" : "Reject Report",
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                if (!isApproved)
-                  TextFormField(
-                    controller: remarkController,
-                    decoration: const InputDecoration(
-                      labelText: "Remarks",
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLines: 5,
-                  ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () async {
-                    final result = await context
-                        .read<DryFractionationProvider>()
-                        .updateApproveRejectReport(
-                          status: isApproved ? 'Approved' : 'Rejected',
-                          plant: _data.plant ?? '',
-                          date: _data.date!,
-                          crystallizer: _data.crystallizer!,
-                        );
-
-                    if (result) {
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            isApproved
-                                ? "Report berhasil diapprove"
-                                : "Report berhasil direject",
-                          ),
-                        ),
-                      );
-                      Navigator.of(context).pop(); // Close bottom sheet
-                      Navigator.of(context).pop(); // Go back from detail page
-                    } else {
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            isApproved
-                                ? "Report gagal diapprove"
-                                : "Report gagal direject",
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                  child: Text(
-                    isApproved ? 'Submit Approval' : 'Submit Rejection',
-                  ),
-                ),
-              ],
-            ),
-          ),
         );
       },
     );

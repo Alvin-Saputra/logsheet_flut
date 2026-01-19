@@ -1,20 +1,16 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
+import 'package:logsheet_app/core/widgets/custom_date_field.dart';
 import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
-import 'package:logsheet_app/core/widgets/custom_date_field.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
+import 'package:logsheet_app/features/production/data/model/dry_fractionation/local/dry_fractionation_header_entity.dart';
 import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_detail_page.dart';
 import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_input.dart';
 import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation/dry_fractionation_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_detail_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_input_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_provider.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:provider/provider.dart';
 
 class DryFractionationListPage extends StatefulWidget {
@@ -27,45 +23,122 @@ class DryFractionationListPage extends StatefulWidget {
 
 class _DryFractionationListPageState extends State<DryFractionationListPage> {
   DataFormNoEntity? formData;
-
   final TextEditingController dateEntryController = TextEditingController();
+
   @override
-  initState() {
+  void initState() {
     super.initState();
-    context
-        .read<DryFractionationProvider>()
-        .clearReports();
+    // Pastikan provider di-reset atau fetch data awal jika perlu
+    context.read<DryFractionationProvider>().clearReports();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final userRole = context.read<UserProvider>().currentUser?.role;
     return Scaffold(
       appBar: _buildAppBar(),
-      body: _buildBody(userRole ?? ''),
+      body: Column(
+        children: [
+          _buildFilterSection(context),
+          Expanded(
+            child: Consumer<DryFractionationProvider>(
+              builder: (context, provider, child) {
+                if (provider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (provider.reportList.isEmpty) {
+                  return const Center(child: Text("No Data Available"));
+                }
+
+                // 1. Grouping Data berdasarkan Tanggal dan Plant
+                final Map<String, List<DryFractionationHeaderEntity>>
+                groupedData = {};
+                for (var report in provider.reportList) {
+                  // Key Grouping: Tanggal + Plant
+                  final dateStr =
+                      formatDatetoString(report.date, 'yyyy-MM-dd') ??
+                      'Unknown Date';
+                  final plantStr = report.plant ?? 'Unknown Plant';
+                  final key = "$dateStr|$plantStr";
+
+                  groupedData.putIfAbsent(key, () => []).add(report);
+                }
+
+                final groupedKeys = groupedData.keys.toList();
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  child: ListView.builder(
+                    itemCount: groupedKeys.length,
+                    itemBuilder: (context, index) {
+                      final key = groupedKeys[index];
+                      final reports = groupedData[key]!;
+
+                      // Ambil data representatif dari item pertama di grup
+                      final firstItem = reports.first;
+                      final formattedDate =
+                          formatDatetoString(firstItem.date, 'dd-MM-yyyy') ??
+                          '-';
+                      final plantName = firstItem.plant ?? '-';
+
+                      // Cek status keseluruhan (Opsional: logic bisa disesuaikan)
+                      // Jika ada satu yang belum approve, anggap "Pending"
+                      final isAllApproved = reports.every(
+                        (e) => e.approvedStatus == "Approved",
+                      );
+                      final isAnyRejected = reports.any(
+                        (e) =>
+                            e.approvedStatus == "Rejected" ||
+                            e.preparedStatus == "Rejected",
+                      );
+
+                      return _groupedCardItem(
+                        date: formattedDate,
+                        plant: plantName,
+                        totalItems: reports.length,
+                        isAllApproved: isAllApproved,
+                        isAnyRejected: isAnyRejected,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              // 2. Mengirim LIST laporan ke halaman detail
+                              builder:
+                                  (context) => DryFractionationDetailPage(
+                                    reportEntities:
+                                        reports, // Kirim list hasil grouping
+                                    title: "$formattedDate - $plantName",
+                                  ),
+                            ),
+                          ).then((_) async {
+                            if (!mounted) return;
+                            _refreshData();
+                          });
+                        },
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder:
-                  (context) =>
-                      DryFractionationInputPage(form: formData,),
+              builder: (context) => DryFractionationInputPage(form: formData),
             ),
-          ).then((_) async {
-            if (!mounted) return;
-
-            final plant = context.read<PlantProvider>().currentPlant;
-            final plantId = plant?.code ?? '';
-            final formattedDate = changeStringDateFormat(
-              dateEntryController.text,
-              'dd-MM-yyyy',
-              'yyyy-MM-dd',
-            );
-            await context.read<DryFractionationProvider>().fetchReport(
-              plantId,
-              formattedDate,
-            );
+          ).then((_) {
+            _refreshData();
           });
         },
         label: const Text("Tambah Report"),
@@ -77,61 +150,50 @@ class _DryFractionationListPageState extends State<DryFractionationListPage> {
   }
 
   AppBar _buildAppBar() {
-    formData =
-        context
-            .read<DataFormNoProvider>()
-            .dataFormNoList
-            .where((form) => form.isMenu == "Logsheet_Dry_Fractionation")
-            .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
-        
+    final formProvider = context.read<DataFormNoProvider>();
+    // Safety check jika list kosong
+    if (formProvider.dataFormNoList.isNotEmpty) {
+      try {
+        formData = formProvider.dataFormNoList.firstWhere(
+          (form) =>
+              form.isMenu == "Logsheet_Dry_Fractionation",
+        );
+      } catch (e) {
+        formData = null;
+      }
+    }
+
+    return AppBar(
+      title: Text("List ${formData?.code ?? ''}"),
+      actions: [
+        IconButton(onPressed: _refreshData, icon: const Icon(Icons.replay)),
       ],
     );
   }
 
-  Widget _buildBody(String role) {
-    return Column(
-      children: [
-        _buildFilterSection(context, role),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Builder(
-              builder: (context) {
-                return Consumer<DryFractionationProvider>(
-                  builder: (
-                    BuildContext context,
-                    DryFractionationProvider provider,
-                    Widget? child,
-                  ) {
-                    return (provider.isLoading)
-                        ? Center(child: CircularProgressIndicator())
-                        : (provider.reportList.isEmpty)
-                        ? Center(child: Text('No data'))
-                        : ListView.builder(
-                          itemCount: provider.reportList.length,
-                          itemBuilder: (context, index) {
-                            final item = provider.reportList[index];
-                            return _cardItem(
-                              id: item.id ?? '',
-                              date: item.entryDate?.toString() ?? '',
-                              entryBy: item.entryBy ?? '',
-                              material: item.crystallizer,
-                              role: role,
-                            );
-                          },
-                        );
-                  },
-                );
-              },
-            ),
-          ),
-        ),
-      ],
+  Future<void> _refreshData() async {
+    final plant = await context.read<PlantProvider>().currentPlant;
+    final user = await context.read<UserProvider>().currentUser;
+    if (!mounted) return;
+
+    // Menggunakan filter tanggal jika ada
+    final formattedDate =
+        dateEntryController.text.isNotEmpty
+            ? changeStringDateFormat(
+              dateEntryController.text,
+              'dd-MM-yyyy',
+              'yyyy-MM-dd',
+            )
+            : '';
+
+    await context.read<DryFractionationProvider>().fetchReport(
+      plant?.code ?? '',
+      formattedDate,
+      role: user?.role ?? '',
     );
   }
 
-  Widget _buildFilterSection(BuildContext context, String role) {
+  Widget _buildFilterSection(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       child: Row(
@@ -143,29 +205,14 @@ class _DryFractionationListPageState extends State<DryFractionationListPage> {
               icon: Icons.event,
             ),
           ),
-          SizedBox(width: 16),
+          const SizedBox(width: 16),
           ElevatedButton.icon(
-            onPressed: () async {
+            onPressed: () {
               if (dateEntryController.text != "") {
-                final formattedDate = changeStringDateFormat(
-                  dateEntryController.text,
-                  'dd-MM-yyyy',
-                  'yyyy-MM-dd',
-                );
-                log('Searching for date: $formattedDate');
-
-                final plant = context.read<PlantProvider>().currentPlant;
-                final plantId = plant?.code ?? '';
-                await context.read<DryFractionationProvider>().fetchReport(
-                  plantId,
-                  formattedDate,
-                  role: role,
-                );
-              } else if (dateEntryController.text == "") {
-                showSnackBar("Silahkan Pilih Tanggal", this.context);
+                _refreshData();
+              } else {
+                showSnackBar("Silahkan Pilih Tanggal", context);
               }
-
-              // }
             },
             icon: const Icon(Icons.search),
             label: const Text('Cari'),
@@ -183,136 +230,95 @@ class _DryFractionationListPageState extends State<DryFractionationListPage> {
     );
   }
 
-  Widget _cardItem({
-    required String id,
+  Widget _groupedCardItem({
     required String date,
-    required String? material,
-    required String? entryBy,
-    required String? role,
+    required String plant,
+    required int totalItems,
+    required bool isAllApproved,
+    required bool isAnyRejected,
+    required VoidCallback onTap,
   }) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => DryFractionationDetailPage(
-                  data: context
-                      .read<DryFractionationProvider>()
-                      .reportList
-                      .firstWhere((element) => element.id == id),
-                ),
-          ),
-        ).then((_) async {
-          if (!mounted) return;
+    IconData icon = Icons.folder_open;
+    Color color = Colors.blue;
+    Color bgColor = Colors.blue[50]!;
+    String statusText = "Submitted";
 
-          final plant = context.read<PlantProvider>().currentPlant;
-          final plantId = plant?.code ?? '';
-          final formattedDate = changeStringDateFormat(
-            dateEntryController.text,
-            'dd-MM-yyyy',
-            'yyyy-MM-dd',
-          );
-          await context.read<DryFractionationProvider>().fetchReport(
-            plantId,
-            formattedDate,
-            role: role
-          );
-        });
-      },
-      child: Card(
+    if (isAllApproved) {
+      icon = Icons.check_circle;
+      color = Colors.green;
+      bgColor = Colors.green[50]!;
+      statusText = "All Approved";
+    } else if (isAnyRejected) {
+      icon = Icons.warning_rounded;
+      color = Colors.red;
+      bgColor = Colors.red[50]!;
+      statusText = "Action Needed";
+    } else {
+      icon = Icons.hourglass_top;
+      color = Colors.orange;
+      bgColor = Colors.orange[50]!;
+      statusText = "Pending";
+    }
+
+    return Card(
+      // color: bgColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+      elevation: 2,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
         child: Padding(
-          padding: EdgeInsetsGeometry.all(16.0),
-          child: Column(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      "$id",
+              Icon(Icons.drag_handle_outlined, color: Colors.grey, size: 40),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      date,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blueGrey,
                       ),
                     ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
+                    const SizedBox(height: 4),
+                    Text('Plant: $plant', style: const TextStyle(fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$totalItems Crystallizer Batch(es)',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              const SizedBox(height: 8),
-              const Divider(height: 16),
-              const SizedBox(height: 8),
-              Row(
+              Column(
                 children: [
+                  // Text(
+                  //   statusText,
+                  //   style: TextStyle(
+                  //     fontSize: 12,
+                  //     fontWeight: FontWeight.bold,
+                  //     color: color,
+                  //   ),
+                  // ),
                   const Icon(
-                    Icons.calendar_today,
+                    Icons.arrow_forward_ios,
                     size: 16,
                     color: Colors.grey,
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    "${_formatDateString(date)}",
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
-                  ),
-                  SizedBox(width: 8),
-
-                  SizedBox(width: 8),
-                  const Icon(Icons.storage, size: 18, color: Colors.grey),
-                  SizedBox(width: 8),
-                  Text(
-                    "$material",
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
-                  ),
-                  SizedBox(width: 16),
                 ],
               ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(Icons.person, size: 16, color: Colors.grey),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Entried by: $entryBy',
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
-                  ),
-                ],
-              ),
-              // Row(
-              //   children: [
-              //     const Icon(
-              //       Icons.car_repair_outlined,
-              //       size: 18,
-              //       color: Colors.grey,
-              //     ),
-              //     SizedBox(width: 8),
-              //     Text(
-              //       'Vessel/Vechicle: $vesselVehicle',
-              //       style: const TextStyle(fontSize: 14, color: Colors.black87),
-              //     ),
-              //   ],
-              // ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  String _formatDateString(String? s) {
-    if (s == null || s.isEmpty) return '-';
-    final dt = DateTime.tryParse(s);
-    if (dt != null) {
-      return DateFormat('dd-MM-yyyy').format(dt);
-    }
-    // If parsing fails, return the original string as a fallback
-    return s;
   }
 }

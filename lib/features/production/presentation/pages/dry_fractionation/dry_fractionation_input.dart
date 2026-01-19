@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/core/widgets/custom_app_bar.dart';
 import 'package:logsheet_app/core/widgets/custom_date_field.dart';
-import 'package:logsheet_app/core/widgets/custom_hour_field.dart';
 import 'package:logsheet_app/core/widgets/custom_hour_minute_field.dart';
 import 'package:logsheet_app/core/widgets/custom_hour_minute_picker.dart';
-import 'package:logsheet_app/core/widgets/custom_hour_picker.dart';
 import 'package:logsheet_app/core/widgets/custom_save_button.dart';
 import 'package:logsheet_app/core/widgets/custom_text.dart';
 import 'package:logsheet_app/core/widgets/custom_text_field.dart';
@@ -66,9 +64,7 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        title: 'Dry Fractionation (${widget.form?.code})',
-      ),
+      appBar: CustomAppBar(title: 'Logsheet_Dry_Fractionation (${widget.form?.code})'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: Column(
@@ -567,7 +563,6 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
                                 ),
                           ),
 
-
                           CustomText(
                             text: "Time End Filtration",
                             size: 16,
@@ -583,8 +578,7 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
                                   inputItems[index].timeEndFiltration,
                                   (val) {
                                     setState(() {
-                                      inputItems[index].timeEndFiltration =
-                                          val;
+                                      inputItems[index].timeEndFiltration = val;
                                     });
                                   },
                                 ),
@@ -616,8 +610,18 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
                 ),
               ),
             ),
+            Consumer<DryFractionationProvider>(
+              builder: (
+                BuildContext context,
+                DryFractionationProvider provider,
+                Widget? child,
+              ) {
+                return (provider.isLoadingInput)
+                    ? Center(child: CircularProgressIndicator())
+                    : CustomSaveButton(onPressed: _onSubmit);
+              },
+            ),
 
-            CustomSaveButton(onPressed: _onSubmit),
             const SizedBox(height: 30), // Extra space bottom
           ],
         ),
@@ -751,7 +755,10 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Gagal menyimpan data ${provider.errorMessage}" ?? "Gagal menyimpan data"),
+            content: Text(
+              "Gagal menyimpan data ${provider.errorMessage}" ??
+                  "Gagal menyimpan data",
+            ),
           ),
         );
       }

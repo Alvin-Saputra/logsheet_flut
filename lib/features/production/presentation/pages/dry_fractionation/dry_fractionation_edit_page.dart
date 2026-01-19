@@ -45,6 +45,8 @@ class _DryFractionationEditPageState extends State<DryFractionationEditPage> {
   TimeOfDay?
   selectedCoolingStartTime; // Variabel ini ada tapi belum dipakai sebelumnya
 
+  bool? isTicketcomplete = false;
+
   List<DryFractionationInputItem> inputItems = [];
   void _addNewRow() {
     setState(() {
@@ -653,7 +655,16 @@ class _DryFractionationEditPageState extends State<DryFractionationEditPage> {
                 ),
               );
             }),
-
+            CheckboxListTile(
+              value: isTicketcomplete ?? false,
+              title: const Text("Ticket Selesai"),
+              onChanged: (value) {
+                setState(() {
+                  isTicketcomplete = value;
+                });
+              },
+              controlAffinity: ListTileControlAffinity.leading,
+            ),
             Container(
               width: double.infinity,
               margin: const EdgeInsets.only(bottom: 24),
@@ -784,7 +795,7 @@ class _DryFractionationEditPageState extends State<DryFractionationEditPage> {
       dateIssued: null,
       revisionNo: '',
       revisionDate: null,
-      isCompleted: false,
+      isCompleted: isTicketcomplete,
     );
 
     // 4. Panggil Provider
@@ -804,7 +815,7 @@ class _DryFractionationEditPageState extends State<DryFractionationEditPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Data berhasil disimpan!")),
         );
-        Navigator.pop(context); // Kembali ke halaman sebelumnya
+        Navigator.pop(context, true); // Kembali ke halaman sebelumnya
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

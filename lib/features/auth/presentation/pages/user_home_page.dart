@@ -14,6 +14,7 @@ import 'package:logsheet_app/features/daily_production/presentation/pages/daily_
 import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/refinery/ref_daily_production_reports_list.dart';
 import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_approval_list_page.dart';
 import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_list_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_report_list_page.dart';
 import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_approval_list_page.dart';
 import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_list_page.dart';
 import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_report_list_page.dart';
@@ -1375,22 +1376,18 @@ class _UserHomePageState extends State<UserHomePage> {
                     },
                   ),
                 ],
-                // _buildDrawerItem(
-                //   icon: Icons.receipt_long_outlined,
-                //   title: 'Reports (${formDryFractionation?.name})',
-                //   onTap: () {
-                //     Navigator.push(
-                //       context,
-                //       MaterialPageRoute(
-                //         builder:
-                //             (_) => DryFractionationReportListPage(
-                //               userName: user.username,
-                //               role: user.role,
-                //             ),
-                //       ),
-                //     );
-                //   },
-                // ),
+                _buildDrawerItem(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Reports (${formDryFractionation?.name})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DryFractionationReportListPage(),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ],

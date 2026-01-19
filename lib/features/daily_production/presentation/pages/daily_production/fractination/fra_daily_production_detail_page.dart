@@ -629,12 +629,12 @@ class _DailyProductionFractionationDetailPageState
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: ElevatedButton(
                             onPressed: () {
-                              // _showApprovedRejectedBottomSheet(
-                              //   context,
-                              //   false,
-                              //   shift,
-                              //   user!,
-                              // );
+                             _showApprovedRejectedBottomSheet(
+                                context,
+                                false,
+                                shift,
+                                user!,
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red[700],

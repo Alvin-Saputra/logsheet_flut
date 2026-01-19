@@ -3,6 +3,7 @@ import 'package:logsheet_app/features/production/data/model/dry_fractionation/re
 import 'package:logsheet_app/features/production/data/model/dry_fractionation/remote/delete_dry_fractionation_response.dart';
 import 'package:logsheet_app/features/production/data/model/dry_fractionation/remote/fetch_dry_fractionation_response.dart';
 import 'package:logsheet_app/features/production/data/model/dry_fractionation/remote/update_approve_reject_dry_fractionation.dart';
+import 'package:logsheet_app/features/production/data/model/dry_fractionation/remote/update_approve_reject_perdate_dry_fractionation.dart';
 import 'package:logsheet_app/features/production/data/model/dry_fractionation/remote/update_dry_fractionation_response.dart';
 import 'package:logsheet_app/features/quality_control/data/model/remote/analytical_result_incoming_material_by_truck/create_analytical_result_incoming_material_by_truck_response.dart';
 import 'package:logsheet_app/features/quality_control/data/model/remote/analytical_result_incoming_material_by_truck/delete_analytical_result_incoming_material_by_truck_response.dart';
@@ -46,6 +47,13 @@ abstract class DryFractionationApiService {
 
   @PUT("/dryfrac/approve-reject")
   Future<UpdateApproveRejectDryFractionation> updateApproveRejectReport(
+    @Header("Authorization") String token,
+    @Body() Map<String, dynamic> body,
+  );
+
+  @PUT("/dryfrac/approve-reject-perdate")
+  Future<UpdateApproveRejectPerdateDryFractionation>
+  updateApproveRejectReportPerDate(
     @Header("Authorization") String token,
     @Body() Map<String, dynamic> body,
   );

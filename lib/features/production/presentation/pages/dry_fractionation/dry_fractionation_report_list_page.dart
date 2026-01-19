@@ -7,22 +7,23 @@ import 'package:logsheet_app/features/master_data/data/model/master/data_form_no
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:logsheet_app/features/production/data/model/dry_fractionation/local/dry_fractionation_header_entity.dart';
-import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_approval_detail_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_detail_page.dart';
 import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_input.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_report_detail_page.dart';
 import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation/dry_fractionation_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:provider/provider.dart';
 
-class DryFractionationApprovalListPage extends StatefulWidget {
-  const DryFractionationApprovalListPage({super.key});
+class DryFractionationReportListPage extends StatefulWidget {
+  const DryFractionationReportListPage({super.key});
 
   @override
-  State<DryFractionationApprovalListPage> createState() =>
-      _DryFractionationApprovalListPageState();
+  State<DryFractionationReportListPage> createState() =>
+      _DryFractionationReportListPageState();
 }
 
-class _DryFractionationApprovalListPageState
-    extends State<DryFractionationApprovalListPage> {
+class _DryFractionationReportListPageState
+    extends State<DryFractionationReportListPage> {
   DataFormNoEntity? formData;
   final TextEditingController dateEntryController = TextEditingController();
 
@@ -30,9 +31,8 @@ class _DryFractionationApprovalListPageState
   void initState() {
     super.initState();
     // Pastikan provider di-reset atau fetch data awal jika perlu
-    context.read<DryFractionationProvider>().clearReports();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      
+      context.read<DryFractionationProvider>().clearReports();
     });
   }
 
@@ -99,26 +99,19 @@ class _DryFractionationApprovalListPageState
                             e.preparedStatus == "Rejected",
                       );
 
-                      final isAllprepared = reports.any(
-                        (e) => e.preparedStatus == "Approved",
-                      );
-
                       return _groupedCardItem(
                         date: formattedDate,
                         plant: plantName,
                         totalItems: reports.length,
                         isAllApproved: isAllApproved,
                         isAnyRejected: isAnyRejected,
-                        isAllPrepared: isAllprepared,
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               // 2. Mengirim LIST laporan ke halaman detail
                               builder:
-                                  (
-                                    context,
-                                  ) => DryFractionationApprovalDetailPage(
+                                  (context) => DryFractionationReportDetailPage(
                                     reportEntities:
                                         reports, // Kirim list hasil grouping
                                     title: "$formattedDate - $plantName",
@@ -137,6 +130,22 @@ class _DryFractionationApprovalListPageState
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DryFractionationInputPage(form: formData),
+            ),
+          ).then((_) {
+            _refreshData();
+          });
+        },
+        label: const Text("Tambah Report"),
+        icon: Icon(Icons.add),
+        backgroundColor: Color(0xFFB91C1C),
+        foregroundColor: Colors.white,
       ),
     );
   }
@@ -178,7 +187,7 @@ class _DryFractionationApprovalListPageState
             )
             : '';
 
-    await context.read<DryFractionationProvider>().fetchReportForManager(
+    await context.read<DryFractionationProvider>().fetchReport(
       plant?.code ?? '',
       formattedDate,
       role: user?.role ?? '',
@@ -228,7 +237,6 @@ class _DryFractionationApprovalListPageState
     required int totalItems,
     required bool isAllApproved,
     required bool isAnyRejected,
-    required bool isAllPrepared,
     required VoidCallback onTap,
   }) {
     IconData icon = Icons.folder_open;
@@ -245,7 +253,7 @@ class _DryFractionationApprovalListPageState
       icon = Icons.warning_rounded;
       color = Colors.red;
       bgColor = Colors.red[50]!;
-      statusText = "Rejected";
+      statusText = "Action Needed";
     } else {
       icon = Icons.hourglass_top;
       color = Colors.orange;
@@ -254,7 +262,7 @@ class _DryFractionationApprovalListPageState
     }
 
     return Card(
-      color: bgColor,
+      // color: bgColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
       elevation: 2,
@@ -265,7 +273,7 @@ class _DryFractionationApprovalListPageState
           padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
-              Icon(icon, color: color, size: 40),
+              Icon(Icons.drag_handle_outlined, color: Colors.grey, size: 40),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -293,14 +301,14 @@ class _DryFractionationApprovalListPageState
               ),
               Column(
                 children: [
-                  Text(
-                    statusText,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
-                  ),
+                  // Text(
+                  //   statusText,
+                  //   style: TextStyle(
+                  //     fontSize: 12,
+                  //     fontWeight: FontWeight.bold,
+                  //     color: color,
+                  //   ),
+                  // ),
                   const Icon(
                     Icons.arrow_forward_ios,
                     size: 16,
