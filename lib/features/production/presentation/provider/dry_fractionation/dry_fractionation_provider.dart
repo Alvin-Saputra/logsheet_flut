@@ -84,12 +84,9 @@ class DryFractionationProvider with ChangeNotifier {
 
     try {
       final body = {
-        "date": formatDatetoString(
-          headerInput.date ?? DateTime.now(),
-          'yyyy-MM-dd HH:mm:ss',
-        ),
+        "date": formatDatetoString(headerInput.date, 'yyyy-MM-dd HH:mm:ss'),
         "posting_date": formatDatetoString(
-          headerInput.postingDate ?? DateTime.now(),
+          headerInput.postingDate,
           'yyyy-MM-dd HH:mm:ss',
         ),
         "company": headerInput.company,
@@ -123,7 +120,7 @@ class DryFractionationProvider with ChangeNotifier {
                   (detail) => {
                     "filtration_cycle_number": detail.filtrationCycleNumber,
                     "filtration_date": formatDatetoString(
-                      detail.filtrationDate ?? DateTime.now(),
+                      detail.filtrationDate,
                       'yyyy-MM-dd',
                     ),
                     "filtration_temp": detail.filtrationTemp,
@@ -237,7 +234,7 @@ class DryFractionationProvider with ChangeNotifier {
         _reportList = data ?? [];
 
         if (AppRoles.leadProd.contains(role) ||
-            AppRoles.qualityControlManagerApproval.contains(role)) {
+            AppRoles.productionQualityManagerApproval.contains(role)) {
           _reportList =
               _reportList.where((report) => report.preparedBy == null).toList();
           notifyListeners();
@@ -301,12 +298,9 @@ class DryFractionationProvider with ChangeNotifier {
 
     try {
       final body = {
-        "date": formatDatetoString(
-          headerInput.date ?? DateTime.now(),
-          'yyyy-MM-dd HH:mm:ss',
-        ),
+        "date": formatDatetoString(headerInput.date, 'yyyy-MM-dd HH:mm:ss'),
         "posting_date": formatDatetoString(
-          headerInput.postingDate ?? DateTime.now(),
+          headerInput.postingDate,
           'yyyy-MM-dd HH:mm:ss',
         ),
         "company": headerInput.company,
@@ -338,7 +332,7 @@ class DryFractionationProvider with ChangeNotifier {
             headerInput.details
                 .map(
                   (detail) => {
-                    "id":detail.id,
+                    "id": detail.id,
                     "filtration_cycle_number": detail.filtrationCycleNumber,
                     // "filtration_date": formatDatetoString(
                     //   detail.filtrationDate ?? DateTime.now(),
@@ -426,6 +420,48 @@ class DryFractionationProvider with ChangeNotifier {
       return false;
     } finally {
       _setLoadingInput(false);
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateApproveRejectReport({
+    required String status,
+    String? remarks,
+    required String plant,
+    required DateTime date,
+    required String crystallizer,
+  }) async {
+    _setLoadingEdit(true);
+    _setErrorMessage(null);
+    try {
+      final body = {
+        "approve_status": status,
+        "remark": remarks,
+        "plant": plant,
+        "date": formatDatetoString(date, 'yyyy-MM-dd'),
+        "crystallizer": crystallizer,
+      };
+
+      String token = await _storageService.readSessionToken() ?? '';
+      final response = await _apiService.updateApproveRejectReport(
+        'Bearer $token',
+        body,
+      );
+
+      if (response != null && response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage('Update Approve/Reject Report Failed');
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage(e.toString());
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoadingEdit(false);
       notifyListeners();
     }
   }

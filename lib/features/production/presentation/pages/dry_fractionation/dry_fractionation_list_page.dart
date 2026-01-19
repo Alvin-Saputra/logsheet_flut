@@ -217,6 +217,7 @@ class _DryFractionationListPageState extends State<DryFractionationListPage> {
           await context.read<DryFractionationProvider>().fetchReport(
             plantId,
             formattedDate,
+            role: role
           );
         });
       },

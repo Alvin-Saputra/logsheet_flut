@@ -23,18 +23,18 @@ import 'package:logsheet_app/features/quality_control/presentation/provider/dail
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class DryFractionationDetailPage extends StatefulWidget {
-  DryFractionationDetailPage({super.key, required this.data});
+class DryFractionationApprovalDetailPage extends StatefulWidget {
+  DryFractionationApprovalDetailPage({super.key, required this.data});
 
   final DryFractionationHeaderEntity data;
 
   @override
-  State<DryFractionationDetailPage> createState() =>
-      _DryFractionationDetailPageState();
+  State<DryFractionationApprovalDetailPage> createState() =>
+      _DryFractionationApprovalDetailPageState();
 }
 
-class _DryFractionationDetailPageState
-    extends State<DryFractionationDetailPage> {
+class _DryFractionationApprovalDetailPageState
+    extends State<DryFractionationApprovalDetailPage> {
   final TextEditingController remarkController = TextEditingController();
   final PageController detailPageControllers = PageController();
   late DryFractionationHeaderEntity _data;
