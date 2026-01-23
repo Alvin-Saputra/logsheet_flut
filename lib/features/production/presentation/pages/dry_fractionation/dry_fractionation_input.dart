@@ -59,12 +59,17 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
   void initState() {
     super.initState();
     _addNewRow();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await context.read<ValueProvider>().fetchTankSourceLists();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Logsheet_Dry_Fractionation (${widget.form?.code})'),
+      appBar: CustomAppBar(
+        title: 'Logsheet_Dry_Fractionation (${widget.form?.code})',
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: Column(
@@ -111,9 +116,42 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
             Consumer<ValueProvider>(
               builder: (context, provider, child) {
                 if (provider.isLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  ); // Disederhanakan untuk contoh
+                  return TextFormField(
+                    readOnly: true,
+                    enabled:
+                        false, // Non-aktifkan interaksi agar terlihat disabled
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(
+                        0xFFF0ECE9,
+                      ), // Warna background abu-abu halus
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      // Ubah text agar sesuai konteks
+                      hintText: 'Sedang memuat data...',
+                      hintStyle: TextStyle(color: Colors.grey[600]),
+
+                      // Gunakan suffixIcon (di kanan) dengan ukuran yang dibatasi (SizedBox)
+                      // agar tampilan lebih rapi dan tidak merusak tinggi field
+                      suffixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.grey, // Warna netral
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
                 }
                 if (provider.tankSourceList.isEmpty) {
                   return TextFormField(

@@ -61,13 +61,23 @@ class DailyProductionRefineryEntity {
   final String? flag;
 
   // Utility Usage (UU)
+  // final String? uuItem;
+  // final String? uuBudgetRefTank;
+  // final String? uuBudgetQty;
+  // final int? uuTotalCpo;
+  // final int? uuTotalSteam;
+  // final String? uuSteamCpo;
+  // final double? uuYieldPercent;
+
+
   final String? uuItem;
   final String? uuBudgetRefTank;
-  final String? uuBudgetQty;
-  final int? uuTotalCpo;
-  final int? uuTotalSteam;
-  final String? uuSteamCpo;
+  final double? uuBudgetQty;
+  final double? uuTotalCpo;
+  final double? uuTotalSteam;
+  final double? uuSteamCpo;
   final double? uuYieldPercent;
+
 
   // Approval & Tracking
   String? entryBy;
@@ -255,10 +265,14 @@ class DailyProductionRefineryEntity {
       flag: map['flag'] as String?,
       uuItem: map['uu_item'] as String?,
       uuBudgetRefTank: map['uu_budget_ref_tank'] as String?,
-      uuBudgetQty: map['uu_budget_qty'] as String?,
-      uuTotalCpo: parseInt(map['uu_total_cpo']),
-      uuTotalSteam: parseInt(map['uu_total_steam']),
-      uuSteamCpo: map['uu_steam_cpo'] as String?,
+      // uuBudgetQty: map['uu_budget_qty'] as String?,
+      // uuTotalCpo: parseInt(map['uu_total_cpo']),
+      // uuTotalSteam: parseInt(map['uu_total_steam']),
+      // uuSteamCpo: map['uu_steam_cpo'] as String?,
+      uuBudgetQty: parseDouble(map['uu_budget_qty']),
+      uuTotalCpo: parseDouble(map['uu_total_cpo']),
+      uuTotalSteam: parseDouble(map['uu_total_steam']),
+      uuSteamCpo: parseDouble(map['uu_steam_cpo']),
       uuYieldPercent: parseDouble(map['uu_yield_percent']),
       entryBy: map['entry_by'] as String?,
       entryDate: parseDateTime(map['entry_date']),
@@ -408,10 +422,14 @@ class DailyProductionRefineryEntity {
     String? flag,
     String? uuItem,
     String? uuBudgetRefTank,
-    String? uuBudgetQty,
-    int? uuTotalCpo,
-    int? uuTotalSteam,
-    String? uuSteamCpo,
+    // String? uuBudgetQty,
+    // int? uuTotalCpo,
+    // int? uuTotalSteam,
+    // String? uuSteamCpo,
+    double? uuBudgetQty,
+    double? uuTotalCpo,
+    double? uuTotalSteam,
+    double? uuSteamCpo,
     double? uuYieldPercent,
     String? entryBy,
     DateTime? entryDate,

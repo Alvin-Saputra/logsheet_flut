@@ -99,7 +99,7 @@ class AnalyticalResultIncomingMaterialByTruckHeaderModel
   final String? jsonRevisionDate;
 
   // List Detail (Model)
-  @JsonKey(name: 'detail')
+  @JsonKey(name: 'details')
   final List<AnalyticalResultIncomingMaterialByTruckDetailModel>? jsonDetail;
 
   AnalyticalResultIncomingMaterialByTruckHeaderModel({

@@ -7,7 +7,9 @@ import 'package:logsheet_app/core/widgets/custom_section_title.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:logsheet_app/features/production/data/model/dry_fractionation/local/dry_fractionation_detail_entity.dart';
 import 'package:logsheet_app/features/production/data/model/dry_fractionation/local/dry_fractionation_header_entity.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_detail_bottom_sheet.dart';
 import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_edit_page.dart'; // Pastikan import ini ada
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_metadata_bottom_sheet.dart';
 import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation/dry_fractionation_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -97,6 +99,18 @@ class _DryFractionationApprovalDetailPageState
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.info_outline,
+                                color: Colors.blueGrey,
+                              ),
+                              tooltip: 'View Metadata & History',
+                              onPressed:
+                                  () => dryFractionationMetaDataBottomSheet(
+                                    context,
+                                    report,
+                                  ),
+                            ),
                             Text(
                               showedStatus ?? '',
                               style: TextStyle(
@@ -158,26 +172,48 @@ class _DryFractionationApprovalDetailPageState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // 1. Header Information (Process Parameters)
-                                CustomSectionCard("Process Parameters", [
-                                  CustomSectionCardData(
-                                    "Feed Oil IV",
-                                    "${report.feedOilIv ?? '-'}",
-                                  ),
-                                  CustomSectionCardData(
-                                    "Filling Start",
-                                    formatTimeOfDay(report.fillingStartTime) ??
-                                        '-',
-                                  ),
-                                  CustomSectionCardData(
-                                    "Filling End",
-                                    formatTimeOfDay(report.fillingEndTime) ??
-                                        '-',
-                                  ),
-                                  CustomSectionCardData(
-                                    "Cooling Start Temp",
-                                    "${report.coolingStartTemp ?? '-'}",
-                                  ),
-                                ]),
+                                CustomSectionTitle(title: "Process Parameters"),
+                                CustomSectionCardData(
+                                  "Feed Oil IV",
+                                  "${report.feedOilIv ?? '-'}",
+                                ),
+                                CustomSectionCardData(
+                                  "Filling Start",
+                                  formatTimeOfDay(report.fillingStartTime) ??
+                                      '-',
+                                ),
+                                CustomSectionCardData(
+                                  "Initial Oil Level (%)",
+                                  report.initialOilLevel.toString(),
+                                ),
+                                CustomSectionCardData(
+                                  "Filling End",
+                                  formatTimeOfDay(report.fillingEndTime) ?? '-',
+                                ),
+                                CustomSectionCardData(
+                                  "Cooling Start Temp",
+                                  "${report.coolingStartTemp ?? '-'}",
+                                ),
+
+                                CustomSectionCardData(
+                                  "Cooling Start Time",
+                                  formatTimeOfDay(report.coolingStartTime) ??
+                                      '-',
+                                ),
+
+                                CustomSectionCardData(
+                                  "Agitator Speed (Hz)",
+                                  report.agitatorSpeed != null
+                                      ? report.agitatorSpeed.toString()
+                                      : '-',
+                                ),
+
+                                CustomSectionCardData(
+                                  "Water Pump Pres(Bar)",
+                                  report.waterPumpPres != null
+                                      ? report.waterPumpPres.toString()
+                                      : '-',
+                                ),
 
                                 const Divider(),
 
@@ -199,7 +235,8 @@ class _DryFractionationApprovalDetailPageState
                                 const SizedBox(height: 16),
 
                                 // 3. Approval Actions (Only if leadProd & not finalized)
-                                if (AppRoles.productionQualityManagerApproval.contains(user?.role) &&
+                                if (AppRoles.productionQualityManagerApproval
+                                        .contains(user?.role) &&
                                     report.approvedStatus == null)
                                   _buildActionButtons(context, report),
 
@@ -213,7 +250,9 @@ class _DryFractionationApprovalDetailPageState
                   },
                 ),
               ),
-              if (AppRoles.productionQualityManagerApproval.contains(user?.role) &&
+              if (AppRoles.productionQualityManagerApproval.contains(
+                    user?.role,
+                  ) &&
                   widget.reportEntities.every(
                     (report) => report.preparedStatus == null,
                   ))
@@ -289,7 +328,7 @@ class _DryFractionationApprovalDetailPageState
         ),
         trailing: const Icon(Icons.keyboard_arrow_right, size: 20),
         onTap: () {
-          _showDetailBottomSheet(context, detail);
+          dryFractionationDetailBottomSheet(context, detail);
         },
       ),
     );
@@ -484,53 +523,6 @@ class _DryFractionationApprovalDetailPageState
               ),
             ),
           ],
-        );
-      },
-    );
-  }
-
-  void _showDetailBottomSheet(
-    BuildContext context,
-    DryFractionationDetailEntity detail,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Detail Cycle #${detail.filtrationCycleNumber}",
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const Divider(),
-              CustomSectionCardData(
-                "Filtration Temp",
-                "${detail.filtrationTemp ?? '-'}",
-              ),
-              CustomSectionCardData("Load", "${detail.load ?? '-'}"),
-              const SizedBox(height: 8),
-              const Text(
-                "Olein",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              CustomSectionCardData("IV", "${detail.oleinIv ?? '-'}"),
-              CustomSectionCardData("CP", "${detail.oleinCp ?? '-'}"),
-              CustomSectionCardData("Color", "${detail.oleinColorRed ?? '-'}"),
-              const SizedBox(height: 8),
-              const Text(
-                "Stearin",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              CustomSectionCardData("IV", "${detail.stearinIv ?? '-'}"),
-            ],
-          ),
         );
       },
     );

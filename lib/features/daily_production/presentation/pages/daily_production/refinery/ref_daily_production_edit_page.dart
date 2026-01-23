@@ -717,21 +717,25 @@ class _RefDailyProductionEditPageState
                           controller: totalOilController,
                           label: 'Total $selectedOilRm',
                           icon: Icons.functions,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: totalSteamController,
                           label: 'Total Steam',
                           icon: Icons.functions,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: steamOilTypeController,
                           label: 'Steam: $selectedOilRm',
                           icon: Icons.functions,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: yieldPercentController,
                           label: 'Yield %',
                           icon: Icons.functions,
+                          isNumeric: true,
                         ),
                       ],
                     ),
@@ -892,7 +896,7 @@ class _RefDailyProductionEditPageState
       isUtillityUsageActive = true;
       totalOilController.text = entity.uuTotalCpo?.toString() ?? '';
       totalSteamController.text = entity.uuTotalSteam?.toString() ?? '';
-      steamOilTypeController.text = entity.uuSteamCpo ?? '';
+      steamOilTypeController.text = entity.uuSteamCpo.toString() ?? '';
       yieldPercentController.text = entity.uuYieldPercent?.toString() ?? '';
     }
 
@@ -1036,12 +1040,12 @@ class _RefDailyProductionEditPageState
         remarks: remarksController.text,
         uuItem: isUtillityUsageActive ? steamItem : null,
         uuBudgetRefTank: isUtillityUsageActive ? selectedRefineryMachine : null,
-        uuBudgetQty: isUtillityUsageActive ? budgetValue : null,
+        uuBudgetQty: isUtillityUsageActive ? double.tryParse(budgetValue ?? '') : null,
         uuTotalCpo:
-            isUtillityUsageActive ? parseInt(totalOilController.text) : null,
+            isUtillityUsageActive ? parseDouble(totalOilController) : null,
         uuTotalSteam:
-            isUtillityUsageActive ? parseInt(totalSteamController.text) : null,
-        uuSteamCpo: isUtillityUsageActive ? steamOilTypeController.text : null,
+            isUtillityUsageActive ? parseDouble(totalSteamController) : null,
+        uuSteamCpo: isUtillityUsageActive ? parseDouble(steamOilTypeController) : null,
         uuYieldPercent:
             isUtillityUsageActive ? parseDouble(yieldPercentController) : null,
         isCompleted: isTicketcomplete ?? false,

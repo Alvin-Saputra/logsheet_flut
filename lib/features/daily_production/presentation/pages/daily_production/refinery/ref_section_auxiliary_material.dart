@@ -109,6 +109,7 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
               controller: bleachingBatchYieldPercentController,
               label: 'Yield (%)',
               icon: Icons.numbers,
+              isNumeric: true,
             ),
             
             const SizedBox(height: 12),

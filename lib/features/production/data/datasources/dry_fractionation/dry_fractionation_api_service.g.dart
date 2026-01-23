@@ -56,9 +56,16 @@ class _DryFractionationApiService implements DryFractionationApiService {
     String token,
     String? plantId,
     String? date,
+    String? startDate,
+    String? endDate,
   ) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'plant': plantId, r'date': date};
+    final queryParameters = <String, dynamic>{
+      r'plant': plantId,
+      r'date': date,
+      r'start_date': startDate,
+      r'end_data': endDate,
+    };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{r'Authorization': token};
     _headers.removeWhere((k, v) => v == null);

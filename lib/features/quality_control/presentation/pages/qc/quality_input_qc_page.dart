@@ -119,9 +119,9 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   context.read<ValueProvider>().fetchAllInitialData();
-    // });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ValueProvider>().fetchAllInitialData();
+    });
 
     rmFlowRateController.addListener(() {
       log('FlowRate changed: ${rmFlowRateController.text}');

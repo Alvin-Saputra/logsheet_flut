@@ -30,6 +30,8 @@ abstract class DryFractionationApiService {
     @Header("Authorization") String token,
     @Query("plant") String? plantId,
     @Query("date") String? date,
+    @Query("start_date") String? startDate,
+    @Query("end_data") String? endDate,
   );
 
   @DELETE("/dryfrac/{id}")

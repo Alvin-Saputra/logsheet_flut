@@ -23,26 +23,30 @@ class QualityReportQCList extends StatefulWidget {
 
 class _QualityReportQCListState extends State<QualityReportQCList> {
   DataFormNoEntity? formData;
+  final TextEditingController _dateController = TextEditingController();
+  DateTime? _selectedDate;
+  String? _tempSelectedShift = "All";
+  final List<String> shifts = ["1", "2", "3", "4", "5"];
 
   @override
   void initState() {
     final username = context.read<UserProvider>().currentUser?.username;
     final role = context.read<UserProvider>().currentUser?.role;
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await context.read<QualityReportQCProvider>().fetchAllTickets(
-        null,
-        null,
-        username ?? "",
-        role ?? "",
-        plantCode,
-      );
-      if (!mounted) return;
-      await context.read<ValueProvider>().fetchAllInitialData();
+    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+    //   await context.read<QualityReportQCProvider>().fetchAllTickets(
+    //     null,
+    //     null,
+    //     username ?? "",
+    //     role ?? "",
+    //     plantCode,
+    //   );
+    //   if (!mounted) return;
+    //   await context.read<ValueProvider>().fetchAllInitialData();
 
-      if (!mounted) return;
-      await context.read<ProductProvider>().fetchProducts();
-    });
+    //   if (!mounted) return;
+    //   await context.read<ProductProvider>().fetchProducts();
+    // });
     super.initState();
   }
 
@@ -113,214 +117,330 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
   }
 
   Widget _buildBody() {
-    return Consumer3<QualityReportQCProvider, PlantProvider, UserProvider>(
-      builder: (context, qualityProvider, plantprovider, userProvider, child) {
-        List<QualityReportQcEntity> filteredList =
-            qualityProvider.reportsList
-                .where(
-                  (e) => e.preparedStatus == null && e.checkedStatus == null,
-                )
-                .toList();
-        if (qualityProvider.isLoading) {
-          return Center(child: CircularProgressIndicator());
-        }
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: _buildFilterSection(context),
+        ),
+        Expanded(
+          child: Consumer3<
+            QualityReportQCProvider,
+            PlantProvider,
+            UserProvider
+          >(
+            builder: (
+              context,
+              qualityProvider,
+              plantprovider,
+              userProvider,
+              child,
+            ) {
+              // NOTE: Depending on your provider implementation, fetchFilteredTickets
+              // might populate 'filteredTickets' instead of 'reportsList'.
+              // If your list is empty after filtering, check if you need to swap
+              // 'reportsList' with 'filteredTickets' here.
+              List<QualityReportQcEntity> filteredList =
+                  qualityProvider.filteredTickets
+                      .where(
+                        (e) =>
+                            e.preparedStatus == null && e.checkedStatus == null,
+                      )
+                      .toList();
 
-        if (qualityProvider.errorMessage != null) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Error: ${qualityProvider.errorMessage!}',
-                    style: const TextStyle(color: Colors.red, fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                  OutlinedButton(
-                    onPressed: () async {
-                      final plantCode = plantprovider.currentPlant?.code ?? "";
+              if (qualityProvider.isLoadingFilterReport) {
+                return Center(child: CircularProgressIndicator());
+              }
 
-                      await qualityProvider.fetchAllTickets(
-                        null,
-                        null,
-                        userProvider.currentUser?.username ?? "",
-                        userProvider.currentUser?.role ?? "",
-                        plantCode,
-                      );
-                    },
-                    child: const Text("Refresh"),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-        if (filteredList.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'No data',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                  OutlinedButton(
-                    onPressed: () async {
-                      final plantCode = plantprovider.currentPlant?.code ?? "";
-
-                      await qualityProvider.fetchAllTickets(
-                        null,
-                        null,
-                        userProvider.currentUser?.username ?? "",
-                        userProvider.currentUser?.role ?? "",
-                        plantCode,
-                      );
-                    },
-                    child: const Text("Refresh"),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: ListView.builder(
-            padding: const EdgeInsets.only(bottom: 88),
-            itemCount: filteredList.length,
-            itemBuilder: (context, index) {
-              final report = filteredList[index];
-              return Card(
-                child: InkWell(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => QualityDetailQCPage(item: report),
-                      ),
-                    );
-                  },
+              if (qualityProvider.errorMessage != null) {
+                return Center(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 18.0,
-                    ),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                report.id,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blueGrey,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: _getStatusColor(report),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                _getStatusText(report),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
+                        Text(
+                          'Error: ${qualityProvider.errorMessage!}',
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        const Divider(height: 16),
-
-                        // Transaction Date and Time
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.calendar_today,
-                              size: 16,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              DateFormat(
-                                'yyyy-MM-dd',
-                              ).format(report.transactionDate!),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            SizedBox(width: 16),
-                            const Icon(
-                              Icons.schedule,
-                              size: 18,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              DateFormat('HH:mm').format(report.time!),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            SizedBox(width: 16),
-                            const Icon(
-                              Icons.timelapse,
-                              size: 18,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              "Shift ${report.shift}",
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        // Entered By
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.person,
-                              size: 16,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Entried by: ${report.entryBy}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ],
+                        OutlinedButton(
+                          onPressed: () async {
+                            final plantCode =
+                                plantprovider.currentPlant?.code ?? "";
+                            await qualityProvider.fetchFilteredTickets(
+                              _selectedDate,
+                              plantCode,
+                              _tempSelectedShift,
+                            );
+                          },
+                          child: const Text("Refresh"),
                         ),
                       ],
                     ),
                   ),
+                );
+              }
+              if (filteredList.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'No data',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                        OutlinedButton(
+                          onPressed: () async {
+                            final plantCode =
+                                plantprovider.currentPlant?.code ?? "";
+                            await qualityProvider.fetchFilteredTickets(
+                              _selectedDate,
+                              plantCode,
+                              _tempSelectedShift,
+                            );
+                          },
+                          child: const Text("Refresh"),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 88),
+                  itemCount: filteredList.length,
+                  itemBuilder: (context, index) {
+                    final report = filteredList[index];
+                    return Card(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder:
+                                  (context) =>
+                                      QualityDetailQCPage(item: report),
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 18.0,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      report.id,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blueGrey,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: _getStatusColor(report),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      _getStatusText(report),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Divider(height: 16),
+
+                              // Transaction Date and Time
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.calendar_today,
+                                    size: 16,
+                                    color: Colors.grey,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    DateFormat(
+                                      'yyyy-MM-dd',
+                                    ).format(report.transactionDate!),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  SizedBox(width: 16),
+                                  const Icon(
+                                    Icons.schedule,
+                                    size: 18,
+                                    color: Colors.grey,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    DateFormat('HH:mm').format(report.time!),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  SizedBox(width: 16),
+                                  const Icon(
+                                    Icons.timelapse,
+                                    size: 18,
+                                    color: Colors.grey,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    "Shift ${report.shift}",
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              // Entered By
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.person,
+                                    size: 16,
+                                    color: Colors.grey,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Entried by: ${report.entryBy}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               );
             },
           ),
-        );
-      },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterSection(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: TextFormField(
+            controller: _dateController,
+            readOnly: true,
+            decoration: InputDecoration(
+              hintText: 'Pilih tanggal',
+              filled: true,
+              fillColor: const Color(0xFFF0ECE9),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              prefixIcon: const Icon(Icons.calendar_today),
+            ),
+            onTap: () => _pickDate(context),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: DropdownButtonFormField<String?>(
+            isExpanded: true,
+            value: _tempSelectedShift,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: const Color(0xFFF0ECE9),
+              hintText: "Pilih Shift",
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              prefixIcon: const Icon(Icons.access_time),
+            ),
+            items: [
+              const DropdownMenuItem<String?>(
+                value: "All",
+                child: Text('Semua'),
+              ),
+              ...shifts.map(
+                (shift) => DropdownMenuItem<String?>(
+                  value: shift,
+                  child: Text(" $shift"),
+                ),
+              ),
+            ],
+            onChanged: (value) {
+              setState(() {
+                _tempSelectedShift = value;
+              });
+            },
+          ),
+        ),
+        const SizedBox(width: 10),
+        ElevatedButton.icon(
+          onPressed: () async {
+            final plantCode =
+                context.read<PlantProvider>().currentPlant?.code ?? "";
+            await context.read<QualityReportQCProvider>().fetchFilteredTickets(
+              _selectedDate,
+              plantCode,
+              _tempSelectedShift,
+            );
+          },
+          icon: const Icon(Icons.search),
+          label: const Text('Cari'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFAB2F2B),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -359,5 +479,25 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
       return Colors.red;
     }
     return Colors.grey;
+  }
+
+  Future<void> _pickDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+
+    if (picked != null) {
+      final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
+      _selectedDate = picked;
+      _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
+      await context.read<QualityReportQCProvider>().fetchFilteredTickets(
+        _selectedDate,
+        plantCode,
+        _tempSelectedShift,
+      );
+    }
   }
 }

@@ -2,6 +2,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/core/widgets/custom_date_field.dart';
+import 'package:logsheet_app/core/widgets/custom_section_card.dart';
+import 'package:logsheet_app/core/widgets/custom_section_card_data.dart';
 import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
@@ -25,15 +27,14 @@ class DryFractionationReportListPage extends StatefulWidget {
 class _DryFractionationReportListPageState
     extends State<DryFractionationReportListPage> {
   DataFormNoEntity? formData;
-  final TextEditingController dateEntryController = TextEditingController();
+  final TextEditingController dateStartController = TextEditingController();
+  final TextEditingController dateEndController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     // Pastikan provider di-reset atau fetch data awal jika perlu
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DryFractionationProvider>().clearReports();
-    });
+    context.read<DryFractionationProvider>().clearReports();
   }
 
   @override
@@ -178,10 +179,18 @@ class _DryFractionationReportListPageState
     if (!mounted) return;
 
     // Menggunakan filter tanggal jika ada
-    final formattedDate =
-        dateEntryController.text.isNotEmpty
+    final formattedStartDate =
+        dateStartController.text.isNotEmpty
             ? changeStringDateFormat(
-              dateEntryController.text,
+              dateStartController.text,
+              'dd-MM-yyyy',
+              'yyyy-MM-dd',
+            )
+            : '';
+    final formattedEndDate =
+        dateEndController.text.isNotEmpty
+            ? changeStringDateFormat(
+              dateEndController.text,
               'dd-MM-yyyy',
               'yyyy-MM-dd',
             )
@@ -189,7 +198,9 @@ class _DryFractionationReportListPageState
 
     await context.read<DryFractionationProvider>().fetchReport(
       plant?.code ?? '',
-      formattedDate,
+      '',
+      formattedStartDate,
+      formattedEndDate,
       role: user?.role ?? '',
     );
   }
@@ -200,16 +211,28 @@ class _DryFractionationReportListPageState
       child: Row(
         children: [
           Expanded(
-            child: CustomDateField(
-              controller: dateEntryController,
-              label: 'Tanggal',
-              icon: Icons.event,
+            child: Column(
+              children: [
+                CustomDateField(
+                  controller: dateStartController,
+                  label: 'Tanggal Awal',
+                  icon: Icons.event,
+                ),
+                SizedBox(height: 8.0),
+                CustomDateField(
+                  controller: dateEndController,
+                  label: 'Tanggal Akhir',
+                  icon: Icons.event,
+                ),
+              ],
             ),
           ),
+
           const SizedBox(width: 16),
           ElevatedButton.icon(
             onPressed: () {
-              if (dateEntryController.text != "") {
+              if (dateStartController.text != "" ||
+                  dateEndController.text != "") {
                 _refreshData();
               } else {
                 showSnackBar("Silahkan Pilih Tanggal", context);
@@ -322,4 +345,6 @@ class _DryFractionationReportListPageState
       ),
     );
   }
+
+  
 }

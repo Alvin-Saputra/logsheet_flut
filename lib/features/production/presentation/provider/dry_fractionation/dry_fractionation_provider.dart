@@ -205,7 +205,13 @@ class DryFractionationProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchReport(String plantId, String? date, {String? role}) async {
+  Future<void> fetchReport(
+    String plantId,
+    String? date,
+    String? startDate,
+    String? endDate, {
+    String? role,
+  }) async {
     _setLoading(true);
     _setErrorMessage(null);
 
@@ -218,7 +224,9 @@ class DryFractionationProvider with ChangeNotifier {
       final response = await _apiService.fetchReports(
         'Bearer $token',
         plantId ?? '',
-        date ?? '',
+        date,
+        startDate,
+        endDate,
       );
 
       // DEBUG LOG 2
@@ -266,7 +274,9 @@ class DryFractionationProvider with ChangeNotifier {
 
   Future<void> fetchReportForManager(
     String plantId,
-    String? date, {
+    String? date,
+    String? startDate,
+    String? endDate, {
     String? role,
   }) async {
     _setLoading(true);
@@ -281,7 +291,9 @@ class DryFractionationProvider with ChangeNotifier {
       final response = await _apiService.fetchReports(
         'Bearer $token',
         plantId ?? '',
-        date ?? '',
+        date,
+        startDate,
+        endDate,
       );
 
       // DEBUG LOG 2

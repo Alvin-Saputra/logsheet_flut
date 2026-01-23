@@ -13,13 +13,13 @@ class AnalyticalResultIncomingMaterialByVesselDetailModel
 
   // Case 1: JSON berupa String (perlu diparse ke double)
   @JsonKey(name: 'palka_s_no')
-  final String? jsonPalkaSNo;
+  final num? jsonPalkaSNo;
 
   @JsonKey(name: 'palka_c_no')
-  final String? jsonPalkaCNo;
+  final num? jsonPalkaCNo;
 
   @JsonKey(name: 'palka_p_no')
-  final String? jsonPalkaPNo;
+  final num? jsonPalkaPNo;
 
   // Case 2: JSON berupa num/angka (perlu di-cast ke double)
   @JsonKey(name: 'palka_s_ffa')
@@ -73,9 +73,9 @@ class AnalyticalResultIncomingMaterialByVesselDetailModel
           idHdr: jsonIdHdr,
           
           // 1. Konversi String -> Double
-          palkaSNo: jsonPalkaSNo,
-          palkaCNo: jsonPalkaCNo,
-          palkaPNo: jsonPalkaPNo,
+          palkaSNo: jsonPalkaSNo?.toInt(),
+          palkaCNo: jsonPalkaCNo?.toInt(),
+          palkaPNo: jsonPalkaPNo?.toInt(),
 
           // 2. Konversi Num -> Double
           // .toDouble() aman digunakan pada tipe 'num'
