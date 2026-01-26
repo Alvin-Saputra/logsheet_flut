@@ -620,6 +620,7 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
         dateIssued: formDataQC!.dateIssued,
         revisionNo: formDataQC!.revisionNo,
         revisionDate: formDataQC!.revisionDate,
+        // revisionDate: formDataQC!.dateIssued,
       );
 
       bool? success;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
 import 'package:logsheet_app/features/production/data/model/logsheet/pretreatment_bleaching_filtration_entity.dart';
 import 'package:logsheet_app/features/production/presentation/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_detail_page.dart';
 import 'package:logsheet_app/features/production/presentation/provider/logsheet/pretreatment_bleaching_filtration_provider.dart';
@@ -31,6 +32,7 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
   DateTime? _selectedDate = DateTime.now();
   String? _tempSelectedShift = "All";
   final List<String> shifts = ["1", "2", "3", "4", "5"];
+  String? selectedWorkCenter;
 
   DataFormNoEntity? formData;
 
@@ -38,7 +40,17 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
   void initState() {
     super.initState();
     _selectedDate = DateTime.now();
-    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
+     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
+    final valueProvider = context.read<ValueProvider>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await valueProvider.fetchWorkCenterLists();
+
+      if (valueProvider.oilTypeLists.isEmpty) {
+        await valueProvider.fetchOilTypes();
+      }
+    });
+   
 
     WidgetsBinding.instance.addPostFrameCallback(
       (timeStamp) async => await context
@@ -246,6 +258,7 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
                                         _selectedDate,
                                         plantCode,
                                         _tempSelectedShift,
+                                        selectedWorkCenter
                                       );
                                 },
                                 child: const Text("Refresh"),
@@ -433,91 +446,186 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
   }
 
   Widget _buildFilterSection(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: TextFormField(
-            controller: _dateController,
-            readOnly: true,
-            decoration: InputDecoration(
-              hintText: 'Pilih tanggal',
-              filled: true,
-              fillColor: const Color(0xFFF0ECE9),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _dateController,
+                readOnly: true,
+                decoration: InputDecoration(
+                  hintText: 'Pilih tanggal',
+                  filled: true,
+                  fillColor: const Color(0xFFF0ECE9),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  prefixIcon: const Icon(Icons.calendar_today),
+                ),
+                onTap: () => _pickDate(context),
               ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              prefixIcon: const Icon(Icons.calendar_today),
             ),
-            onTap: () => _pickDate(context),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: DropdownButtonFormField<String?>(
-            isExpanded: true,
-            value: _tempSelectedShift,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: const Color(0xFFF0ECE9),
-              hintText: "Pilih Shift",
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
+            const SizedBox(width: 10),
+            Expanded(
+              child: DropdownButtonFormField<String?>(
+                isExpanded: true,
+                value: _tempSelectedShift,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: const Color(0xFFF0ECE9),
+                  hintText: "Pilih Shift",
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  prefixIcon: const Icon(Icons.access_time),
+                ),
+                items: [
+                  const DropdownMenuItem<String?>(
+                    value: "All",
+                    child: Text('Semua'),
+                  ),
+                  ...shifts.map(
+                    (shift) => DropdownMenuItem<String?>(
+                      value: shift,
+                      child: Text(" $shift"),
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _tempSelectedShift = value;
+                  });
+                },
               ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              prefixIcon: const Icon(Icons.access_time),
             ),
-            items: [
-              const DropdownMenuItem<String?>(
-                value: "All",
-                child: Text('Semua'),
-              ),
-              ...shifts.map(
-                (shift) => DropdownMenuItem<String?>(
-                  value: shift,
-                  child: Text(" $shift"),
+            const SizedBox(width: 10),
+            ElevatedButton.icon(
+              onPressed: () async {
+                final plantCode =
+                    context.read<PlantProvider>().currentPlant?.code ?? "";
+
+                await context
+                    .read<PretreatmentBleachingFiltrationProvider>()
+                    .fetchFilteredTickets(
+                      _selectedDate,
+                      plantCode,
+                      _tempSelectedShift,
+                      selectedWorkCenter
+                    );
+              },
+              icon: const Icon(Icons.search),
+              label: const Text('Cari'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFAB2F2B),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-            ],
-            onChanged: (value) {
-              setState(() {
-                _tempSelectedShift = value;
-              });
-            },
-          ),
-        ),
-        const SizedBox(width: 10),
-        ElevatedButton.icon(
-          onPressed: () async {
-            final plantCode =
-                context.read<PlantProvider>().currentPlant?.code ?? "";
-
-            await context
-                .read<PretreatmentBleachingFiltrationProvider>()
-                .fetchFilteredTickets(
-                  _selectedDate,
-                  plantCode,
-                  _tempSelectedShift,
-                );
-          },
-          icon: const Icon(Icons.search),
-          label: const Text('Cari'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFAB2F2B),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
             ),
-          ),
+          ],
+        ),
+        SizedBox(height:12.0),
+        Consumer<ValueProvider>(
+          builder: (context, provider, child) {
+            if (provider.isWorkCenterLoading) {
+              return DropdownButtonFormField<String>(
+                value: null,
+                items: [],
+                onChanged: null,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: const Color(0xFFF0ECE9),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  hintText: 'Loading Work Center...',
+                  prefixIcon: const Padding(
+                    padding: EdgeInsets.all(12.0),
+                    child: SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            if (provider.workCenterLists.isEmpty) {
+              return TextFormField(
+                readOnly: true,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: const Color(0xFFF0ECE9),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  hintText: 'Work Center tidak ditemukan.',
+                  prefixIcon: const Padding(
+                    padding: EdgeInsets.all(12.0),
+                    child: Icon(Icons.warning_amber_rounded),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () {
+                      provider.fetchWorkCenterLists();
+                    },
+                  ),
+                ),
+              );
+            }
+
+            return DropdownButtonFormField(
+              value: selectedWorkCenter,
+              items:
+                  provider.workCenterLists.map((machine) {
+                    return DropdownMenuItem<String>(
+                      value: machine.code,
+                      child: Text("${machine.code} - ${machine.name}"),
+                    );
+                  }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedWorkCenter = value;
+                });
+              },
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFFF0ECE9),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                hintText: 'Pilih Work Center',
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: SvgPicture.asset(
+                    'assets/icons/oil-refinery-tanks.svg',
+                    height: 24,
+                    width: 24,
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ],
     );

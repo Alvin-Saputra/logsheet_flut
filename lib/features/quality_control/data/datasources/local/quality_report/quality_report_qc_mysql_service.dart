@@ -759,6 +759,78 @@ class QualityReportQCMySQLService {
     }
   }
 
+  Future<bool> sendApproveRejectTicketPerDate(
+    final String username,
+    final String status,
+    final String userRole,
+    final int shift,
+    final String transactionDate,
+    final String plant,
+    final String workCenter,
+    final String? remark,
+    // Removed 'final String id'
+  ) async {
+    MySQLConnection? connection;
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log(
+          'Failed to get MySQL connection for sending approve/reject ticket.',
+        );
+        return false;
+      }
+
+      connection = connResult.connection;
+      final date = DateTime.now();
+
+      // 1. Define the parameters map once, as it is used in both branches
+      // (excluding the specific SET columns which vary by role)
+      final parameters = {
+        "username": username,
+        "status": status,
+        "date": date,
+        "remark": remark,
+        "plant": plant,
+        "transactionDate": transactionDate,
+        "workCenter": workCenter,
+        "shift": shift,
+      };
+
+      if (userRole == "MGR" || userRole == "MGR_QC") {
+        // 2. Updated SQL for Managers
+        final sql =
+            "UPDATE t_quality_report_qc SET checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE plant = :plant AND DATE(transaction_date) = :transactionDate AND work_center = :workCenter AND shift = :shift";
+
+        final result = await connection!.execute(sql, parameters);
+
+        log("Query Sent: $sql");
+        log("Affected Rows: ${result.affectedRows}");
+        return result.affectedRows > BigInt.from(0);
+      } else {
+        // 3. Updated SQL for other roles
+        final sql =
+            "UPDATE t_quality_report_qc SET prepared_by = :username, prepared_status = :status, prepared_date = :date, prepared_status_remarks = :remark WHERE plant = :plant AND DATE(transaction_date) = :transactionDate AND work_center = :workCenter AND shift = :shift";
+
+        final result = await connection!.execute(sql, parameters);
+
+        log("Query Sent: $sql");
+        log("Affected Rows: ${result.affectedRows}");
+        return result.affectedRows > BigInt.from(0);
+      }
+    } catch (e) {
+      log(
+        "Error sending approve or reject ticket: $e",
+      ); // Added $e to log the actual error
+      return false;
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+      } catch (e) {
+        log('$e');
+      }
+    }
+  }
+
   Future<List<int>> getReportedHours(
     DateTime dateFilter,
     String plantCode,

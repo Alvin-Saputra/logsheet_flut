@@ -270,6 +270,47 @@ class QualityReportQCProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> sendApproveRejectReportPerDate(
+    final String username,
+    final String status,
+    final String userRole,
+    final int shift,
+    final String transactionDate,
+    final String plant,
+    final String workCenter,
+    final String? remark,
+  ) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      log("Sending Approval or Rejection for date $transactionDate report");
+      final result = await _repository.sendApproveRejectTicketPerDate(
+        username,
+        status,
+        userRole,
+        shift,
+        transactionDate,
+        plant,
+        workCenter,
+        remark ?? '',
+      );
+      log("status from provider: $result");
+
+      if (result) {
+        _setLoading(false);
+        return result;
+      } else {
+        _setLoading(false);
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage('Failed to send approval or rejection report: $e');
+      _setLoading(false);
+      return false;
+    }
+  }
+
   Future<void> fetchReportsForManager(String plantCode) async {
     _setLoading(true);
     _setErrorMessage(null);

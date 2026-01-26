@@ -86,6 +86,28 @@ class QualityReportQCRepository {
     );
   }
 
+  Future<bool> sendApproveRejectTicketPerDate(
+    final String username,
+    final String status,
+    final String userRole,
+    final int shift,
+    final String transactionDate,
+    final String plant,
+    final String workCenter,
+    final String? remark,
+  ) async {
+    return await _mySQLService.sendApproveRejectTicketPerDate(
+      username,
+      status,
+      userRole,
+      shift,
+      transactionDate,
+      plant,
+      workCenter,
+      remark ?? '',
+    );
+  }
+
   Future<List<int>> getReportedHours(
     DateTime dateFilter,
     String plantCode,
