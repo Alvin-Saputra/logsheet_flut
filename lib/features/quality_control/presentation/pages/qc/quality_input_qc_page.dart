@@ -619,8 +619,8 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
         formNo: formDataQC!.code,
         dateIssued: formDataQC!.dateIssued,
         revisionNo: formDataQC!.revisionNo,
-        revisionDate: formDataQC!.revisionDate,
-        // revisionDate: formDataQC!.dateIssued,
+        // revisionDate: formDataQC!.revisionDate,
+        revisionDate: formDataQC!.dateIssued,
       );
 
       bool? success;
@@ -929,12 +929,12 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
               isNumeric: true,
               hintText: 'Masukkan nilai FFA (%)',
             ),
-            _buildTextField(
-              controller: rmTempController,
-              label: 'Temp (°C)',
-              icon: Icons.thermostat,
-              hintText: 'Masukkan nilai Temperatur (°C)',
-            ),
+            // _buildTextField(
+            //   controller: rmTempController,
+            //   label: 'Temp (°C)',
+            //   icon: Icons.thermostat,
+            //   hintText: 'Masukkan nilai Temperatur (°C)',
+            // ),
             _buildTextField(
               controller: rmFFAController,
               label: 'FFA',

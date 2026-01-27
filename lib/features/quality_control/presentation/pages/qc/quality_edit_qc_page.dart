@@ -110,6 +110,7 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
     selectedWorkCenter = widget.report.workCenter;
     selectedTankSource = widget.report.rmTankSource;
     selectedBpToTankGroup = checkIfNull(widget.report.bpToTank);
+    // selectedBpToTankGroup = checkIfNull(widget.report.bpToTank);
     selectedHour = widget.report.time?.hour;
     selectedToTankGroup = widget.report.fgTankTo;
 
@@ -556,13 +557,13 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
               hintText: 'Masukkan nilai Flowrate',
               isNumeric: true,
             ),
-            _buildTextField(
-              controller: rmTempController,
-              label: 'Temp (°C)',
-              icon: Icons.thermostat,
-              hintText: 'Masukkan nilai Temperatur (°C)',
-              isNumeric: true,
-            ),
+            // _buildTextField(
+            //   controller: rmTempController,
+            //   label: 'Temp (°C)',
+            //   icon: Icons.thermostat,
+            //   hintText: 'Masukkan nilai Temperatur (°C)',
+            //   isNumeric: true,
+            // ),
             _buildTextField(
               controller: rmFFAController,
               label: 'FFA',

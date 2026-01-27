@@ -38,20 +38,20 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
     final username = context.read<UserProvider>().currentUser?.username;
     final role = context.read<UserProvider>().currentUser?.role;
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
-    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-    //   await context.read<QualityReportQCProvider>().fetchAllTickets(
-    //     null,
-    //     null,
-    //     username ?? "",
-    //     role ?? "",
-    //     plantCode,
-    //   );
-    //   if (!mounted) return;
-    //   await context.read<ValueProvider>().fetchAllInitialData();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await context.read<QualityReportQCProvider>().fetchAllTickets(
+        null,
+        null,
+        username ?? "",
+        role ?? "",
+        plantCode,
+      );
+      if (!mounted) return;
+      await context.read<ValueProvider>().fetchAllInitialData();
 
-    //   if (!mounted) return;
-    //   await context.read<ProductProvider>().fetchProducts();
-    // });
+      if (!mounted) return;
+      await context.read<ProductProvider>().fetchProducts();
+    });
     super.initState();
   }
 
@@ -134,7 +134,7 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
       children: [
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: _buildFilterSection(context),
+          // child: _buildFilterSection(context),
         ),
         Expanded(
           child: Consumer3<
@@ -151,14 +151,14 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
             ) {
               // 1. Ambil data yang difilter
               List<QualityReportQcEntity> filteredList =
-                  qualityProvider.filteredTickets
+                  qualityProvider.reportsList
                       .where(
                         (e) =>
                             e.preparedStatus == null && e.checkedStatus == null,
                       )
                       .toList();
 
-              if (qualityProvider.isLoadingFilterReport) {
+              if (qualityProvider.isLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
 
@@ -292,7 +292,7 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
                                       backgroundColor: Colors.green,
                                       foregroundColor: Colors.white,
                                     ),
-                                    child: const Text("Approve"),
+                                    child: const Text("Approve All"),
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -312,7 +312,7 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
                                       backgroundColor: Colors.red,
                                       foregroundColor: Colors.white,
                                     ),
-                                    child: const Text("Reject"),
+                                    child: const Text("Reject All"),
                                   ),
                                 ),
                               ],
@@ -478,11 +478,16 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
             ),
             OutlinedButton(
               onPressed: () async {
+                final username =
+                    context.read<UserProvider>().currentUser?.username;
+                final role = context.read<UserProvider>().currentUser?.role;
                 final plantCode = plantprovider.currentPlant?.code ?? "";
-                await qualityProvider.fetchFilteredTickets(
-                  _selectedDate,
+                await qualityProvider.fetchAllTickets(
+                  null,
+                  null,
+                  username ?? "",
+                  role ?? "",
                   plantCode,
-                  _tempSelectedShift,
                 );
               },
               child: const Text("Refresh"),

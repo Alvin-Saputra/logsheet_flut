@@ -32,12 +32,16 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
   late final QualityReportRefineryDao qualityReportRefDao;
 
   // Data dropdown & kontrol
-  late String? selectedOilType;
+  late String? selectedOilTypeQC;
   late String? selectedWorkCenter;
-  late String? selectedTankSource;
+  late String? selectedTankSourceQC;
   late String? selectedBpToTankGroup;
   late int? selectedHour;
-  late String? selectedToTankGroup;
+  late String? selectedFgToTankGroupQC;
+
+  String? selectedOilTypeProd;
+  String? selectedTankSourceProd;
+  String? selectedFgToTankGroupProd;
 
   // Stepper state
   int currentStep = 0;
@@ -77,7 +81,9 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
   final TextEditingController fgColorRController = TextEditingController();
   final TextEditingController fgColorYController = TextEditingController();
   final TextEditingController fgColorBController = TextEditingController();
-  final TextEditingController fgTankToOthersRemarkController =
+  final TextEditingController fgTankToOthersRemarkControllerQC =
+      TextEditingController();
+  final TextEditingController fgTankToOthersRemarkControllerProd =
       TextEditingController();
 
   // RFAD
@@ -90,7 +96,8 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
   final TextEditingController wasteMNIController = TextEditingController();
 
   // Remark
-  final TextEditingController remarkController = TextEditingController();
+  final TextEditingController remarkControllerQC = TextEditingController();
+  final TextEditingController remarkControllerProd = TextEditingController();
 
   final Color primaryRed = const Color(0xFFAB2F2B);
   final Color backgroundGrey = const Color(0xFFEFF3F9);
@@ -102,13 +109,17 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
     qualityReportRefDao = QualityReportRefineryDao(db);
 
     // Initialize dropdown values from the report
-    selectedOilType = widget.report.oilTypeId;
+    selectedOilTypeQC = widget.report.qcOilTypeId;
     selectedWorkCenter = widget.report.workCenter;
-    selectedTankSource = widget.report.rmTankSource;
+    selectedTankSourceQC = widget.report.qcRmTankSource;
     selectedBpToTankGroup = widget.report.bpToTank;
     selectedHour = widget.report.time?.hour;
-    selectedToTankGroup = widget.report.fgTankTo;
+    selectedFgToTankGroupQC = widget.report.qcFgTankTo;
 
+    selectedOilTypeProd = widget.report.oilTypeId;
+    selectedTankSourceProd = widget.report.rmTankSource;
+    selectedFgToTankGroupProd = widget.report.fgTankTo;
+    remarkControllerProd.text = widget.report.remarks ?? '';
     // Initialize all controllers with data from the existing report
     rmFlowrateController.text = widget.report.rmFlowRate.toString();
     rmTempController.text = widget.report.rmTemp.toString();
@@ -136,7 +147,10 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
     fgColorRController.text = widget.report.fgColorR.toString();
     fgColorYController.text = widget.report.fgColorY.toString();
     fgColorBController.text = widget.report.fgColorB.toString();
-    fgTankToOthersRemarkController.text =
+    fgTankToOthersRemarkControllerQC.text =
+        widget.report.qcfgTankToOthersRemarks ?? '';
+
+    fgTankToOthersRemarkControllerProd.text =
         widget.report.fgTankToOthersRemarks ?? '';
 
     bpFFAController.text = widget.report.bpFFA.toString();
@@ -146,7 +160,7 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
     WSBEQCController.text = widget.report.wSBEQC.toString();
     wasteMNIController.text = widget.report.wasteMNI.toString();
 
-    remarkController.text = widget.report.remarks ?? '';
+    remarkControllerQC.text = widget.report.qcRemarks ?? '';
 
     // Fetch dropdown data similar to the input page
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -182,13 +196,15 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
       fgColorRController,
       fgColorYController,
       fgColorBController,
-      fgTankToOthersRemarkController,
+      fgTankToOthersRemarkControllerQC,
+      fgTankToOthersRemarkControllerProd,
       bpFFAController,
       bpMNIController,
       bpToTankController,
       WSBEQCController,
       wasteMNIController,
-      remarkController,
+      remarkControllerQC,
+      remarkControllerProd
     ];
 
     for (var c in controllers) {
@@ -246,11 +262,11 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
         transactionDate: widget.report.transactionDate,
         postingDate: widget.report.postingDate,
         workCenter: selectedWorkCenter,
-        oilTypeId: selectedOilType,
+        oilTypeId: "P03",
         time: time,
         shift: getShiftBasedOnDate(time),
         rmFlowRate: parseDouble(rmFlowrateController),
-        rmTankSource: selectedTankSource,
+        rmTankSource: selectedTankSourceProd,
         rmTemp: parseDouble(rmTempController),
         rmFFA: parseDouble(rmFFAController),
         rmIV: parseDouble(rmIVController),
@@ -275,14 +291,14 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
         fgColorR: parseDouble(fgColorRController),
         fgColorY: parseDouble(fgColorYController),
         fgColorB: parseDouble(fgColorBController),
-        fgTankTo: selectedToTankGroup,
-        fgTankToOthersRemarks: fgTankToOthersRemarkController.text.trim(),
+        fgTankTo: selectedFgToTankGroupProd,
+        fgTankToOthersRemarks: fgTankToOthersRemarkControllerProd.text.trim(),
 
         bpFFA: parseDouble(bpFFAController),
         bpMNI: parseDouble(bpMNIController),
         wSBEQC: parseDouble(WSBEQCController),
         wasteMNI: parseDouble(wasteMNIController),
-        remarks: remarkController.text.trim(),
+        remarks: remarkControllerProd.text.trim(),
 
         flag: widget.report.flag,
         entryBy: widget.report.entryBy,
@@ -308,7 +324,7 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
 
       log("PROD ID: ${updatedItem.id}, QC ID: ${updatedItem.idFk}");
       log("Flag: ${updatedItem.flag}");
-      
+
       if (!mounted) return;
       final currentUser = context.read<UserProvider>().currentUser;
 
@@ -474,13 +490,26 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
       case 1:
         return 'Bleach Oil';
       case 2:
+        // final finishedGoods =
+        //     context
+        //         .read<ProductProvider>()
+        //         .productRefineryList
+        //         .where((element) => element.id == selectedOilTypeQC)
+        //         .toList();
+        // return 'Finished Goods (${finishedGoods[0].rawMaterial})';
+
         final finishedGoods =
             context
                 .read<ProductProvider>()
                 .productRefineryList
-                .where((element) => element.id == selectedOilType)
+                .where((element) => element.id == selectedOilTypeQC)
                 .toList();
-        return 'Finished Goods (${finishedGoods[0].rawMaterial})';
+
+        if (finishedGoods.isEmpty) {
+          return 'Finished Goods';
+        }
+
+        return 'Finished Goods (${finishedGoods.first.rawMaterial})';
       case 3:
         return 'By Product';
       case 4:
@@ -620,6 +649,7 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
 
       case 2:
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildTextField(
               controller: fgFFAController,
@@ -678,11 +708,20 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
               isNumeric: true,
               hintText: 'Masukkan nilai Color (B)',
             ),
+
+            Text(
+              "To Tank QC",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF655F5B),
+              ),
+            ),
             // Tank To Dropdown
             Consumer<ValueProvider>(
               builder: (context, provider, child) {
                 return DropdownButtonFormField<String>(
-                  value: selectedToTankGroup,
+                  value: selectedFgToTankGroupQC,
                   items: [
                     ...provider.toTankGroupLists.map((tank) {
                       return DropdownMenuItem<String>(
@@ -719,14 +758,101 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
                 );
               },
             ),
-            if (selectedToTankGroup == "Others")
+            if (selectedFgToTankGroupQC == "Others")
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: _buildTextField(
-                  controller: fgTankToOthersRemarkController,
+                  controller: fgTankToOthersRemarkControllerQC,
                   label: 'Remark (Others)',
                   icon: Icons.comment,
                   hintText: 'Masukkan keterangan lainnya',
+                ),
+              ),
+            SizedBox(height: 16),
+            Text(
+              "To Tank Production",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF655F5B),
+              ),
+            ),
+            Consumer<ValueProvider>(
+              builder: (context, provider, child) {
+                if (provider.toTankGroupLists.isEmpty) {
+                  // Return a disabled dropdown with a loading indicator or message
+                  return DropdownButtonFormField<String>(
+                    value: null,
+                    items: [],
+                    onChanged: null, // Disable the dropdown
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Loading Tank To...',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                return DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: selectedFgToTankGroupProd,
+                  items: [
+                    ...provider.toTankGroupLists.map((tank) {
+                      return DropdownMenuItem<String>(
+                        value: tank.code,
+                        child: Text(tank.code, style: TextStyle(fontSize: 14)),
+                      );
+                    }),
+                    DropdownMenuItem<String>(
+                      value: "Others",
+                      child: Text("Others", style: TextStyle(fontSize: 14)),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      selectedFgToTankGroupProd = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Pilih To Tank Group',
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: SvgPicture.asset(
+                        'assets/icons/oil-refinery-tanks.svg',
+                        height: 24,
+                        width: 24,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            if (selectedFgToTankGroupProd == "Others")
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: _buildTextField(
+                  controller: fgTankToOthersRemarkControllerProd,
+                  label: 'Remark (Others)',
+                  icon: Icons.comment,
+                  hintText: 'Masukkan keterangan lainnya',
+                  isEnabled: true,
                 ),
               ),
           ],
@@ -836,22 +962,16 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
       case 5:
         return Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Remark",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF655F5B),
-                  ),
-                ),
-              ),
-            ),
             _buildTextField(
-              controller: remarkController,
+              controller: remarkControllerQC,
+              label: 'Remark QC',
+              icon: Icons.note,
+              hintText: 'Masukkan remark tambahan',
+              isEnabled: false,
+            ),
+
+            _buildTextField(
+              controller: remarkControllerProd,
               label: 'Remark',
               icon: Icons.note,
               hintText: 'Masukkan remark tambahan',
@@ -919,11 +1039,49 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
                 },
               ),
               const SizedBox(height: 8),
+
               // Oil Type Dropdown
+              const SizedBox(height: 8),
+
+              // Jam Input
+              InkWell(
+                onTap: null,
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    prefixIcon: const Icon(Icons.access_time),
+                  ),
+                  child: Text(
+                    selectedHour != null
+                        ? '${selectedHour.toString().padLeft(2, '0')}:00'
+                        : 'Pilih jam input',
+                    style: TextStyle(
+                      color:
+                          selectedHour != null
+                              ? const Color(0xFF655F5B)
+                              : Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Oil Type (QC)",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF655F5B),
+                ),
+              ),
               Consumer<ProductProvider>(
                 builder: (context, provider, child) {
                   return DropdownButtonFormField<String>(
-                    value: selectedOilType,
+                    value: selectedOilTypeQC,
                     items:
                         provider.productRefineryList.map((oil) {
                           return DropdownMenuItem<String>(
@@ -953,10 +1111,18 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
               ),
               const SizedBox(height: 8),
               // Tank Source Dropdown
+              Text(
+                "Tank Source (QC)",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF655F5B),
+                ),
+              ),
               Consumer<ValueProvider>(
                 builder: (context, provider, child) {
                   return DropdownButtonFormField<String>(
-                    value: selectedTankSource,
+                    value: selectedTankSourceQC,
                     isExpanded: true,
                     items:
                         provider.tankSourceList.map((tank) {
@@ -989,33 +1155,199 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
                   );
                 },
               ),
-              const SizedBox(height: 8),
-
-              // Jam Input
-              InkWell(
-                onTap: null,
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: const Color(0xFFF0ECE9),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    prefixIcon: const Icon(Icons.access_time),
-                  ),
-                  child: Text(
-                    selectedHour != null
-                        ? '${selectedHour.toString().padLeft(2, '0')}:00'
-                        : 'Pilih jam input',
-                    style: TextStyle(
-                      color:
-                          selectedHour != null
-                              ? const Color(0xFF655F5B)
-                              : Colors.grey.shade600,
-                    ),
-                  ),
+              SizedBox(height: 16.0),
+              Text(
+                "Oil Type (Production)",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF655F5B),
                 ),
+              ),
+              Consumer<ProductProvider>(
+                builder: (context, provider, child) {
+                  if (provider.isLoading) {
+                    // Return a disabled dropdown with a loading indicator or message
+                    return DropdownButtonFormField<String>(
+                      value: null,
+                      items: [],
+                      onChanged: null, // Disable the dropdown
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Loading Oil Types...',
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (provider.productRefineryList.isEmpty) {
+                    return TextFormField(
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Oil Types tidak ditemukan.',
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Icon(Icons.warning_amber_rounded),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.refresh),
+                          onPressed: () {
+                            context.read<ProductProvider>().fetchProducts();
+                          },
+                        ),
+                      ),
+                    );
+                  }
+                  return DropdownButtonFormField<String>(
+                    value: selectedOilTypeProd,
+                    items:
+                        provider.productRefineryList.map((oil) {
+                          return DropdownMenuItem<String>(
+                            value: oil.id,
+                            child: Text(
+                              oil.rawMaterial ?? "",
+                              style: TextStyle(fontSize: 14),
+                            ),
+                          );
+                        }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedOilTypeProd = value;
+                      });
+                      log("$selectedOilTypeProd");
+                    },
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Pilih Oil Type',
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Icon(Icons.oil_barrel_rounded),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8.0),
+              Text(
+                "Tank Source (Production)",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF655F5B),
+                ),
+              ),
+              Consumer<ValueProvider>(
+                builder: (context, provider, child) {
+                  if (provider.isTankSourceLoading) {
+                    // Return a disabled dropdown with a loading indicator or message
+                    return DropdownButtonFormField<String>(
+                      value: null,
+                      items: [],
+                      onChanged: null, // Disable the dropdown
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Loading Tank Source...',
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (provider.tankSourceList.isEmpty) {
+                    return TextFormField(
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Tank Sources tidak ditemukan.',
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Icon(Icons.warning_amber_rounded),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.refresh),
+                          onPressed: () {
+                            context
+                                .read<ValueProvider>()
+                                .fetchTankSourceLists();
+                          },
+                        ),
+                      ),
+                    );
+                  }
+                  return DropdownButtonFormField<String>(
+                    value: selectedTankSourceProd,
+                    isExpanded: true,
+                    items:
+                        provider.tankSourceList.map((tank) {
+                          return DropdownMenuItem<String>(
+                            value: tank.code,
+                            child: Text(
+                              tank.code,
+                              style: TextStyle(fontSize: 14),
+                            ),
+                          );
+                        }).toList(),
+                    onChanged: (value) {
+                      setState(() => selectedTankSourceProd = value);
+                    },
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Pilih tank source',
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: SvgPicture.asset(
+                          'assets/icons/oil-refinery-tanks.svg',
+                          height: 24,
+                          width: 24,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 24),
 

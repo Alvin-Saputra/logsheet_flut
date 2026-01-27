@@ -281,7 +281,16 @@ class _QualityApprovalDetailProductionScreenState
                   const Divider(),
                   _buildDetailRow('Ticket ID', report.id),
                   _buildDetailRow('Work Center', report.workCenter ?? 'N/A'),
-                  _buildDetailRow('Oil Type', report.oilType ?? 'N/A'),
+                  _buildDetailRow('Oil Type Prod', report.oilType ?? 'N/A'),
+                  _buildDetailRow('Oil Type QC', report.qcOilTypeName ?? 'N/A'),
+                  _buildDetailRow(
+                    'Tank Source Prod',
+                    report.rmTankSource ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'Tank Source QC',
+                    report.qcRmTankSource ?? '-',
+                  ),
                   const Divider(),
                   _buildDetailRow('Flow Rate', formatDouble(report.rmFlowRate)),
                   _buildDetailRow('RM Temp', formatDouble(report.rmTemp)),
@@ -313,10 +322,21 @@ class _QualityApprovalDetailProductionScreenState
                   ),
                   _buildDetailRow('FG Color R', formatDouble(report.fgColorR)),
                   _buildDetailRow('FG Color Y', formatDouble(report.fgColorY)),
-                  _buildDetailRow('FG Tank To', report.fgTankTo ?? '-'),
                   _buildDetailRow(
-                    'FG Tank Others Remarks',
-                    report.fgTankToOthersRemarks ?? '-',
+                    'Tank Destination Prod',
+                    report.fgTankTo ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'Tank Destination QC',
+                    report.qcFgTankTo ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'Tank Others Remarks QC',
+                    report.qcfgTankToOthersRemarks.toString(),
+                  ),
+                  _buildDetailRow(
+                    'Tank Others Remarks Prod',
+                    report.fgTankToOthersRemarks.toString(),
                   ),
                   const Divider(),
                   _buildDetailRow('BP FFA', formatDouble(report.bpFFA)),
@@ -328,7 +348,18 @@ class _QualityApprovalDetailProductionScreenState
                   _buildDetailRow('OC', formatDouble(report.wSBEQC)),
                   _buildDetailRow('Waste M&I', formatDouble(report.wasteMNI)),
                   const Divider(),
-                  _buildDetailRow('Remarks', report.remarks ?? '-'),
+                 _buildDetailRow(
+                    'Remarks QC',
+                    report.qcRemarks != null
+                        ? "${report.remarks}"
+                        : "-",
+                  ),
+                 _buildDetailRow(
+                    'Remarks Prod',
+                    report.remarks != null
+                        ? "${report.remarks}"
+                        : "-",
+                  ),
                   _buildDetailRow('Entry By', report.entryBy ?? '-'),
                   _buildDetailRow('Entry Date', formatDate(report.entryDate)),
                   const Divider(),
