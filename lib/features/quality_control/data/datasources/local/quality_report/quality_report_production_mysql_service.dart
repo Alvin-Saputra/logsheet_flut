@@ -685,37 +685,60 @@ class QualityReportProductionMySQLService {
         final List<String> setClause = [];
         final Map<String, dynamic> sqlExecuteParams = {};
 
+        // Daftar kolom yang HARAM di-update oleh QC (Milik Produksi)
+        const productionOnlyFields = [
+          'remarks',
+          'rm_temp',
+          'rm_tank_source',
+          'fg_tank_to',
+          'fg_tank_to_others_remarks',
+          'oil_type', // Sesuai info lapangan, oil type produksi itu independen
+          'shift', // Shift produksi jangan diubah QC
+          'time', // Waktu input produksi jangan diubah QC
+        ];
+
         entityData.forEach((keyInEntityMap, value) {
-          if (keyInEntityMap != "id" && keyInEntityMap != "id_fk") {
-            String actualDbColumnName = keyInEntityMap;
-            String safeParameterName = keyInEntityMap;
-
-            if (keyInEntityMap == 'rm_mni') {
-              actualDbColumnName = 'rm_m&i';
-              safeParameterName = 'rm_mni_param';
-            } else if (keyInEntityMap == 'fg_mni') {
-              actualDbColumnName = 'fg_m&i';
-              safeParameterName = 'fg_mni_param';
-            } else if (keyInEntityMap == 'bp_mni') {
-              actualDbColumnName = 'bp_m&i';
-              safeParameterName = 'bp_mni_param';
-            } else if (keyInEntityMap == 'wsbeqc') {
-              actualDbColumnName = 'w_sbe_qc';
-              safeParameterName = 'w_sbe_qc_param';
-            } else if (keyInEntityMap == 'w_sbe_mni') {
-              actualDbColumnName = 'w_sbe_m&i';
-              safeParameterName = 'w_sbe_mni_param';
-            } else if (keyInEntityMap == 'w_sbe_m&i') {
-              actualDbColumnName = 'w_sbe_m&i';
-              safeParameterName = 'w_sbe_mni_param';
-            }
-
-            setClause.add('`$actualDbColumnName` = :$safeParameterName');
-
-            sqlExecuteParams[safeParameterName] = value;
+          // 1. Skip Primary Key & Foreign Key dari SET clause
+          if (keyInEntityMap == "id" || keyInEntityMap == "id_fk") {
+            return;
           }
+
+          // 2. [FILTER BARU] Skip kolom milik Produksi agar tidak tertimpa/terhapus
+          if (productionOnlyFields.contains(keyInEntityMap)) {
+            return;
+          }
+
+          // --- Logic Mapping Nama Kolom (Tetap Sama) ---
+          String actualDbColumnName = keyInEntityMap;
+          String safeParameterName = keyInEntityMap;
+
+          if (keyInEntityMap == 'rm_mni') {
+            actualDbColumnName = 'rm_m&i';
+            safeParameterName = 'rm_mni_param';
+          } else if (keyInEntityMap == 'fg_mni') {
+            actualDbColumnName = 'fg_m&i';
+            safeParameterName = 'fg_mni_param';
+          } else if (keyInEntityMap == 'bp_mni') {
+            actualDbColumnName = 'bp_m&i';
+            safeParameterName = 'bp_mni_param';
+          } else if (keyInEntityMap == 'wsbeqc') {
+            actualDbColumnName = 'w_sbe_qc';
+            safeParameterName = 'w_sbe_qc_param';
+          } else if (keyInEntityMap == 'w_sbe_mni') {
+            actualDbColumnName = 'w_sbe_m&i';
+            safeParameterName = 'w_sbe_mni_param';
+          } else if (keyInEntityMap == 'w_sbe_m&i') {
+            // Duplicate check di kode asli Anda, biarkan atau hapus salah satu
+            actualDbColumnName = 'w_sbe_m&i';
+            safeParameterName = 'w_sbe_mni_param';
+          }
+
+          // Masukkan ke SET clause
+          setClause.add('`$actualDbColumnName` = :$safeParameterName');
+          sqlExecuteParams[safeParameterName] = value;
         });
-        // sqlExecuteParams['id'] = entity.id;
+
+        // Pastikan idFk digunakan untuk WHERE clause
         sqlExecuteParams['id'] = entity.idFk;
 
         final sql =
@@ -761,13 +784,7 @@ class QualityReportProductionMySQLService {
     } catch (e) {
       log('Error updating report: $e');
       return false;
-    } finally {
-      try {
-        await closeMySQLConnection(connection);
-      } catch (e) {
-        log('$e');
-      }
-    }
+    } 
   }
 
   Future<List<Map<String, dynamic>>> getReportsForManager(

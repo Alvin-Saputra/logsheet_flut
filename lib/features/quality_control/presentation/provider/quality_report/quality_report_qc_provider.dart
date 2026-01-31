@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/features/daily_production/data/model/daily_production/daily_production_refinery_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/features/transactions/report_notification_data_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/quality_report/quality_report_qc_repository.dart';
@@ -25,6 +26,10 @@ class QualityReportQCProvider with ChangeNotifier {
   bool _isLoadingAlert = false;
   bool get isLoadingAlert => _isLoadingAlert;
 
+  bool _isLoadingFetchDailyProductionRefinery = false;
+  bool get isLoadingFetchDailyProductionRefinery =>
+      _isLoadingFetchDailyProductionRefinery;
+
   List<QualityReportQcEntity> _reportsList = [];
   List<QualityReportQcEntity> get reportsList => _reportsList;
 
@@ -36,6 +41,10 @@ class QualityReportQCProvider with ChangeNotifier {
 
   List<ReportNotificationDataEntity> _readyReportsList = [];
   List<ReportNotificationDataEntity> get readyReportsList => _readyReportsList;
+
+  List<DailyProductionRefineryEntity> _dailyProductionRefineryData = [];
+  List<DailyProductionRefineryEntity> get dailyProductionRefineryData =>
+      _dailyProductionRefineryData;
 
   String? _latestId;
   String? get latestId => _latestId;
@@ -62,6 +71,11 @@ class QualityReportQCProvider with ChangeNotifier {
 
   void setLatestId(String value) {
     _latestId = value;
+    notifyListeners();
+  }
+
+  void _setLoadingFetchDailyProductionRefinery(bool value) {
+    _isLoadingFetchDailyProductionRefinery = value;
     notifyListeners();
   }
 
@@ -381,6 +395,33 @@ class QualityReportQCProvider with ChangeNotifier {
     } catch (e) {
       _setErrorMessage('(QR Provider) Failed fetch filtered QR ticket: $e');
       _setLoading(false);
+    }
+  }
+
+  Future<void> getDailyProductionRefineryByFilter(
+    DateTime? transactionDate,
+    String plantCode,
+    int? shift,
+    String? workCenter,
+  ) async {
+    _setLoadingFetchDailyProductionRefinery(true);
+    _setErrorMessage(null);
+
+    try {
+      _dailyProductionRefineryData = await _repository
+          .getDailyProductionRefineryByFilter(
+            transactionDate: transactionDate,
+            plantCode: plantCode,
+            shift: shift,
+            workCenter: workCenter,
+          );
+      notifyListeners();
+    } catch (e) {
+      _setErrorMessage(
+        '(Daily Production Refinery Provider) Failed fetch filtered Daily Prod Refinery ticket: $e',
+      );
+    } finally {
+      _setLoadingFetchDailyProductionRefinery(false);
     }
   }
 }

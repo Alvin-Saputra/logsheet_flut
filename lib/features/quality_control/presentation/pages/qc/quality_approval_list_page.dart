@@ -172,6 +172,7 @@ class _QualityApprovalListScreenPageState
             final bool isRejectedForDay = reportsForGroup.any(
               (r) => r.checkedStatus == 'Rejected',
             );
+            
 
             // Determine card color, icon, and status text based on the group's state
             Color cardColor = Colors.white;

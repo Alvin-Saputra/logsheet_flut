@@ -117,6 +117,28 @@ class QualityReportQCMySQLService {
       String baseQuery;
       final Map<String, dynamic> params = {};
 
+      const String dailyProductionColumns = """
+      a.daily_production_refinery_id,
+      c.be_ref_tank,
+      c.be_ref_qty,
+      c.be_total_bag,
+      c.be_total_jenis,
+      c.be_lot_batch_number,
+      c.be_yield_percent,
+      c.pa_ref_tank,
+      c.pa_ref_qty,
+      c.pa_total,
+      c.pa_lot_batch_number,
+      c.pa_yield_percent,
+      c.uu_item,
+      c.uu_budget_ref_tank,
+      c.uu_budget_qty,
+      c.uu_total_cpo,
+      c.uu_total_steam,
+      c.uu_steam_cpo,
+      c.uu_yield_percent
+    """;
+
       switch (role) {
         case 'LEAD' || 'LEAD_QC':
           baseQuery = """
@@ -180,16 +202,17 @@ class QualityReportQCMySQLService {
             a.form_no,
             a.date_issued,
             a.revision_no,
-            a.revision_date
+            a.revision_date,
+            $dailyProductionColumns
           FROM
             t_quality_report_qc AS a
           JOIN 
             m_product AS b
           ON 
             a.oil_type = b.id
-
+          LEFT JOIN t_daily_production_refinery AS c ON a.daily_production_refinery_id = c.id
           WHERE
-             plant = :plantCode AND (flag IS NULL OR flag = 'T') AND prepared_status IS NULL AND checked_status IS NULL
+             a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T') AND a.prepared_status IS NULL AND a.checked_status IS NULL
         """;
           params["plantCode"] = plantCode;
           break;
@@ -254,16 +277,18 @@ class QualityReportQCMySQLService {
             a.form_no,
             a.date_issued,
             a.revision_no,
-            a.revision_date
+            a.revision_date,
+            $dailyProductionColumns
           FROM
             t_quality_report_qc AS a
           JOIN 
             m_product AS b
           ON 
             a.oil_type = b.id
+          LEFT JOIN t_daily_production_refinery AS c ON a.daily_production_refinery_id = c.id
 
           WHERE
-             plant = :plantCode AND (flag IS NULL OR flag = 'T')
+             a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
         """;
 
           params["plantCode"] = plantCode;
@@ -331,15 +356,17 @@ class QualityReportQCMySQLService {
             a.form_no,
             a.date_issued,
             a.revision_no,
-            a.revision_date
+            a.revision_date,
+            $dailyProductionColumns
           FROM
             t_quality_report_qc AS a
           JOIN 
             m_product AS b
           ON 
             a.oil_type = b.id
+            LEFT JOIN t_daily_production_refinery AS c ON a.daily_production_refinery_id = c.id
           WHERE
-             plant = :plantCode AND (flag IS NULL OR flag = 'T')
+             a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
         """;
           params["status"] = "Approved";
           params["plantCode"] = plantCode;
@@ -406,16 +433,18 @@ class QualityReportQCMySQLService {
             a.form_no,
             a.date_issued,
             a.revision_no,
-            a.revision_date
+            a.revision_date,
+            $dailyProductionColumns
           FROM
             t_quality_report_qc AS a
           JOIN 
             m_product AS b
           ON 
             a.oil_type = b.id
+            LEFT JOIN t_daily_production_refinery AS c ON a.daily_production_refinery_id = c.id
 
           WHERE
-             plant = :plantCode AND (flag IS NULL OR flag = 'T')
+             a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
           """;
           params["plantCode"] = plantCode;
           break;
@@ -671,15 +700,36 @@ class QualityReportQCMySQLService {
             a.form_no,
             a.date_issued,
             a.revision_no,
-            a.revision_date
+            a.revision_date,
+            a.daily_production_refinery_id,
+            c.be_ref_tank,
+            c.be_ref_qty,
+            c.be_total_bag,
+            c.be_total_jenis,
+            c.be_lot_batch_number,
+            c.be_yield_percent,
+            c.pa_ref_tank,
+            c.pa_ref_qty,
+            c.pa_total,
+            c.pa_lot_batch_number,
+            c.pa_yield_percent,
+            c.uu_item,
+            c.uu_budget_ref_tank,
+            c.uu_budget_qty,
+            c.uu_total_cpo,
+            c.uu_total_steam,
+            c.uu_steam_cpo,
+            c.uu_yield_percent
           FROM
             t_quality_report_qc AS a
           JOIN 
             m_product AS b
           ON 
             a.oil_type = b.id
+             LEFT JOIN 
+          t_daily_production_refinery AS c ON a.daily_production_refinery_id = c.id
           WHERE
-           prepared_status = 'Approved' AND plant = :plantCode AND (flag IS NULL OR flag = 'T')
+           a.prepared_status = 'Approved' AND a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
         """,
         {"plantCode": plantCode},
       );
@@ -688,12 +738,6 @@ class QualityReportQCMySQLService {
     } catch (e) {
       log('Error fetching all prepared transactions: $e');
       return [];
-    } finally {
-      try {
-        await closeMySQLConnection(connection);
-      } catch (e) {
-        log("$e");
-      }
     }
   }
 
@@ -1046,16 +1090,39 @@ class QualityReportQCMySQLService {
             a.form_no,
             a.date_issued,
             a.revision_no,
-            a.revision_date
-          FROM
-            t_quality_report_qc AS a
-          JOIN 
-            m_product AS b
-          ON 
-            a.oil_type = b.id
-          WHERE 
-            DATE(posting_date) = :dateFilter AND plant = :plantCode AND (flag IS NULL OR flag = 'T')
-           """;
+            a.revision_date,
+            a.daily_production_refinery_id,
+            c.be_ref_tank,
+            c.be_ref_qty,
+            c.be_total_bag,
+            c.be_total_jenis,
+            c.be_lot_batch_number,
+            c.be_yield_percent,
+            c.pa_ref_tank,
+            c.pa_ref_qty,
+            c.pa_total,
+            c.pa_lot_batch_number,
+            c.pa_yield_percent,
+            c.uu_item,
+            c.uu_budget_ref_tank,
+            c.uu_budget_qty,
+            c.uu_total_cpo,
+            c.uu_total_steam,
+            c.uu_steam_cpo,
+            c.uu_yield_percent
+          
+        FROM
+          t_quality_report_qc AS a
+        JOIN 
+          m_product AS b ON a.oil_type = b.id
+        LEFT JOIN 
+          t_daily_production_refinery AS c ON a.daily_production_refinery_id = c.id
+          
+        WHERE 
+          DATE(a.posting_date) = :dateFilter 
+          AND a.plant = :plantCode 
+          AND (a.flag IS NULL OR a.flag = 'T')
+         """;
 
       dateFilter ??= DateTime.now();
 
@@ -1083,6 +1150,87 @@ class QualityReportQCMySQLService {
         await connection.close();
         log('(QR MySQL) MySQL connection closed for getTickets.');
       }
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getDailyProductionRefineryByFilter({
+    required String plantCode,
+    DateTime? transactionDate,
+    String? workCenter,
+    int? shift,
+  }) async {
+    MySQLConnection? connection;
+
+    try {
+      final connResult = await getMySQLConnection();
+      connection = connResult.connection;
+
+      if (connection == null) {
+        log('Failed to get MySQL connection.');
+        return [];
+      }
+
+      String query = """
+      SELECT
+        a.id,
+        a.transaction_date,
+        a.work_center,
+        a.shift,
+        a.cpo_tank,
+        a.form_no,
+        a.flag,
+        a.be_ref_tank,
+        a.be_ref_qty,
+        a.be_total_bag,
+        a.be_total_jenis,
+        a.be_lot_batch_number,
+        a.be_yield_percent,
+        a.pa_ref_tank,
+        a.pa_ref_qty,
+        a.pa_total,
+        a.pa_lot_batch_number,
+        a.pa_yield_percent,
+        a.uu_item,
+        a.uu_budget_ref_tank,
+        a.uu_budget_qty,
+        a.uu_total_cpo,
+        a.uu_total_steam,
+        a.uu_steam_cpo,
+        a.uu_yield_percent
+      FROM t_daily_production_refinery a
+      WHERE a.plant = :plantCode
+        AND (a.flag IS NULL OR a.flag = 'T')
+    """;
+
+      final params = <String, dynamic>{"plantCode": plantCode};
+
+      if (transactionDate != null) {
+        query += " AND DATE (a.transaction_date) = :transactionDate";
+        params["transactionDate"] = transactionDate;
+      }
+
+      if (workCenter != null && workCenter.isNotEmpty) {
+        query += " AND a.work_center = :workCenter";
+        params["workCenter"] = workCenter;
+      }
+
+      if (shift != null) {
+        query += " AND a.shift = :shift";
+        params["shift"] = shift;
+      }
+
+      query += " ORDER BY a.transaction_date DESC";
+
+      final result = await connection.execute(query, params);
+
+      log('Fetched ${result.rows.length} production records.');
+
+      return result.rows.map((row) => row.assoc()).toList();
+    } catch (e) {
+      log('Error fetching production data: $e');
+      return [];
+    } finally {
+      await closeMySQLConnection(connection);
     }
   }
 }

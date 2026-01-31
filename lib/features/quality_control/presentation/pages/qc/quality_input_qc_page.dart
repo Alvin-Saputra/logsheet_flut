@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
+import 'package:logsheet_app/core/widgets/custom_date_field.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/quality_refinery/quality_report_production_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/quality_refinery/quality_report_qc_entity.dart';
@@ -13,6 +15,8 @@ import 'package:logsheet_app/features/master_data/presentation/provider/master/b
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/product_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/qc/daily_production_card.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/qc/select_production_data_dialog.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/quality_report/quality_report_production_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/quality_report/quality_report_qc_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
@@ -115,6 +119,14 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
   final logger = Logger();
 
   DataFormNoEntity? formDataQC, formDataProd;
+
+  List<String> dummyShiftOptions = ['1', '2', '3', '4', '5'];
+  String? selectedShift;
+  final TextEditingController dailyProductionRefineryDateEntryController =
+      TextEditingController();
+
+  String? selectedWorkCenterDailyProductionRefinery;
+  String? selectedDailyProductionRefineryDataId;
 
   @override
   void initState() {
@@ -289,6 +301,8 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
             errorMessage = "Mohon isi To Tank Group.";
           }
           break;
+        case 6:
+          break;
       }
     }
 
@@ -318,7 +332,7 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
   // Navigasi Stepper
   void _nextStep() {
     if (_validateCurrentStep()) {
-      if (currentStep < 5) setState(() => currentStep++);
+      if (currentStep < 6) setState(() => currentStep++);
     }
   }
 
@@ -619,8 +633,9 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
         formNo: formDataQC!.code,
         dateIssued: formDataQC!.dateIssued,
         revisionNo: formDataQC!.revisionNo,
-        // revisionDate: formDataQC!.revisionDate,
-        revisionDate: formDataQC!.dateIssued,
+        revisionDate: formDataQC!.revisionDate,
+        // revisionDate: formDataQC!.dateIssued,
+        dailyProductionId: selectedDailyProductionRefineryDataId,
       );
 
       bool? success;
@@ -912,6 +927,9 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
       case 5:
         return 'Remark';
 
+      case 6:
+        return 'Daily Chemical Usage and Theoretical Yield';
+
       default:
         return 'Parameters'; // fallback default
     }
@@ -1071,19 +1089,20 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
             ),
             _buildTextField(
               controller: fgMoisture,
-              label: 'Moisture',
+              label: (selectedWorkCenter == 'REF-02')?'Moisture':'M&I',
               icon: Icons.science,
               isNumeric: true,
               hintText: 'Masukkan nilai Moisture',
             ),
-
-            _buildTextField(
-              controller: fgImpurities,
-              label: 'Impurities',
-              icon: Icons.science,
-              isNumeric: true,
-              hintText: 'Masukkan nilai Impurities',
-            ),
+            if (selectedWorkCenter == 'REF-02') ...[
+              _buildTextField(
+                controller: fgImpurities,
+                label: 'Impurities',
+                icon: Icons.science,
+                isNumeric: true,
+                hintText: 'Masukkan nilai Impurities',
+              ),
+            ],
 
             _buildTextField(
               controller: fgColorRController,
@@ -1317,6 +1336,245 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
               label: 'Remark',
               icon: Icons.note,
               hintText: 'Masukkan remark tambahan',
+            ),
+          ],
+        );
+
+      case 6:
+        final plantProvider = context.read<PlantProvider>();
+        final plantCode = plantProvider.currentPlant?.code ?? "";
+        return Column(
+          children: [
+            Consumer<ValueProvider>(
+              builder: (context, provider, child) {
+                if (provider.isWorkCenterLoading) {
+                  // Return a disabled dropdown with a loading indicator or message
+                  return DropdownButtonFormField<String>(
+                    value: null,
+                    items: [],
+                    onChanged: null, // Disable the dropdown
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Loading Work Center...',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                if (provider.workCenterLists.isEmpty) {
+                  return TextFormField(
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Work Center tidak ditemukan.',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Icon(Icons.warning_amber_rounded),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: () {
+                          context.read<ValueProvider>().fetchWorkCenterLists();
+                        },
+                      ),
+                    ),
+                  );
+                }
+                return DropdownButtonFormField<String>(
+                  value: selectedWorkCenterDailyProductionRefinery,
+                  items:
+                      provider.workCenterLists.map((machine) {
+                        return DropdownMenuItem<String>(
+                          value: machine.code,
+                          child: Text(
+                            "${machine.code} | ${machine.name}",
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedWorkCenter = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Pilih Work Center',
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: SvgPicture.asset(
+                        'assets/icons/oil-refinery-tanks.svg',
+                        height: 24,
+                        width: 24,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            SizedBox(height: 12),
+            CustomDateField(
+              controller: dailyProductionRefineryDateEntryController,
+              label: 'Arrival',
+              icon: Icons.event,
+            ),
+            SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: selectedShift,
+              items:
+                  dummyShiftOptions.map((item) {
+                    return DropdownMenuItem<String>(
+                      value: item,
+                      child: Text(
+                        "${item}",
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    );
+                  }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedShift = value;
+                });
+              },
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFFF0ECE9),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                labelText: 'Pilih Shift',
+                floatingLabelBehavior: FloatingLabelBehavior.auto,
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: SvgPicture.asset(
+                    'assets/icons/oil-refinery-tanks.svg',
+                    height: 24,
+                    width: 24,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 12),
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Consumer<QualityReportQCProvider>(
+                    builder: (
+                      BuildContext context,
+                      QualityReportQCProvider provider,
+                      Widget? child,
+                    ) {
+                      return (provider.isLoadingFetchDailyProductionRefinery)
+                          ? Center(child: CircularProgressIndicator())
+                          : ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFAB2F2B),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 12,
+                                horizontal: 24,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              print("BUTTON DIPENCET");
+                              provider.getDailyProductionRefineryByFilter(
+                                changeStringDateFormat(
+                                  dailyProductionRefineryDateEntryController
+                                      .text,
+                                  'dd-MM-yyyy',
+                                  'yyyy-MM-dd',
+                                  returnDateTime: true,
+                                ),
+                                plantCode,
+                                parseInt(selectedShift),
+                                selectedWorkCenterDailyProductionRefinery,
+                              );
+                              log(
+                                "nilai work center daily production refinery: $selectedWorkCenterDailyProductionRefinery",
+                              );
+                            },
+                            child: const Text('Cari Data Daily Production Ref'),
+                          );
+                    },
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16),
+            Consumer<QualityReportQCProvider>(
+              builder: (
+                BuildContext context,
+                QualityReportQCProvider provider,
+                Widget? child,
+              ) {
+                if (provider.isLoadingFetchDailyProductionRefinery) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                if (provider.dailyProductionRefineryData.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: Text('No data')),
+                  );
+                }
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: provider.dailyProductionRefineryData.length,
+                  itemBuilder: (context, index) {
+                    final item = provider.dailyProductionRefineryData[index];
+
+                    return dailyProductionCard(
+                      data: item,
+                      isSelected:
+                          selectedDailyProductionRefineryDataId == item.id,
+                      onTap: () async {
+                        // Wait for the user to pick an action
+                        final bool? isConfirmed =
+                            await selectProductionDataDialog(context);
+
+                        // If they chose "Ya" (true), update the state
+                        if (isConfirmed == true) {
+                          setState(() {
+                            selectedDailyProductionRefineryDataId = item.id;
+                          });
+                        }
+                      },
+                    );
+                  },
+                );
+              },
             ),
           ],
         );
@@ -1666,7 +1924,7 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
                     // Step Indicator
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(6, (index) {
+                      children: List.generate(7, (index) {
                         final isSelected = currentStep == index;
                         return InkWell(
                           onTap: () => _goToStep(index),
@@ -1766,14 +2024,7 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
           Expanded(
             child: ElevatedButton.icon(
               icon: const Icon(Icons.arrow_back),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey.shade400,
-                foregroundColor: Colors.black87,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
+              // ... styling tetap sama
               onPressed: _prevStep,
               label: const Text('Back'),
             ),
@@ -1785,8 +2036,9 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
           child: ElevatedButton.icon(
             icon: Consumer<QualityReportQCProvider>(
               builder: (context, provider, child) {
+                // UBAH DISINI: Dari 5 ke 6
                 return Icon(
-                  currentStep == 5 ? Icons.save : Icons.arrow_forward,
+                  currentStep == 6 ? Icons.save : Icons.arrow_forward,
                 );
               },
             ),
@@ -1798,9 +2050,11 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
+            // UBAH DISINI: Dari 5 ke 6
             onPressed:
-                currentStep == 5 ? () => _showAlertDialog(context) : _nextStep,
-            label: Text(currentStep == 5 ? 'Save' : 'Next'),
+                currentStep == 6 ? () => _showAlertDialog(context) : _nextStep,
+            // UBAH DISINI: Dari 5 ke 6
+            label: Text(currentStep == 6 ? 'Save' : 'Next'),
           ),
         ),
       ],

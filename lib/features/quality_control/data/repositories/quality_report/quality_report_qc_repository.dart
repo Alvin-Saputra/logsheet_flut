@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:logsheet_app/features/daily_production/data/model/daily_production/daily_production_refinery_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/features/transactions/report_notification_data_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/datasources/local/quality_report/quality_report_qc_mysql_service.dart';
@@ -137,6 +138,30 @@ class QualityReportQCRepository {
     List<QualityReportQcEntity> filteredTicketListFromMap =
         filteredTicketList
             .map((map) => QualityReportQcEntity.fromMap(map))
+            .toList();
+
+    return filteredTicketListFromMap;
+  }
+
+  Future<List<DailyProductionRefineryEntity>>
+  getDailyProductionRefineryByFilter({
+    DateTime? transactionDate,
+    required String plantCode,
+    int? shift,
+    String? workCenter,
+  }
+  ) async {
+    final List<Map<String, dynamic>> filteredTicketList = await _mySQLService
+        .getDailyProductionRefineryByFilter(
+          plantCode: plantCode,
+          transactionDate: transactionDate,
+          shift: shift,
+          workCenter: workCenter,
+        );
+
+    List<DailyProductionRefineryEntity> filteredTicketListFromMap =
+        filteredTicketList
+            .map((map) => DailyProductionRefineryEntity.fromMap(map))
             .toList();
 
     return filteredTicketListFromMap;

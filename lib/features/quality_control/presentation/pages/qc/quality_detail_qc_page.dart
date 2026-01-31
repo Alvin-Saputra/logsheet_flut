@@ -346,7 +346,7 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
               _buildDataRow('Work Center', _currentReport.workCenter ?? '-'),
               _buildDataRow('Tank Source', _currentReport.rmTankSource ?? '-'),
               _buildDataRow("Flow Rate", isNull(_currentReport.rmFlowRate)),
-              _buildDataRow('Temp (°C)', isNull(_currentReport.rmTemp)),
+              // _buildDataRow('Temp (°C)', isNull(_currentReport.rmTemp)),
               _buildDataRow('FFA (%)', isNull(_currentReport.rmFFA)),
               _buildDataRow('IV', isNull(_currentReport.rmIV)),
               _buildDataRow('PV', isNull(_currentReport.rmPV)),
@@ -370,8 +370,16 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
               _buildDataRow('FFA (%)', isNull(_currentReport.fgFFA)),
               _buildDataRow('IV', isNull(_currentReport.fgIV)),
               _buildDataRow('PV', isNull(_currentReport.fgPV)),
-              _buildDataRow('Moisture', isNull(_currentReport.fgMoisture)),
-              _buildDataRow('Impurities', isNull(_currentReport.fgImpurities)),
+              _buildDataRow(
+                (_currentReport.workCenter == 'REF-02') ? 'Moisture' : 'M&I',
+                isNull(_currentReport.fgMoisture),
+              ),
+              if (_currentReport.workCenter == 'REF-02') ...[
+                _buildDataRow(
+                  'Impurities',
+                  isNull(_currentReport.fgImpurities),
+                ),
+              ],
               _buildDataRow('Color R', isNull(_currentReport.fgColorR)),
               _buildDataRow('Color Y', isNull(_currentReport.fgColorY)),
               _buildDataRow(
@@ -394,6 +402,45 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
             _buildSection('Waste', [
               _buildDataRow('OC', isNull(_currentReport.wSBEQC)),
               _buildDataRow('M&I', isNull(_currentReport.wasteMNI)),
+            ]),
+
+            _buildSection('Daily Production Refinery Data', [
+              _buildDataRow('ID', _currentReport.dailyProductionId ?? '-'),
+              _buildDataRow(
+                'Be Ref Total Bag',
+                _currentReport.beTotalBag?.toString() ?? '-',
+              ),
+              _buildDataRow(
+                'PA Total',
+                _currentReport.paTotal?.toString() ?? '-',
+              ),
+              _buildDataRow(
+                'UU Total RM',
+                _currentReport.uuTotalCpo?.toString() ?? '-',
+              ),
+              _buildDataRow(
+                'UU Total RM',
+                _currentReport.uuTotalCpo?.toString() ?? '-',
+              ),
+              _buildDataRow(
+                'BE Yield',
+                _currentReport.beYieldPercent != null
+                    ? "${_currentReport.beYieldPercent?.toStringAsFixed(2)}%"
+                    : "-",
+              ),
+
+              _buildDataRow(
+                'PA Yield',
+                _currentReport.paYieldPercent != null
+                    ? "${_currentReport.paYieldPercent?.toStringAsFixed(2)}%"
+                    : "-",
+              ),
+              _buildDataRow(
+                'UU Yield',
+                _currentReport.uuYieldPercent != null
+                    ? "${_currentReport.uuYieldPercent?.toStringAsFixed(2)}%"
+                    : "-",
+              ),
             ]),
 
             _buildSection('Metadata & Remarks', [

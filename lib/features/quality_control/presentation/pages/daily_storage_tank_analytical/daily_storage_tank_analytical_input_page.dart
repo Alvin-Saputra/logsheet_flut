@@ -536,7 +536,8 @@ class _DailyStorageTankAnalyticalInputPageState
         formNo: formData?.code,
         dateIssued: formData?.dateIssued,
         revisionNo: formData?.revisionNo.toString(),
-        revisionDate: formData?.revisionDate,
+        // revisionDate: formData?.revisionDate,
+        revisionDate: DateTime.now(),
       );
 
       final isSuccess = await context
