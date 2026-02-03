@@ -913,7 +913,7 @@ class _DailyProductionFractionPageState
     final currentPlant = context.read<PlantProvider>().currentPlant;
     final plantCode = currentPlant!.code;
     final companyName =
-        context.read<BusinessUnitProvider>().currentBusinessUnit?.buName;
+        context.read<BusinessUnitProvider>().currentBusinessUnit?.buCode;
 
     DateTime getTransactionDate() {
       final DateTime now = selectedTransactionDate;
