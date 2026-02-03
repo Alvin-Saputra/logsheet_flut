@@ -19,25 +19,26 @@ import 'package:logsheet_app/features/quality_control/presentation/provider/dail
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class AnalyticalResultOutgoingShipmentProductByVesselListDetailPage
+class AnalyticalResultOutgoingShipmentProductByVesselApprovalDetailPage
     extends StatefulWidget {
-  AnalyticalResultOutgoingShipmentProductByVesselListDetailPage({
+  AnalyticalResultOutgoingShipmentProductByVesselApprovalDetailPage({
     super.key,
-    required this.data, required this.isShowApprovalAction,
+    required this.data,
   });
 
   final AnalyticalResultOutgoingShipmentProductByVesselHeaderEntity data;
-  final bool isShowApprovalAction;
 
   @override
-  State<AnalyticalResultOutgoingShipmentProductByVesselListDetailPage>
+  State<AnalyticalResultOutgoingShipmentProductByVesselApprovalDetailPage>
   createState() =>
-      _AnalyticalResultOutgoingShipmentProductByVesselListDetailPageState();
+      _AnalyticalResultOutgoingShipmentProductByVesselApprovalDetailPageState();
 }
 
-class _AnalyticalResultOutgoingShipmentProductByVesselListDetailPageState
+class _AnalyticalResultOutgoingShipmentProductByVesselApprovalDetailPageState
     extends
-        State<AnalyticalResultOutgoingShipmentProductByVesselListDetailPage> {
+        State<
+          AnalyticalResultOutgoingShipmentProductByVesselApprovalDetailPage
+        > {
   final TextEditingController remarkController = TextEditingController();
   final PageController detailPageControllers = PageController();
   late AnalyticalResultOutgoingShipmentProductByVesselHeaderEntity _data;
@@ -294,8 +295,6 @@ class _AnalyticalResultOutgoingShipmentProductByVesselListDetailPageState
                         ],
                       ),
                     ]),
-
-                    if (widget.isShowApprovalAction)
                     if ((AppRoles.leadQC.contains(
                           userProvider.currentUser?.role,
                         )) ||
@@ -303,8 +302,8 @@ class _AnalyticalResultOutgoingShipmentProductByVesselListDetailPageState
                           userProvider.currentUser?.role,
                         )))
                       _buildSection('Approval Actions', [
-                        if (_data.preparedStatus == "Approved" &&
-                            _data.approvedStatus == "Approved") ...[
+                        if (widget.data.preparedStatus == "Approved" &&
+                            widget.data.approvedStatus == "Approved") ...[
                           Text(
                             "Checklist Approved",
                             style: TextStyle(
@@ -312,8 +311,8 @@ class _AnalyticalResultOutgoingShipmentProductByVesselListDetailPageState
                               color: Colors.green,
                             ),
                           ),
-                        ] else if (_data.preparedStatus == "Rejected" ||
-                            _data.approvedStatus == "Rejected") ...[
+                        ] else if (widget.data.preparedStatus == "Rejected" ||
+                            widget.data.approvedStatus == "Rejected") ...[
                           Text(
                             "Checklist Rejected",
                             style: TextStyle(
@@ -321,11 +320,11 @@ class _AnalyticalResultOutgoingShipmentProductByVesselListDetailPageState
                               color: Colors.red,
                             ),
                           ),
-                        ] else if (AppRoles.leadQC.contains(
-                          userProvider.currentUser?.role,
-                        )) ...[
-                          if (_data.preparedStatus == null) ...[
-                            Text('Prepared Status:'),
+                        ] else if (AppRoles.qualityControlManagerApproval
+                            .contains(userProvider.currentUser?.role)) ...[
+                          if (widget.data.preparedStatus == "Approved" &&
+                              widget.data.approvedStatus == null) ...[
+                            Text('Approved Status:'),
                             SizedBox(height: 8.0),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -366,16 +365,14 @@ class _AnalyticalResultOutgoingShipmentProductByVesselListDetailPageState
                                         if (isSuccess) {
                                           showSnackBar(
                                             "Berhasil Approve Checklist",
-                                            context,
+                                            this.context,
                                           );
-
-                                          log("Sukses Approve");
-                                          if (!mounted) return;
                                           Navigator.of(this.context).pop();
+                                          log("Sukses Approve");
                                         } else {
                                           showSnackBar(
                                             "Gagal Approve Checklist",
-                                            context,
+                                            this.context,
                                           );
                                         }
                                       },
@@ -395,39 +392,25 @@ class _AnalyticalResultOutgoingShipmentProductByVesselListDetailPageState
                                 ),
                               ],
                             ),
-                          ] else if (_data.preparedStatus != null &&
-                              _data.approvedStatus == null) ...[
+                          ] else if (widget.data.preparedStatus == null) ...[
                             Text(
-                              "Waiting Apprvoal From Manager QC...",
+                              "Waiting Approval From Leader QC...",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.orange,
                               ),
                             ),
                           ],
-                        ] else if (AppRoles.qualityControlManagerApproval
-                            .contains(userProvider.currentUser?.role)) ...[
-                          if (_data.approvedStatus == null) ...[
+                        ] else if (AppRoles.leadQC.contains(
+                          userProvider.currentUser?.role,
+                        )) ...[
+                          if (widget.data.approvedStatus == null) ...[
                             Text(
-                              "Waiting Apprvoal From Leader QC...",
+                              "Waiting Apprvoal From Manager QC...",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.orange,
                               ),
-                            ),
-                          ] else if (_data.preparedStatus == "Approved" ||
-                              _data.approvedStatus == "Rejected") ...[
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Text(
-                                  "Checklist Prepared",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.amber,
-                                  ),
-                                ),
-                              ],
                             ),
                           ],
                         ],
@@ -657,7 +640,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselListDetailPageState
         .read<AnalyticalResultOutgoingShipmentProductByVesselProvider>()
         .updateApproveRejectReport(
           id: _data.id,
-       
+
           status: status,
           remarks: remarkController.text,
         );

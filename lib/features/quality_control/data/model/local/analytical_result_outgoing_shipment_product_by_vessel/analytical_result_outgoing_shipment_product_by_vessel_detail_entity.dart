@@ -3,14 +3,14 @@ class AnalyticalResultOutgoingShipmentProductByVesselDetailEntity {
   final String id;
   final String idHdr;
 
-  final double? palkaSPalka;
+  final int? palkaSPalka;
   final double? palkaSFfa;
   final double? palkaSIv;
   final double? palkaSColour;
   final double? palkaSPv;
   final double? palkaSMni;
 
-  final double? palkaPPalka;
+  final int? palkaPPalka;
   final double? palkaPFfa;
   final double? palkaPIv;
   final double? palkaPColour;

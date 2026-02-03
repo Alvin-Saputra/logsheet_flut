@@ -13,7 +13,7 @@ class AnalyticalResultOutgoingShipmentProductByVesselDetailModel
   final String jsonIdHdr;
 
   @JsonKey(name: 'palka_s_palka')
-  final String? jsonPalkaSPalka;
+  final int? jsonPalkaSPalka;
 
   @JsonKey(name: 'palka_s_ffa')
   final String? jsonPalkaSFfa;
@@ -31,7 +31,7 @@ class AnalyticalResultOutgoingShipmentProductByVesselDetailModel
   final String? jsonPalkaSMni;
 
   @JsonKey(name: 'palka_p_palka')
-  final String? jsonPalkaPPalka;
+  final int? jsonPalkaPPalka;
 
   @JsonKey(name: 'palka_p_ffa')
   final String? jsonPalkaPFfa;
@@ -70,13 +70,13 @@ class AnalyticalResultOutgoingShipmentProductByVesselDetailModel
   }) : super(
          id: jsonId,
          idHdr: jsonIdHdr,
-         palkaSPalka: parseDouble(jsonPalkaSPalka),
+         palkaSPalka: parseInt(jsonPalkaSPalka),
          palkaSFfa: parseDouble(jsonPalkaSFfa),
          palkaSIv: parseDouble(jsonPalkaSIv),
          palkaSColour: parseDouble(jsonPalkaSColour),
          palkaSPv: parseDouble(jsonPalkaSPv),
          palkaSMni: parseDouble(jsonPalkaSMni),
-         palkaPPalka: parseDouble(jsonPalkaPPalka),
+         palkaPPalka: parseInt(jsonPalkaPPalka),
          palkaPFfa: parseDouble(jsonPalkaPFfa),
          palkaPIv: parseDouble(jsonPalkaPIv),
          palkaPColour: parseDouble(jsonPalkaPColour),

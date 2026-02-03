@@ -42,7 +42,7 @@ _$AnalyticalResultOutgoingShipmentProductByVesselHeaderModelFromJson(
   jsonRevisionNo: (json['revision_no'] as num?)?.toInt(),
   jsonRevisionDate: json['revision_date'] as String?,
   jsonDetail:
-      (json['detail'] as List<dynamic>?)
+      (json['details'] as List<dynamic>?)
           ?.map(
             (e) =>
                 AnalyticalResultOutgoingShipmentProductByVesselDetailModel.fromJson(
@@ -50,6 +50,7 @@ _$AnalyticalResultOutgoingShipmentProductByVesselHeaderModelFromJson(
                 ),
           )
           .toList(),
+  jsonRemark: json['remark'] as String?,
 );
 
 Map<String, dynamic>
@@ -71,6 +72,7 @@ _$AnalyticalResultOutgoingShipmentProductByVesselHeaderModelToJson(
   'hasil_analisa_colour': instance.jsonHasilAnalisaColour,
   'hasil_analisa_pv': instance.jsonHasilAnalisaPv,
   'hasil_analisa_smp': instance.jsonHasilAnalisaSmp,
+  'remark': instance.jsonRemark,
   'entry_by': instance.jsonEntryBy,
   'entry_date': instance.jsonEntryDate,
   'prepared_by': instance.jsonPreparedBy,
@@ -87,5 +89,5 @@ _$AnalyticalResultOutgoingShipmentProductByVesselHeaderModelToJson(
   'date_issued': instance.jsonDateIssued,
   'revision_no': instance.jsonRevisionNo,
   'revision_date': instance.jsonRevisionDate,
-  'detail': instance.jsonDetail?.map((e) => e.toJson()).toList(),
+  'details': instance.jsonDetail?.map((e) => e.toJson()).toList(),
 };

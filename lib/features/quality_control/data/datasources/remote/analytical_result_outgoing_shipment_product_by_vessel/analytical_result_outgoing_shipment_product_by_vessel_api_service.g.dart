@@ -63,7 +63,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselApiService
   Future<FetchAnalyticalResultOutgoingShipmentProductByVesselResponse>
   fetchReports(String token, String? date) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'entry_date': date};
+    final queryParameters = <String, dynamic>{r'sampling_date': date};
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{r'Authorization': token};
     _headers.removeWhere((k, v) => v == null);
@@ -85,6 +85,117 @@ class _AnalyticalResultOutgoingShipmentProductByVesselApiService
     try {
       _value =
           FetchAnalyticalResultOutgoingShipmentProductByVesselResponse.fromJson(
+            _result.data!,
+          );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<DeleteAnalyticalResultOutgoingShipmentProductByVesselResponse>
+  deleteReport(String token, String id) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{r'Authorization': token};
+    _headers.removeWhere((k, v) => v == null);
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<
+      DeleteAnalyticalResultOutgoingShipmentProductByVesselResponse
+    >(
+      Options(method: 'DELETE', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/arosvess/${id}',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late DeleteAnalyticalResultOutgoingShipmentProductByVesselResponse _value;
+    try {
+      _value =
+          DeleteAnalyticalResultOutgoingShipmentProductByVesselResponse.fromJson(
+            _result.data!,
+          );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<UpdateAnalyticalResultOutgoingShipmentProductByVesselResponse>
+  updateReport(String token, String id, Map<String, dynamic> body) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{r'Authorization': token};
+    _headers.removeWhere((k, v) => v == null);
+    final _data = <String, dynamic>{};
+    _data.addAll(body);
+    final _options = _setStreamType<
+      UpdateAnalyticalResultOutgoingShipmentProductByVesselResponse
+    >(
+      Options(method: 'PUT', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/arosvess/${id}',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late UpdateAnalyticalResultOutgoingShipmentProductByVesselResponse _value;
+    try {
+      _value =
+          UpdateAnalyticalResultOutgoingShipmentProductByVesselResponse.fromJson(
+            _result.data!,
+          );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<
+    UpdateApproveRejectAnalyticalResultOutgoingShipmentProductByVesselResponse
+  >
+  updateApprovalReport(
+    String token,
+    String id,
+    Map<String, dynamic> body,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{r'Authorization': token};
+    _headers.removeWhere((k, v) => v == null);
+    final _data = <String, dynamic>{};
+    _data.addAll(body);
+    final _options = _setStreamType<
+      UpdateApproveRejectAnalyticalResultOutgoingShipmentProductByVesselResponse
+    >(
+      Options(method: 'PUT', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/arosvess/${id}/approve',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late UpdateApproveRejectAnalyticalResultOutgoingShipmentProductByVesselResponse
+    _value;
+    try {
+      _value =
+          UpdateApproveRejectAnalyticalResultOutgoingShipmentProductByVesselResponse.fromJson(
             _result.data!,
           );
     } on Object catch (e, s) {

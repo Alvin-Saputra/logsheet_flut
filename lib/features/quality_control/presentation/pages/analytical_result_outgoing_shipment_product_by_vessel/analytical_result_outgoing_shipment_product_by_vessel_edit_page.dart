@@ -27,18 +27,23 @@ import 'package:logsheet_app/features/quality_control/presentation/provider/anal
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class AnalyticalResultOutgoingShipmentProductByVesselInputPage
+class AnalyticalResultOutgoingShipmentProductByVesselEditPage
     extends StatefulWidget {
-  const AnalyticalResultOutgoingShipmentProductByVesselInputPage({super.key});
+  AnalyticalResultOutgoingShipmentProductByVesselEditPage({
+    super.key,
+    required this.data,
+  });
+
+  AnalyticalResultOutgoingShipmentProductByVesselHeaderEntity data;
 
   @override
-  State<AnalyticalResultOutgoingShipmentProductByVesselInputPage>
+  State<AnalyticalResultOutgoingShipmentProductByVesselEditPage>
   createState() =>
-      _AnalyticalResultOutgoingShipmentProductByVesselInputPageState();
+      _AnalyticalResultOutgoingShipmentProductByVesselEditPageState();
 }
 
-class _AnalyticalResultOutgoingShipmentProductByVesselInputPageState
-    extends State<AnalyticalResultOutgoingShipmentProductByVesselInputPage> {
+class _AnalyticalResultOutgoingShipmentProductByVesselEditPageState
+    extends State<AnalyticalResultOutgoingShipmentProductByVesselEditPage> {
   final _formKey = GlobalKey<FormState>();
   // final _formKeyDetails = GlobalKey<FormState>();
 
@@ -74,6 +79,8 @@ class _AnalyticalResultOutgoingShipmentProductByVesselInputPageState
   List<AnalyticalResultOutgoingShipmentProductByVesselDetailInputItem>
   inputItems = [];
 
+  AnalyticalResultOutgoingShipmentProductByVesselHeaderEntity? updatedData;
+
   void _addNewRow() {
     setState(() {
       inputItems.add(
@@ -89,12 +96,83 @@ class _AnalyticalResultOutgoingShipmentProductByVesselInputPageState
     });
   }
 
+  void _populateData() {
+    final data = widget.data;
+
+    // --- 1. POPULATE HEADER ---
+
+    // Date (Convert DateTime ke String format dd-MM-yyyy)
+    if (data.samplingDate != null) {
+      samplingDateController.text =
+          formatDatetoString(DateTime.now(), 'dd-MM-yyyy') ?? '';
+    }
+
+    // Dropdown
+    selectedProductName = data.productName;
+
+    // Numeric Fields (Pastikan handle null dengan '??')
+    quantityController.text = data.quantity?.toString() ?? '';
+    vesselNameController.text = data.vesselName ?? '';
+    shipperController.text = data.shipper ?? '';
+    destinationController.text = data.destination ?? '';
+    hasilAnalisaFfaController.text = data.hasilAnalisaFfa?.toString() ?? '';
+    hasilAnalisaIvController.text = data.hasilAnalisaIv?.toString() ?? '';
+    hasilAnalisaIvController.text = data.hasilAnalisaIv?.toString() ?? '';
+    hasilAnalisaMoistureController.text =
+        data.hasilAnalisaMoisture?.toString() ?? '';
+    hasilAnalisaColourController.text =
+        data.hasilAnalisaColorR?.toString() ?? '';
+    hasilAnalisaPvController.text = data.hasilAnalisaPv?.toString() ?? '';
+    hasilAnalisaSmpController.text = data.hasilAnalisaSMP?.toString() ?? '';
+    remarkController.text = data.remark??'';
+
+    // --- 2. POPULATE DETAILS ---
+
+    if (data.details.isNotEmpty) {
+      // Bersihkan list bawaan jika ada
+      inputItems.clear();
+
+      for (var detail in data.details) {
+        // Buat object Input Item baru (yang berisi controller2 kosong)
+        var item =
+            AnalyticalResultOutgoingShipmentProductByVesselDetailInputItem();
+        // item.id = detail.id;
+        // Isi controller di dalam item tersebut dengan data detail
+
+        item.palkaSffa.text = detail.palkaSFfa?.toString() ?? '';
+        item.palkaSiv.text = detail.palkaSIv?.toString() ?? '';
+        item.palkaSColour.text = detail.palkaSColour?.toString() ?? '';
+        item.palkaSPv.text = detail.palkaSPv?.toString() ?? '';
+        item.palkaSMni.text = detail.palkaSMni?.toString() ?? '';
+
+        item.palkaPffa.text = detail.palkaPFfa?.toString() ?? '';
+        item.palkaPiv.text = detail.palkaPIv?.toString() ?? '';
+        item.palkaPColour.text = detail.palkaPColour?.toString() ?? '';
+        item.palkaPPv.text = detail.palkaPPv?.toString() ?? '';
+        item.palkaPMni.text = detail.palkaPMni?.toString() ?? '';
+
+        // Masukkan item yang sudah terisi ke list utama
+        inputItems.add(item);
+      }
+    } else {
+      // Jika header ada tapi detail kosong (jarang terjadi), kasih 1 baris kosong
+      _addNewRow();
+    }
+
+    // Trigger rebuild UI agar data tampil
+    setState(() {});
+  }
+
   @override
   initState() {
     super.initState();
-    _addNewRow();
+    // _addNewRow();
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await context.read<ValueProvider>().fetchOilTypes();
+      if (widget.data.id.isNotEmpty) {
+        _populateData();
+      }
     });
   }
 
@@ -116,7 +194,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselInputPageState
             .first;
     return AppBar(
       title: Text(
-        "Analytical Result of OutGoing Shipment By Vessel (${formData!.code})",
+        "Analytical Result of OutGoing Shipment By Vessel Edit (${formData!.code})",
       ),
       actions: [],
     );
@@ -181,16 +259,6 @@ class _AnalyticalResultOutgoingShipmentProductByVesselInputPageState
                           ),
                         ),
                       );
-                    }
-                    // Set initial value to first item if not already selected
-                    if (selectedProductName == null &&
-                        provider.oilTypeLists.isNotEmpty) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        setState(() {
-                          selectedProductName =
-                              provider.oilTypeLists.first.name;
-                        });
-                      });
                     }
                     return DropdownButtonFormField<String>(
                       value: selectedProductName,
@@ -335,7 +403,9 @@ class _AnalyticalResultOutgoingShipmentProductByVesselInputPageState
               ]),
 
               CustomRemarkField(controller: remarkController),
-              SizedBox(height: 16.0),
+
+              SizedBox(height: 16.0,),
+
               Consumer<AnalyticalResultOutgoingShipmentProductByVesselProvider>(
                 builder: (
                   BuildContext context,
@@ -370,11 +440,11 @@ class _AnalyticalResultOutgoingShipmentProductByVesselInputPageState
 
                           // if (!_validateDetailRows(context)) return;
 
-                          final bool isSuccess = await _insertData();
+                          final bool isSuccess = await _updateData();
 
                           if (isSuccess) {
                             showSnackBar("Berhasil menyimpan data", context);
-                            Navigator.of(context).pop();
+                            Navigator.of(context).pop(updatedData);
                           } else {
                             showSnackBar("Gagal menyimpan data", context);
                           }
@@ -536,7 +606,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselInputPageState
     );
   }
 
-  Future<bool> _insertData() async {
+  Future<bool> _updateData() async {
     final plant = context.read<PlantProvider>().currentPlant;
     final user = context.read<UserProvider>();
     final businessUnit =
@@ -551,7 +621,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselInputPageState
 
         detailEntities.add(
           AnalyticalResultOutgoingShipmentProductByVesselDetailEntity(
-            id: '',
+            id: widget.data.details[i].id,
             idHdr: '',
             palkaSPalka: i + 1,
             palkaSFfa: parseDouble(item.palkaSffa.text),
@@ -571,7 +641,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselInputPageState
 
       final header =
           AnalyticalResultOutgoingShipmentProductByVesselHeaderEntity(
-            id: '',
+            id: widget.data.id,
             company: businessUnit?.buCode ?? '',
             plant: plant?.code ?? '',
             productName: selectedProductName ?? '',
@@ -594,7 +664,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselInputPageState
             hasilAnalisaColorR: parseDouble(hasilAnalisaColourController.text),
             hasilAnalisaSMP: parseDouble(hasilAnalisaSmpController.text),
             entryBy: user.currentUser?.username ?? '',
-            entryDate: null,
+            entryDate: widget.data.entryDate,
             preparedBy: null,
             preparedDate: null,
             preparedStatus: null,
@@ -610,13 +680,13 @@ class _AnalyticalResultOutgoingShipmentProductByVesselInputPageState
             revisionNo: formData?.revisionNo.toString(),
             revisionDate: formData?.revisionDate,
             details: detailEntities,
-            remark: remarkController.text,
+            remark: '',
           );
 
       final isSuccess = await context
           .read<AnalyticalResultOutgoingShipmentProductByVesselProvider>()
-          .insertReport(headerInput: header);
-
+          .updateReport(headerInput: header);
+      updatedData = isSuccess ? header : null;
       return isSuccess;
     } catch (e) {
       debugPrint("Error inserting Analytical Incoming Material By Vessel: $e");

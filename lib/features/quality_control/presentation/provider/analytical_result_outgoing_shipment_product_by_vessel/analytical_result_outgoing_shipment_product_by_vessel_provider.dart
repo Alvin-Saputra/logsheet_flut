@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
 import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_outgoing_shipment_product_by_vessel/analytical_result_outgoing_shipment_product_by_vessel_api_service.dart';
@@ -98,16 +99,17 @@ class AnalyticalResultOutgoingShipmentProductByVesselProvider
               'yyy-MM-dd HH:mm:ss',
             ) ??
             '',
-        "quantity": headerInput.quantity ?? 0,
+        "quantity": headerInput.quantity,
         "shipper": headerInput.shipper ?? '',
         "destination": headerInput.destination ?? '',
         "vessel_name": headerInput.vesselName ?? '',
-        "hasil_analisa_ffa": headerInput.hasilAnalisaFfa ?? 0,
-        "hasil_analisa_iv": headerInput.hasilAnalisaIv ?? 0,
-        "hasil_analisa_moisture": headerInput.hasilAnalisaMoisture ?? 0,
-        "hasil_analisa_colour": headerInput.hasilAnalisaColorR ?? 0,
-        "hasil_analisa_pv": headerInput.hasilAnalisaPv ?? 0,
-        "hasil_analisa_smp": headerInput.hasilAnalisaSMP ?? 0,
+        "hasil_analisa_ffa": headerInput.hasilAnalisaFfa,
+        "hasil_analisa_iv": headerInput.hasilAnalisaIv,
+        "hasil_analisa_moisture": headerInput.hasilAnalisaMoisture,
+        "hasil_analisa_colour": headerInput.hasilAnalisaColorR,
+        "hasil_analisa_pv": headerInput.hasilAnalisaPv,
+        "hasil_analisa_smp": headerInput.hasilAnalisaSMP,
+        "remark": headerInput.remark,
         "details":
             headerInput.details
                 .map(
@@ -154,7 +156,7 @@ class AnalyticalResultOutgoingShipmentProductByVesselProvider
   Future<void> fetchReport(
     String? date, {
     String? role,
-    String? purpose,
+    bool isFilterBasedOnRole = false,
   }) async {
     _setLoading(true);
     _setErrorMessage(null);
@@ -171,14 +173,14 @@ class AnalyticalResultOutgoingShipmentProductByVesselProvider
         _reportList = data;
 
         log("report List Length: ${_reportList.length}");
-        // if (purpose == "list" && AppRoles.leadQC.contains(role)) {
-        //   _reportList =
-        //       _reportList
-        //           .where(
-        //             (item) => item.correctedStatus == null,
-        //           )
-        //           .toList();
-        // }
+        if (isFilterBasedOnRole == true && AppRoles.leadQC.contains(role)) {
+          _reportList =
+              _reportList.where((item) => item.preparedStatus == null).toList();
+        } else if (isFilterBasedOnRole == true &&
+            AppRoles.qualityControlManagerApproval.contains(role)) {
+          _reportList =
+              _reportList.where((item) => item.preparedStatus != null).toList();
+        }
         log("report List Length: ${_reportList.length}");
 
         notifyListeners();
@@ -195,130 +197,143 @@ class AnalyticalResultOutgoingShipmentProductByVesselProvider
     }
   }
 
-  // Future<bool> deleteReport({required String id}) async {
-  //   _setLoadingDelete(true);
-  //   _setErrorMessage(null);
+  Future<bool> deleteReport({required String id}) async {
+    _setLoadingDelete(true);
+    _setErrorMessage(null);
 
-  //   try {
-  //     String token = await _storageService.readSessionToken() ?? '';
-  //     final response = await _apiService.deleteReport('Bearer $token', id);
+    try {
+      String token = await _storageService.readSessionToken() ?? '';
+      final response = await _apiService.deleteReport('Bearer $token', id);
 
-  //     if (response != null && response.success == true) {
-  //       notifyListeners();
-  //       return true;
-  //     } else {
-  //       _setErrorMessage('Delete Report Failed');
-  //       notifyListeners();
-  //       return false;
-  //     }
-  //   } catch (e) {
-  //     _setErrorMessage("$e");
-  //     notifyListeners();
-  //     return false;
-  //   } finally {
-  //     _setLoadingDelete(false);
-  //     notifyListeners();
-  //   }
-  // }
+      if (response != null && response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage('Delete Report Failed');
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage("$e");
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoadingDelete(false);
+      notifyListeners();
+    }
+  }
 
-  // Future<bool> updateReport({
-  //   required AnalyticalResultOutgoingShipmentProductByVesselHeaderEntity
-  //   headerInput,
-  // }) async {
-  //   _setLoadingInput(true);
+  Future<bool> updateReport({
+    required AnalyticalResultOutgoingShipmentProductByVesselHeaderEntity
+    headerInput,
+  }) async {
+    _setLoadingInput(true);
 
-  //   try {
-  //     final body = {
-  //       "loading_date":
-  //           formatDatetoString(headerInput.loadingDate, 'yyy-MM-dd HH:mm:ss') ??
-  //           '',
-  //       "product_name": headerInput.productName,
-  //       "quantity": (headerInput.quantity ?? 0).toString(),
-  //       "ships_name": headerInput.shipsName ?? '',
-  //       "destination": headerInput.destination,
-  //       "load_port": headerInput.loadPort,
-  //       "details":
-  //           headerInput.details
-  //               .map(
-  //                 (detail) => {
-  //                   "id": detail.id,
-  //                   "id_hdr": detail.idHdr,
-  //                   "ships_tank": detail.shipsTank ?? '',
-  //                   "no_police": detail.noPolice ?? '',
-  //                   "ffa": detail.ffa ?? 0,
-  //                   "m_and_i": detail.mni ?? 0,
-  //                   "iv": detail.iv ?? 0,
-  //                   "lovibond_color_red": detail.lovibondColorRed ?? 0,
-  //                   "lovibond_color_yellow": detail.lovibondColorYellow ?? 0,
-  //                   "pv": detail.pv ?? 0,
-  //                   "other": detail.other ?? '',
-  //                   "remarks": detail.remark,
-  //                 },
-  //               )
-  //               .toList(),
-  //     };
+    try {
+      final body = {
+        "company": headerInput.company,
+        "plant": headerInput.plant,
+        "product_name": headerInput.productName ?? '',
+        "sampling_date":
+            formatDatetoString(
+              headerInput.samplingDate,
+              'yyy-MM-dd HH:mm:ss',
+            ) ??
+            '',
+        "quantity": headerInput.quantity,
+        "shipper": headerInput.shipper ?? '',
+        "destination": headerInput.destination ?? '',
+        "vessel_name": headerInput.vesselName ?? '',
+        "hasil_analisa_ffa": headerInput.hasilAnalisaFfa,
+        "hasil_analisa_iv": headerInput.hasilAnalisaIv,
+        "hasil_analisa_moisture": headerInput.hasilAnalisaMoisture,
+        "hasil_analisa_colour": headerInput.hasilAnalisaColorR,
+        "hasil_analisa_pv": headerInput.hasilAnalisaPv,
+        "hasil_analisa_smp": headerInput.hasilAnalisaSMP,
+        "remark": headerInput.remark,
+        "details":
+            headerInput.details
+                .map(
+                  (detail) => {
+                    "id": detail.id,
+                    "palka_s_palka": detail.palkaSPalka,
+                    "palka_s_ffa": detail.palkaSFfa,
+                    "palka_s_iv": detail.palkaSIv,
+                    "palka_s_colour": detail.palkaSColour,
+                    "palka_s_pv": detail.palkaSPv,
+                    "palka_s_mni": detail.palkaSMni,
+                    "palka_p_palka": detail.palkaPPalka,
+                    "palka_p_ffa": detail.palkaPFfa,
+                    "palka_p_iv": detail.palkaPIv,
+                    "palka_p_colour": detail.palkaPColour,
+                    "palka_p_pv": detail.palkaPPv,
+                    "palka_p_mni": detail.palkaPMni,
+                  },
+                )
+                .toList(),
+      };
 
-  //     String token = await _storageService.readSessionToken() ?? '';
+      String token = await _storageService.readSessionToken() ?? '';
 
-  //     final response = await _apiService.updateReport(
-  //       'Bearer $token',
-  //       headerInput.id,
-  //       body,
-  //     );
+      final response = await _apiService.updateReport(
+        'Bearer $token',
+        headerInput.id,
+        body,
+      );
 
-  //     if (response != null && response.success == true) {
-  //       notifyListeners();
-  //       return true;
-  //     } else {
-  //       _setErrorMessage('Update report failed.');
-  //       notifyListeners();
-  //       return false;
-  //     }
-  //   } catch (e) {
-  //     _setErrorMessage(e.toString());
-  //     notifyListeners();
-  //     return false;
-  //   } finally {
-  //     _setLoadingInput(false);
-  //     notifyListeners();
-  //   }
-  // }
+      if (response != null && response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage('Update report failed.');
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage(e.toString());
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoadingInput(false);
+      notifyListeners();
+    }
+  }
 
-  // Future<bool> updateApproveRejectReport({
-  //   required String id,
-  //   // required String role,
-  //   required String status,
-  //   required String remarks,
-  // }) async {
-  //   _setLoadingEdit(true);
-  //   _setErrorMessage(null);
-  //   try {
-  //     final body = {"id": id, "status": status, "remarks": remarks};
+  Future<bool> updateApproveRejectReport({
+    required String id,
+    // required String role,
+    required String status,
+    required String remarks,
+  }) async {
+    _setLoadingEdit(true);
+    _setErrorMessage(null);
+    try {
+      final body = {"id": id, "status": status, "remarks": remarks};
 
-  //     String token = await _storageService.readSessionToken() ?? '';
-  //     final response = await _apiService.updateApprovalReport(
-  //       'Bearer $token',
-  //       id,
-  //       body,
-  //     );
+      String token = await _storageService.readSessionToken() ?? '';
+      final response = await _apiService.updateApprovalReport(
+        'Bearer $token',
+        id,
+        body,
+      );
 
-  //     if (response != null && response.success == true) {
-  //       notifyListeners();
-  //       return true;
-  //     } else {
-  //       _setErrorMessage('Update Approve/Reject Report Failed');
-  //       notifyListeners();
-  //       return false;
-  //     }
-  //   } catch (e) {
-  //     _setErrorMessage(e.toString());
-  //     notifyListeners();
-  //     return false;
-  //   } finally {
-  //     _setLoadingEdit(false);
-  //     notifyListeners();
-  //   }
-  // }
+      if (response != null && response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage('Update Approve/Reject Report Failed');
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage(e.toString());
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoadingEdit(false);
+      notifyListeners();
+    }
+  }
 
   void clearReports() {
     _reportList.clear();
