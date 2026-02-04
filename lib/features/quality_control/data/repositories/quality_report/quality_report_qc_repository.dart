@@ -149,8 +149,7 @@ class QualityReportQCRepository {
     required String plantCode,
     int? shift,
     String? workCenter,
-  }
-  ) async {
+  }) async {
     final List<Map<String, dynamic>> filteredTicketList = await _mySQLService
         .getDailyProductionRefineryByFilter(
           plantCode: plantCode,
@@ -165,5 +164,55 @@ class QualityReportQCRepository {
             .toList();
 
     return filteredTicketListFromMap;
+  }
+
+  Future<String?> checkExistingInterlockDailyProductionRefineryData({
+    required String plant,
+    required String workCenter,
+    required String date,
+  }) async {
+    final dailyProductionRefineryId = await _mySQLService
+        .checkExistingInterlockDailyProductionRefineryData(
+          plant: plant,
+          workCenter: workCenter,
+          date: date,
+        );
+    log(
+      'Found interlock daily production refinery id (Repository): $dailyProductionRefineryId',
+    );
+    return dailyProductionRefineryId ?? '';
+  }
+
+  Future<bool> updateInterlockDailyProductionRefineryData({
+    required String plant,
+    required String workCenter,
+    required String date, // Format: YYYY-MM-DD
+    // required String oldId,
+    required String newId,
+  }) async {
+    final isSuccess = await _mySQLService
+        .updateInterlockDailyProductionRefineryData(
+          plant: plant,
+          workCenter: workCenter,
+          date: date,
+          // oldId: oldId,
+          newId: newId,
+        );
+
+    return isSuccess;
+  }
+
+  Future<bool> checkAnyDataExists({
+    required String plant,
+    required String workCenter,
+    required String date, // Format: YYYY-MM-DD
+  }) async {
+    final isExist = await _mySQLService.checkAnyDataExists(
+      plant: plant,
+      workCenter: workCenter,
+      date: date,
+    );
+
+    return isExist;
   }
 }

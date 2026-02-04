@@ -26,9 +26,17 @@ class QualityReportQCProvider with ChangeNotifier {
   bool _isLoadingAlert = false;
   bool get isLoadingAlert => _isLoadingAlert;
 
+  bool _isLoadingUpdateDailyProductionRefineryData = false;
+  bool get isLoadingUpdateDailyProductionRefineryData =>
+      _isLoadingUpdateDailyProductionRefineryData;
+
   bool _isLoadingFetchDailyProductionRefinery = false;
   bool get isLoadingFetchDailyProductionRefinery =>
       _isLoadingFetchDailyProductionRefinery;
+
+  bool _isLoadingCheckExistingDailyProductionRefineryData = false;
+  bool get isLoadingCheckExistingDailyProductionRefineryData =>
+      _isLoadingCheckExistingDailyProductionRefineryData;
 
   List<QualityReportQcEntity> _reportsList = [];
   List<QualityReportQcEntity> get reportsList => _reportsList;
@@ -48,6 +56,12 @@ class QualityReportQCProvider with ChangeNotifier {
 
   String? _latestId;
   String? get latestId => _latestId;
+
+  String? _dailyProductionRefineryId;
+  String? get dailyProductionRefineryId => _dailyProductionRefineryId;
+
+  bool _hasExistingData = false;
+  bool get hasExistingData => _hasExistingData;
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -76,6 +90,16 @@ class QualityReportQCProvider with ChangeNotifier {
 
   void _setLoadingFetchDailyProductionRefinery(bool value) {
     _isLoadingFetchDailyProductionRefinery = value;
+    notifyListeners();
+  }
+
+  void _setLoadingCheckExistingDailyProductionRefineryData(bool value) {
+    _isLoadingCheckExistingDailyProductionRefineryData = value;
+    notifyListeners();
+  }
+
+  void _setLoadingUpdateDailyProductionRefineryData(bool value) {
+    _isLoadingUpdateDailyProductionRefineryData = value;
     notifyListeners();
   }
 
@@ -422,6 +446,106 @@ class QualityReportQCProvider with ChangeNotifier {
       );
     } finally {
       _setLoadingFetchDailyProductionRefinery(false);
+    }
+  }
+
+  Future<void> checkExistingInterlockDailyProductionRefineryData({
+    required String plant,
+    required String workCenter,
+    required String date,
+  }) async {
+    _setLoadingCheckExistingDailyProductionRefineryData(true);
+    _setErrorMessage(null);
+    try {
+      // _dailyProductionRefineryId = null;
+      // notifyListeners();
+      String? result = await _repository
+          .checkExistingInterlockDailyProductionRefineryData(
+            plant: plant,
+            workCenter: workCenter,
+            date: date,
+          );
+
+      // LOGIC FIX: Jika result adalah string kosong "", ubah jadi null
+      if (result != null && result.isEmpty) {
+        _dailyProductionRefineryId = null;
+      } else {
+        _dailyProductionRefineryId = result;
+      }
+      log(
+        'Found interlock daily production refinery id (Provider): $_dailyProductionRefineryId',
+      );
+      notifyListeners();
+    } catch (e) {
+      _setErrorMessage(
+        'Failed to check existing daily production refinery data: $e',
+      );
+    } finally {
+      _setLoadingCheckExistingDailyProductionRefineryData(false);
+    }
+  }
+
+  Future<bool> updateInterlockDailyProductionRefineryData({
+    required String plant,
+    required String workCenter,
+    required String date, // Format: YYYY-MM-DD
+    // required String oldId,
+    required String newId,
+  }) async {
+    _setLoadingUpdateDailyProductionRefineryData(true);
+    _setErrorMessage(null);
+
+    try {
+      final isSuccess = await _repository
+          .updateInterlockDailyProductionRefineryData(
+            plant: plant,
+            workCenter: workCenter,
+            date: date,
+            // oldId: oldId,
+            newId: newId,
+          );
+
+      _setLoadingUpdateDailyProductionRefineryData(false);
+      return isSuccess;
+    } catch (e) {
+      _setErrorMessage(
+        'Failed to update interlock daily production refinery data: $e',
+      );
+      _setLoadingUpdateDailyProductionRefineryData(false);
+      return false;
+    }
+  }
+
+  Future<void> clearFetchedProductionRefineryData() async {
+    _dailyProductionRefineryData.clear();
+    notifyListeners();
+  }
+
+  // Di dalam class QualityReportQCProvider
+
+  // State Variable
+
+  // Fungsi Helper
+  Future<void> checkDataExistence({
+    required String plant,
+    required String workCenter,
+    required String date,
+  }) async {
+    _setLoading(true); // Bisa pakai loading yang sama atau buat baru
+    notifyListeners();
+
+    try {
+      _hasExistingData = await _repository.checkAnyDataExists(
+        plant: plant,
+        workCenter: workCenter,
+        date: date,
+      );
+    } catch (e) {
+      log("Error provider check existence: $e");
+      _hasExistingData = false;
+    } finally {
+      _setLoading(false);
+      notifyListeners();
     }
   }
 }
