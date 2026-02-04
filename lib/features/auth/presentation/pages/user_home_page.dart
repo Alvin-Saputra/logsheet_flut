@@ -63,6 +63,8 @@ import 'package:logsheet_app/features/master_data/presentation/provider/master/d
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/quality_report/quality_report_qc_provider.dart';
+import 'package:logsheet_app/features/form_transfer/presentation/pages/form_transfer_list_page.dart';
+import 'package:logsheet_app/features/form_transfer/presentation/pages/form_transfer_approval_list_page.dart';
 import 'package:provider/provider.dart';
 import 'login_page.dart';
 
@@ -1086,13 +1088,11 @@ class _UserHomePageState extends State<UserHomePage> {
                         builder:
                             (_) =>
                                 // ParentAnalyticalResultIncomingPlantChemicalIngredient()
-                               AnalyticalResultOutgoingShipmentProductByTruckListPage(),
+                                AnalyticalResultOutgoingShipmentProductByTruckListPage(),
                       ),
                     );
                   },
                 ),
-
-                
 
                 _buildDrawerItem(
                   icon: Icons.list_alt,
@@ -1127,6 +1127,111 @@ class _UserHomePageState extends State<UserHomePage> {
                     );
                   },
                 ),
+              ],
+            ),
+
+            ExpansionTile(
+              leading: const Icon(Icons.swap_horiz, color: Color(0xFF655F5B)),
+              title: Text(
+                'Form Transfer\n(F/QCO-018)',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'List\n(F/QCO-018)',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => FormTransferListPage()),
+                    );
+                  },
+                ),
+                if (AppRoles.formTransferPreparedApproval.contains(userRole))
+                  _buildDrawerItem(
+                    icon: Icons.check_circle_outline,
+                    title: 'Approval (Prepared)\n(F/QCO-018)',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) => FormTransferApprovalListPage(
+                                approvalLevel: 'prepared',
+                              ),
+                        ),
+                      );
+                    },
+                  ),
+                if (AppRoles.formTransferCheckedApproval.contains(userRole))
+                  _buildDrawerItem(
+                    icon: Icons.check_circle_outline,
+                    title: 'Approval (Checked)\n(F/QCO-018)',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) => FormTransferApprovalListPage(
+                                approvalLevel: 'checked',
+                              ),
+                        ),
+                      );
+                    },
+                  ),
+                if (AppRoles.formTransferApprovedApproval.contains(userRole))
+                  _buildDrawerItem(
+                    icon: Icons.check_circle_outline,
+                    title: 'Approval (Approved)\n(F/QCO-018)',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) => FormTransferApprovalListPage(
+                                approvalLevel: 'approved',
+                              ),
+                        ),
+                      );
+                    },
+                  ),
+                if (AppRoles.formTransferAcknowledgedApproval.contains(
+                  userRole,
+                ))
+                  _buildDrawerItem(
+                    icon: Icons.check_circle_outline,
+                    title: 'Approval (Acknowledged)\n(F/QCO-018)',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) => FormTransferApprovalListPage(
+                                approvalLevel: 'acknowledged',
+                              ),
+                        ),
+                      );
+                    },
+                  ),
+                if (AppRoles.formTransferAccess.contains(userRole))
+                  _buildDrawerItem(
+                    icon: Icons.list_alt,
+                    title: 'Report\n(F/QCO-018)',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => FormTransferListPage(),
+                        ),
+                      );
+                    },
+                  ),
               ],
             ),
           ],

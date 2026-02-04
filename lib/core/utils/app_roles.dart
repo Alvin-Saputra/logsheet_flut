@@ -70,4 +70,68 @@ class AppRoles {
     "MGR_PROD",
     "ADM",
   ];
+
+  /// Roles with access to the Form Transfer feature.
+  static const List<String> formTransferAccess = [
+    "ADM",
+    "PRO",
+    "CPC",
+    "OPS",
+    "LEAD_PROD",
+    "STAFF_PROD",
+    "OPR_PROD",
+    "OPR",
+    "QC",
+    "LEAD_QC",
+    "MGR_QC",
+    "STAFF_QC",
+    "OPR_QC",
+    "MGR_OPS",
+    "LEAD_OPS",
+    "MGR",
+    "PPIC",
+    "MGR_PPIC",
+    "LEAD_PPIC",
+    "STAFF_PPIC",
+  ];
+
+  /// Roles that can approve Prepared level in Form Transfer.
+  static const List<String> formTransferPreparedApproval = [
+    "PRO",
+    "CPC",
+    "OPS",
+    "LEAD_PROD",
+    "STAFF_PROD",
+    "OPR_PROD",
+    "OPR",
+    "ADM",
+  ];
+
+  /// Roles that can approve Checked level in Form Transfer.
+  static const List<String> formTransferCheckedApproval = [
+    "QC",
+    "LEAD_QC",
+    "MGR_QC",
+    "STAFF_QC",
+    "OPR_QC",
+    "ADM",
+  ];
+
+  /// Roles that can approve Approved level in Form Transfer.
+  static const List<String> formTransferApprovedApproval = [
+    "OPS",
+    "MGR_OPS",
+    "LEAD_OPS",
+    "ADM",
+    "MGR",
+  ];
+
+  /// Roles that can approve Acknowledged level in Form Transfer.
+  static const List<String> formTransferAcknowledgedApproval = [
+    "PPIC",
+    "MGR_PPIC",
+    "LEAD_PPIC",
+    "STAFF_PPIC",
+    "ADM",
+  ];
 }

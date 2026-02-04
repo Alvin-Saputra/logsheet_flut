@@ -6,6 +6,7 @@ class CustomTextField extends StatelessWidget {
   final IconData icon;
   final String? hintText;
   final bool isNumeric;
+  final bool allowDecimal;
   final bool readOnly;
   final bool isRequired;
   final String? Function(String?)? validator;
@@ -17,6 +18,7 @@ class CustomTextField extends StatelessWidget {
     required this.icon,
     this.hintText,
     this.isNumeric = false,
+    this.allowDecimal = false,
     this.readOnly = false,
     this.isRequired = false,
     this.validator,
@@ -28,7 +30,10 @@ class CustomTextField extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12.0),
       child: TextFormField(
         controller: controller,
-        keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+        keyboardType:
+            isNumeric
+                ? TextInputType.numberWithOptions(decimal: allowDecimal)
+                : TextInputType.text,
         readOnly: readOnly,
         style: const TextStyle(color: Color(0xFF655F5B), fontSize: 16),
         validator:

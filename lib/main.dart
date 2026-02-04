@@ -74,6 +74,9 @@ import 'package:logsheet_app/features/quality_control/presentation/provider/dail
 import 'package:logsheet_app/features/quality_control/presentation/provider/quality_report/quality_report_production_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/quality_report/quality_report_qc_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
+import 'package:logsheet_app/features/form_transfer/data/datasources/remote/form_transfer_api_service.dart';
+import 'package:logsheet_app/features/form_transfer/data/repository/form_transfer_repository.dart';
+import 'package:logsheet_app/features/form_transfer/presentation/provider/form_transfer_provider.dart';
 import 'package:month_year_picker/month_year_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -114,8 +117,10 @@ void main() async {
   final analyticalResultIncomingPlantFuelApiService =
       AnalyticalResultIncomingPlantFuelApiService(dioClient.dio);
 
-      final analyticalResultOutgoingShipmentProductByTruckApiService =
+  final analyticalResultOutgoingShipmentProductByTruckApiService =
       AnalyticalResultOutgoingShipmentProductByTruckApiService(dioClient.dio);
+
+  final formTransferApiService = FormTransferApiService(dioClient.dio);
 
   runApp(
     MultiProvider(
@@ -329,6 +334,8 @@ void main() async {
                   UserProvider(context.read<UserRepository>(), loginApiService),
         ),
 
+        Provider<StorageService>.value(value: storageService),
+
         ChangeNotifierProvider(
           create: (context) => AuthProvider(loginApiService, storageService),
         ),
@@ -481,11 +488,22 @@ void main() async {
               ),
         ),
 
-          ChangeNotifierProvider(
+        ChangeNotifierProvider(
           create:
-              (context) => AnalyticalResultOutgoingShipmentProductByTruckProvider(
-                analyticalResultOutgoingShipmentProductByTruckApiService,
-                storageService,
+              (context) =>
+                  AnalyticalResultOutgoingShipmentProductByTruckProvider(
+                    analyticalResultOutgoingShipmentProductByTruckApiService,
+                    storageService,
+                  ),
+        ),
+
+        // Provide Form Transfer Provider
+        ChangeNotifierProvider(
+          create:
+              (context) => FormTransferProvider(
+                repository: FormTransferRepository(
+                  apiService: formTransferApiService,
+                ),
               ),
         ),
 
