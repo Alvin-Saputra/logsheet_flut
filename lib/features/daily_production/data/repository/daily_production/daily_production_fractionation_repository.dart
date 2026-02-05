@@ -9,12 +9,12 @@ class DailyProductionFractionationRepository {
   DailyProductionFractionationRepository(this._mySQLService);
 
   // Insert Ticket
-  Future<bool> insert(DailyProductionFractionationEntity entity) async {
+  Future<bool> insert(List<DailyProductionFractionationEntity> entity) async {
     return await _mySQLService.insertTicket(entity);
   }
 
-  Future<bool> deleteTicket(String id, String username) async {
-    return await _mySQLService.deleteTicket(id, username);
+  Future<bool> deleteTicket(String username, String shift, String plant, String transaction_date)async {
+    return await _mySQLService.deleteTicket(username, shift, plant, transaction_date);
   }
 
   // Fetch all Quality Refinery Report
@@ -25,6 +25,7 @@ class DailyProductionFractionationRepository {
     String role,
     String plantCode,
   ) async {
+    try{
     final List<Map<String, dynamic>> reportsData = await _mySQLService
         .getAllTickets(dateFilter, time, username, role, plantCode);
 
@@ -40,6 +41,10 @@ class DailyProductionFractionationRepository {
     log('converted ${mapToList.length.toString()}');
 
     return mapToList;
+    }
+    catch(e){
+      rethrow;
+    }
   }
 
   Future<String?> getLatestTicketId(String plantCode) async {
@@ -51,7 +56,7 @@ class DailyProductionFractionationRepository {
   }
 
   Future<bool> updateReportTicket(
-    DailyProductionFractionationEntity report,
+    List<DailyProductionFractionationEntity> report,
   ) async {
     return await _mySQLService.updateTicket(report);
   }
@@ -72,9 +77,11 @@ class DailyProductionFractionationRepository {
     String username,
     String status,
     String userRole,
-    int shift,
+    String shift,
     String? remark,
-    String id,
+    String plant,
+    String transaction_date,
+    String work_center
   ) async {
     return await _mySQLService.sendApproveRejectTicket(
       username,
@@ -82,7 +89,9 @@ class DailyProductionFractionationRepository {
       userRole,
       shift,
       remark,
-      id,
+      plant,
+      transaction_date,
+      work_center
     );
   }
 

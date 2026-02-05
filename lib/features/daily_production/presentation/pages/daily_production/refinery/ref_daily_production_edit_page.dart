@@ -105,11 +105,15 @@ class _RefDailyProductionEditPageState
   // Section 4: Auxiliary Material (Bahan Penolong)
   // Bleaching Earth
   String? selectedShiftBleaching;
+  final oilTypeRmOipController = TextEditingController();
+
   bool ref500Bleaching = false;
   bool ref150Bleaching = false;
   final TextEditingController bleachingBagController = TextEditingController();
   final TextEditingController bleachingTypeController = TextEditingController();
   final TextEditingController bleachingBatchController =
+      TextEditingController();
+  final TextEditingController bleachingYieldPercentController =
       TextEditingController();
   // Phosphoric Acid
   String? selectedShiftPhosphoric;
@@ -130,6 +134,8 @@ class _RefDailyProductionEditPageState
 
   // Section 6: Remarks
   final TextEditingController remarksController = TextEditingController();
+
+  bool? isTicketcomplete = false;
 
   @override
   void initState() {
@@ -542,6 +548,7 @@ class _RefDailyProductionEditPageState
                 flowRateAwalController: flowmeter1AwalController,
                 flowRateAkhirController: flowmeter1AkhirController,
                 flowRateTotalController: flowmeter1TotalController,
+                oipController: oilTypeRmOipController,
               ),
               const SizedBox(height: 16),
 
@@ -617,6 +624,7 @@ class _RefDailyProductionEditPageState
                   bleachingBagController: bleachingBagController,
                   bleachingTypeController: bleachingTypeController,
                   bleachingBatchController: bleachingBatchController,
+                  bleachingBatchYieldPercentController: bleachingYieldPercentController,
                   ref500Bleaching: ref500Bleaching,
                   ref150Bleaching: ref150Bleaching,
                   phosphoricWeightController:
@@ -709,21 +717,25 @@ class _RefDailyProductionEditPageState
                           controller: totalOilController,
                           label: 'Total $selectedOilRm',
                           icon: Icons.functions,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: totalSteamController,
                           label: 'Total Steam',
                           icon: Icons.functions,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: steamOilTypeController,
                           label: 'Steam: $selectedOilRm',
                           icon: Icons.functions,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: yieldPercentController,
                           label: 'Yield %',
                           icon: Icons.functions,
+                          isNumeric: true,
                         ),
                       ],
                     ),
@@ -738,6 +750,17 @@ class _RefDailyProductionEditPageState
                 children: [CustomRemarkField(controller: remarksController)],
               ),
               const SizedBox(height: 24),
+
+              CheckboxListTile(
+                value: isTicketcomplete ?? false,
+                title: const Text("Ticket Selesai"),
+                onChanged: (value) {
+                  setState(() {
+                    isTicketcomplete = value;
+                  });
+                },
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
 
               // --- Submit Button ---
               CustomSaveButton(
@@ -763,6 +786,7 @@ class _RefDailyProductionEditPageState
     // Set top-level dropdowns and values
     selectedRefineryMachine = entity.workCenter;
     selectedOilRm = entity.oilTypeRmId;
+
     selectedShiftBleaching = entity.shift;
     selectedShiftPhosphoric = entity.shift;
 
@@ -795,42 +819,54 @@ class _RefDailyProductionEditPageState
 
     if (entity.workCenter == "REF-01") {
       flowmeter1AwalController.text =
-          ((entity.oilTypeRmAwalFlowmeter ?? 0.0) * 1000).toString();
+          entity.oilTypeRmAwalFlowmeter != null
+              ? ((entity.oilTypeRmAwalFlowmeter! * 1000).toString())
+              : '';
+      oilTypeRmOipController.text =
+          entity.oilTypeRmOip != null
+              ? ((entity.oilTypeRmOip! * 1000).toString())
+              : '';
       flowmeter1AkhirController.text =
-          ((entity.oilTypeRmAkhirFlowmeter ?? 0.0) * 1000).toString();
+          entity.oilTypeRmAkhirFlowmeter != null
+              ? ((entity.oilTypeRmAkhirFlowmeter! * 1000).toString())
+              : '';
 
       flowmeter2AwalController.text =
-          ((entity.oilTypeFgAwalFlowmeter ?? 0.0) * 1000).toString();
+          entity.oilTypeFgAwalFlowmeter != null
+              ? ((entity.oilTypeFgAwalFlowmeter! * 1000).toString())
+              : '';
       flowmeter2AkhirController.text =
-          ((entity.oilTypeFgAkhirFlowmeter ?? 0.0) * 1000).toString();
-
-      flowmeter2AwalController.text =
-          ((entity.oilTypeFgAwalFlowmeter ?? 0.0) * 1000).toString();
-      flowmeter2AkhirController.text =
-          ((entity.oilTypeFgAkhirFlowmeter ?? 0.0) * 1000).toString();
+          entity.oilTypeFgAkhirFlowmeter != null
+              ? ((entity.oilTypeFgAkhirFlowmeter! * 1000).toString())
+              : '';
 
       flowmeter3AwalController.text =
-          ((entity.bpAwalFlowmeter ?? 0.0) * 1000).toString();
+          entity.bpAwalFlowmeter != null
+              ? ((entity.bpAwalFlowmeter! * 1000).toString())
+              : '';
       flowmeter3AkhirController.text =
-          ((entity.bpAkhirFlowmeter ?? 0.0) * 1000).toString();
+          entity.bpAkhirFlowmeter != null
+              ? ((entity.bpAkhirFlowmeter! * 1000).toString())
+              : '';
     } else {
+      // Gunakan tanda tanya (?) sebelum toString()
+      oilTypeRmOipController.text = entity.oilTypeRmOip.toString() ?? '';
       flowmeter1AwalController.text =
-          (entity.oilTypeRmAwalFlowmeter).toString();
+          entity.oilTypeRmAwalFlowmeter?.toString() ?? '';
+
       flowmeter1AkhirController.text =
-          (entity.oilTypeRmAkhirFlowmeter).toString();
+          entity.oilTypeRmAkhirFlowmeter?.toString() ?? '';
 
       flowmeter2AwalController.text =
-          (entity.oilTypeFgAwalFlowmeter).toString();
-      flowmeter2AkhirController.text =
-          (entity.oilTypeFgAkhirFlowmeter).toString();
+          entity.oilTypeFgAwalFlowmeter?.toString() ?? '';
 
-      flowmeter2AwalController.text =
-          (entity.oilTypeFgAwalFlowmeter).toString();
       flowmeter2AkhirController.text =
-          (entity.oilTypeFgAkhirFlowmeter).toString();
+          entity.oilTypeFgAkhirFlowmeter?.toString() ?? '';
 
-      flowmeter3AwalController.text = (entity.bpAwalFlowmeter).toString();
-      flowmeter3AkhirController.text = (entity.bpAkhirFlowmeter).toString();
+      flowmeter3AwalController.text = entity.bpAwalFlowmeter?.toString() ?? '';
+
+      flowmeter3AkhirController.text =
+          entity.bpAkhirFlowmeter?.toString() ?? '';
     }
 
     // Section 4: Auxiliary Material
@@ -860,7 +896,7 @@ class _RefDailyProductionEditPageState
       isUtillityUsageActive = true;
       totalOilController.text = entity.uuTotalCpo?.toString() ?? '';
       totalSteamController.text = entity.uuTotalSteam?.toString() ?? '';
-      steamOilTypeController.text = entity.uuSteamCpo ?? '';
+      steamOilTypeController.text = entity.uuSteamCpo.toString() ?? '';
       yieldPercentController.text = entity.uuYieldPercent?.toString() ?? '';
     }
 
@@ -926,14 +962,14 @@ class _RefDailyProductionEditPageState
     double? flow1Awal, flow1Akhir, flow2Awal, flow2Akhir, flow3Awal, flow3Akhir;
 
     if (selectedRefineryMachine == "REF-01") {
-      flow1Awal = parseDouble(flowmeter1AwalController)! / 1000;
-      flow1Akhir = parseDouble(flowmeter1AkhirController)! / 1000;
+      flow1Awal = (parseDouble(flowmeter1AwalController) ?? 0) / 1000;
+      flow1Akhir = (parseDouble(flowmeter1AkhirController) ?? 0) / 1000;
 
-      flow2Awal = parseDouble(flowmeter2AwalController)! / 1000;
-      flow2Akhir = parseDouble(flowmeter2AkhirController)! / 1000;
+      flow2Awal = (parseDouble(flowmeter2AwalController) ?? 0) / 1000;
+      flow2Akhir = (parseDouble(flowmeter2AkhirController) ?? 0) / 1000;
 
-      flow3Awal = parseDouble(flowmeter3AwalController)! / 1000;
-      flow3Akhir = parseDouble(flowmeter3AkhirController)! / 1000;
+      flow3Awal = (parseDouble(flowmeter3AwalController) ?? 0) / 1000;
+      flow3Akhir = (parseDouble(flowmeter3AkhirController) ?? 0) / 1000;
     } else {
       flow1Awal = parseDouble(flowmeter1AwalController);
       flow1Akhir = parseDouble(flowmeter1AkhirController);
@@ -966,6 +1002,7 @@ class _RefDailyProductionEditPageState
         oilTypeRmAwalFlowmeter: flow1Awal,
         oilTypeRmAkhirJam: selectedTime1Akhir,
         oilTypeRmAkhirFlowmeter: flow1Akhir,
+        oilTypeRmOip: parseDouble(oilTypeRmOipController),
         oilTypeRmTotal: (flow1Akhir ?? 0) - (flow1Awal ?? 0),
         oilTypeFgId: selectedOilFg,
         oilTypeFgAwalJam: selectedTime2Awal,
@@ -989,6 +1026,7 @@ class _RefDailyProductionEditPageState
             isBahanPenolongActive
                 ? parseInt(bleachingBatchController.text)
                 : null,
+        beYieldPercent: parseDouble(bleachingYieldPercentController),
         paRefTank: isBahanPenolongActive ? selectedRefineryMachine : null,
         paTotal: isBahanPenolongActive ? phosphoricTotalController.text : null,
         paLotBatchNumber:
@@ -1002,14 +1040,15 @@ class _RefDailyProductionEditPageState
         remarks: remarksController.text,
         uuItem: isUtillityUsageActive ? steamItem : null,
         uuBudgetRefTank: isUtillityUsageActive ? selectedRefineryMachine : null,
-        uuBudgetQty: isUtillityUsageActive ? budgetValue : null,
+        uuBudgetQty: isUtillityUsageActive ? double.tryParse(budgetValue ?? '') : null,
         uuTotalCpo:
-            isUtillityUsageActive ? parseInt(totalOilController.text) : null,
+            isUtillityUsageActive ? parseDouble(totalOilController) : null,
         uuTotalSteam:
-            isUtillityUsageActive ? parseInt(totalSteamController.text) : null,
-        uuSteamCpo: isUtillityUsageActive ? steamOilTypeController.text : null,
+            isUtillityUsageActive ? parseDouble(totalSteamController) : null,
+        uuSteamCpo: isUtillityUsageActive ? parseDouble(steamOilTypeController) : null,
         uuYieldPercent:
             isUtillityUsageActive ? parseDouble(yieldPercentController) : null,
+        isCompleted: isTicketcomplete ?? false,
       );
 
       log("Attempting to update ticket ID: ${updatedEntity.id}");

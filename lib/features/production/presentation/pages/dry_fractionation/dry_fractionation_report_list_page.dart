@@ -1,456 +1,350 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:intl/intl.dart';
-import 'package:logsheet_app/features/production/data/model/dry_fractionation/dry_fractionation_entity.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
+import 'package:logsheet_app/core/widgets/custom_date_field.dart';
+import 'package:logsheet_app/core/widgets/custom_section_card.dart';
+import 'package:logsheet_app/core/widgets/custom_section_card_data.dart';
+import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
+import 'package:logsheet_app/features/production/data/model/dry_fractionation/local/dry_fractionation_header_entity.dart';
 import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_detail_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_input.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_report_detail_page.dart';
 import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation/dry_fractionation_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:provider/provider.dart';
 
 class DryFractionationReportListPage extends StatefulWidget {
-  const DryFractionationReportListPage({
-    super.key,
-    required this.userName,
-    required this.role,
-  });
-
-  final String userName;
-  final String role;
+  const DryFractionationReportListPage({super.key});
 
   @override
   State<DryFractionationReportListPage> createState() =>
-      _DryFractionationReportListsPageState();
+      _DryFractionationReportListPageState();
 }
 
-class _DryFractionationReportListsPageState
+class _DryFractionationReportListPageState
     extends State<DryFractionationReportListPage> {
-  final TextEditingController _dateController = TextEditingController();
-  DateTime? _selectedDate = DateTime.now();
-  String? _tempSelectedShift = "All";
-  final List<String> shifts = ["1", "2", "3", "4", "5"];
-
   DataFormNoEntity? formData;
+  final TextEditingController dateStartController = TextEditingController();
+  final TextEditingController dateEndController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _selectedDate = DateTime.now();
-    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (timeStamp) async => await context
-          .read<DryFractionationProvider>()
-          .fetchFilteredTickets(_selectedDate, plantCode, _tempSelectedShift),
-    );
-  }
-
-  @override
-  void dispose() {
-    _dateController.dispose();
-    super.dispose();
-  }
-
-  void _resetFormAndRefresh() async {
-    setState(() {
-      _dateController.clear();
-      _selectedDate = DateTime.now();
-      _tempSelectedShift = null;
-    });
-    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
-    await context.read<DryFractionationProvider>().fetchFilteredTickets(
-      _selectedDate,
-      plantCode,
-      _tempSelectedShift,
-    );
-  }
-
-  Future<void> _pickDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
-    );
-
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-        _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
-        // _fetchReports();
-      });
-    }
+    // Pastikan provider di-reset atau fetch data awal jika perlu
+    context.read<DryFractionationProvider>().clearReports();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF3F9),
       appBar: _buildAppBar(),
-      body: _buildBody(context),
-    );
-  }
+      body: Column(
+        children: [
+          _buildFilterSection(context),
+          Expanded(
+            child: Consumer<DryFractionationProvider>(
+              builder: (context, provider, child) {
+                if (provider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-  AppBar _buildAppBar() {
-    formData =
-        context
-            .read<DataFormNoProvider>()
-            .dataFormNoList
-            .where((form) => form.isMenu == "Logsheet_Dry_Fractionation")
-            .first;
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 1,
-      centerTitle: true,
-      iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
-      title: Text(
-        'Dry Fract. List (${formData!.code})',
-        style: TextStyle(
-          color: Color(0xFF655F5B),
-          fontWeight: FontWeight.bold,
-          fontSize: 18,
-        ),
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.refresh),
-          onPressed: _resetFormAndRefresh,
-        ),
-      ],
-    );
-  }
+                if (provider.reportList.isEmpty) {
+                  return const Center(child: Text("No Data Available"));
+                }
 
-  Stack _buildBody(BuildContext context) {
-    return Stack(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              _buildFilterSection(context),
-              const SizedBox(height: 16),
-              Expanded(
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                // 1. Grouping Data berdasarkan Tanggal dan Plant
+                final Map<String, List<DryFractionationHeaderEntity>>
+                groupedData = {};
+                for (var report in provider.reportList) {
+                  // Key Grouping: Tanggal + Plant
+                  final dateStr =
+                      formatDatetoString(report.date, 'yyyy-MM-dd') ??
+                      'Unknown Date';
+                  final plantStr = report.plant ?? 'Unknown Plant';
+                  final key = "$dateStr|$plantStr";
+
+                  groupedData.putIfAbsent(key, () => []).add(report);
+                }
+
+                final groupedKeys = groupedData.keys.toList();
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
                   ),
-                  elevation: 4,
-                  shadowColor: Colors.black26,
-                  margin: const EdgeInsets.only(top: 16),
-                  child: Consumer<DryFractionationProvider>(
-                    builder: (context, provider, child) {
-                      if (provider.filteredTickets.isEmpty) {
-                        return Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text("No data."),
-                              OutlinedButton(
-                                onPressed: () async {
-                                  final plantCode =
-                                      context
-                                          .read<PlantProvider>()
-                                          .currentPlant
-                                          ?.code ??
-                                      "";
+                  child: ListView.builder(
+                    itemCount: groupedKeys.length,
+                    itemBuilder: (context, index) {
+                      final key = groupedKeys[index];
+                      final reports = groupedData[key]!;
 
-                                  await context
-                                      .read<DryFractionationProvider>()
-                                      .fetchFilteredTickets(
-                                        _selectedDate,
-                                        plantCode,
-                                        _tempSelectedShift,
-                                      );
-                                },
-                                child: const Text("Refresh"),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
+                      // Ambil data representatif dari item pertama di grup
+                      final firstItem = reports.first;
+                      final formattedDate =
+                          formatDatetoString(firstItem.date, 'dd-MM-yyyy') ??
+                          '-';
+                      final plantName = firstItem.plant ?? '-';
 
-                      if (provider.isLoadingFilterTicket) {
-                        return Center(child: CircularProgressIndicator());
-                      }
+                      // Cek status keseluruhan (Opsional: logic bisa disesuaikan)
+                      // Jika ada satu yang belum approve, anggap "Pending"
+                      final isAllApproved = reports.every(
+                        (e) => e.approvedStatus == "Approved",
+                      );
+                      final isAnyRejected = reports.any(
+                        (e) =>
+                            e.approvedStatus == "Rejected" ||
+                            e.preparedStatus == "Rejected",
+                      );
 
-                      return ListView.builder(
-                        padding: const EdgeInsets.only(top: 12),
-                        itemCount: provider.filteredTickets.length,
-                        itemBuilder: (context, index) {
-                          final report = provider.filteredTickets[index];
-                          return Card(
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => DryFractionationDetailPage(
-                                          item: report,
-                                          isDisplayed: false,
-                                        ),
+                      return _groupedCardItem(
+                        date: formattedDate,
+                        plant: plantName,
+                        totalItems: reports.length,
+                        isAllApproved: isAllApproved,
+                        isAnyRejected: isAnyRejected,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              // 2. Mengirim LIST laporan ke halaman detail
+                              builder:
+                                  (context) => DryFractionationReportDetailPage(
+                                    reportEntities:
+                                        reports, // Kirim list hasil grouping
+                                    title: "$formattedDate - $plantName",
                                   ),
-                                );
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0,
-                                  vertical: 18.0,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            report.id,
-                                            style: const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.blueGrey,
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: _getStatusColor(report),
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            _getStatusText(report),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const Divider(height: 16),
-
-                                    // Transaction Date and Time
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.calendar_today,
-                                          size: 16,
-                                          color: Colors.grey,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          DateFormat(
-                                            'yyyy-MM-dd',
-                                          ).format(report.transactionDate!),
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                        SizedBox(width: 16),
-                                        const Icon(
-                                          Icons.timelapse,
-                                          size: 18,
-                                          color: Colors.grey,
-                                        ),
-                                        Text(
-                                          "Shift ${report.shift}",
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        SvgPicture.asset(
-                                          'assets/icons/oil-refinery-tanks.svg',
-                                          height: 20,
-                                          width: 20,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text("${report.workCenter}"),
-                                        const SizedBox(width: 50),
-
-                                        Icon(Icons.oil_barrel_rounded),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          report.oilType == null
-                                              ? "N/A"
-                                              : "${report.oilType}",
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    // Entered By
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.person,
-                                          size: 16,
-                                          color: Colors.grey,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          'Entried by: ${report.entryBy}',
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ),
-                          );
+                          ).then((_) async {
+                            if (!mounted) return;
+                            _refreshData();
+                          });
                         },
                       );
                     },
                   ),
-                ),
-              ),
-            ],
+                );
+              },
+            ),
           ),
-        ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DryFractionationInputPage(form: formData),
+            ),
+          ).then((_) {
+            _refreshData();
+          });
+        },
+        label: const Text("Tambah Report"),
+        icon: Icon(Icons.add),
+        backgroundColor: Color(0xFFB91C1C),
+        foregroundColor: Colors.white,
+      ),
+    );
+  }
+
+  AppBar _buildAppBar() {
+    final formProvider = context.read<DataFormNoProvider>();
+    // Safety check jika list kosong
+    if (formProvider.dataFormNoList.isNotEmpty) {
+      try {
+        formData = formProvider.dataFormNoList.firstWhere(
+          (form) =>
+              form.isMenu == "Analytical_Result_Of_Incoming_Material_By_Vessel",
+        );
+      } catch (e) {
+        formData = null;
+      }
+    }
+
+    return AppBar(
+      title: Text("Approval ${formData?.code ?? ''}"),
+      actions: [
+        IconButton(onPressed: _refreshData, icon: const Icon(Icons.replay)),
       ],
+    );
+  }
+
+  Future<void> _refreshData() async {
+    final plant = await context.read<PlantProvider>().currentPlant;
+    final user = await context.read<UserProvider>().currentUser;
+    if (!mounted) return;
+
+    // Menggunakan filter tanggal jika ada
+    final formattedStartDate =
+        dateStartController.text.isNotEmpty
+            ? changeStringDateFormat(
+              dateStartController.text,
+              'dd-MM-yyyy',
+              'yyyy-MM-dd',
+            )
+            : '';
+    final formattedEndDate =
+        dateEndController.text.isNotEmpty
+            ? changeStringDateFormat(
+              dateEndController.text,
+              'dd-MM-yyyy',
+              'yyyy-MM-dd',
+            )
+            : '';
+
+    await context.read<DryFractionationProvider>().fetchReport(
+      plant?.code ?? '',
+      '',
+      formattedStartDate,
+      formattedEndDate,
+      role: user?.role ?? '',
     );
   }
 
   Widget _buildFilterSection(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: TextFormField(
-            controller: _dateController,
-            readOnly: true,
-            decoration: InputDecoration(
-              hintText: 'Pilih tanggal',
-              filled: true,
-              fillColor: const Color(0xFFF0ECE9),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              prefixIcon: const Icon(Icons.calendar_today),
-            ),
-            onTap: () => _pickDate(context),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: DropdownButtonFormField<String?>(
-            isExpanded: true,
-            value: _tempSelectedShift,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: const Color(0xFFF0ECE9),
-              hintText: "Pilih Shift",
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              prefixIcon: const Icon(Icons.access_time),
-            ),
-            items: [
-              const DropdownMenuItem<String?>(
-                value: "All",
-                child: Text('Semua'),
-              ),
-              ...shifts.map(
-                (shift) => DropdownMenuItem<String?>(
-                  value: shift,
-                  child: Text(" $shift"),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              children: [
+                CustomDateField(
+                  controller: dateStartController,
+                  label: 'Tanggal Awal',
+                  icon: Icons.event,
                 ),
-              ),
-            ],
-            onChanged: (value) {
-              setState(() {
-                _tempSelectedShift = value;
-              });
-            },
-          ),
-        ),
-        const SizedBox(width: 10),
-        ElevatedButton.icon(
-          onPressed: () async {
-            final plantCode =
-                context.read<PlantProvider>().currentPlant?.code ?? "";
-
-            await context.read<DryFractionationProvider>().fetchFilteredTickets(
-              _selectedDate,
-              plantCode,
-              _tempSelectedShift,
-            );
-          },
-          icon: const Icon(Icons.search),
-          label: const Text('Cari'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFAB2F2B),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+                SizedBox(height: 8.0),
+                CustomDateField(
+                  controller: dateEndController,
+                  label: 'Tanggal Akhir',
+                  icon: Icons.event,
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+
+          const SizedBox(width: 16),
+          ElevatedButton.icon(
+            onPressed: () {
+              if (dateStartController.text != "" ||
+                  dateEndController.text != "") {
+                _refreshData();
+              } else {
+                showSnackBar("Silahkan Pilih Tanggal", context);
+              }
+            },
+            icon: const Icon(Icons.search),
+            label: const Text('Cari'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFAB2F2B),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  String _getStatusText(DryFractionationEntity report) {
-    if (report.checkedStatus == "Approved") {
-      return "Approved";
+  Widget _groupedCardItem({
+    required String date,
+    required String plant,
+    required int totalItems,
+    required bool isAllApproved,
+    required bool isAnyRejected,
+    required VoidCallback onTap,
+  }) {
+    IconData icon = Icons.folder_open;
+    Color color = Colors.blue;
+    Color bgColor = Colors.blue[50]!;
+    String statusText = "Submitted";
+
+    if (isAllApproved) {
+      icon = Icons.check_circle;
+      color = Colors.green;
+      bgColor = Colors.green[50]!;
+      statusText = "All Approved";
+    } else if (isAnyRejected) {
+      icon = Icons.warning_rounded;
+      color = Colors.red;
+      bgColor = Colors.red[50]!;
+      statusText = "Action Needed";
+    } else {
+      icon = Icons.hourglass_top;
+      color = Colors.orange;
+      bgColor = Colors.orange[50]!;
+      statusText = "Pending";
     }
 
-    if (report.checkedStatus == "Rejected") {
-      return "Rejected";
-    }
-    if (report.preparedStatus == "Approved") {
-      return "Prepared ${report.shift}";
-    }
-
-    if (report.preparedStatus == "Rejected") {
-      return "Rejected";
-    }
-    return "Submitted";
+    return Card(
+      // color: bgColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+      elevation: 2,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Icon(Icons.drag_handle_outlined, color: Colors.grey, size: 40),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      date,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text('Plant: $plant', style: const TextStyle(fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$totalItems Crystallizer Batch(es)',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                children: [
+                  // Text(
+                  //   statusText,
+                  //   style: TextStyle(
+                  //     fontSize: 12,
+                  //     fontWeight: FontWeight.bold,
+                  //     color: color,
+                  //   ),
+                  // ),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
-  Color _getStatusColor(DryFractionationEntity report) {
-    if (report.checkedStatus == "Approved") {
-      return Colors.green;
-    }
-
-    if (report.checkedStatus == "Rejected") {
-      return Colors.red;
-    }
-
-    if (report.preparedStatus == "Approved") {
-      return Colors.orangeAccent;
-    }
-
-    if (report.preparedStatus == "Rejected") {
-      return Colors.red;
-    }
-    return Colors.grey;
-  }
+  
 }

@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/features/daily_production/data/model/daily_production/daily_production_refinery_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/features/transactions/report_notification_data_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/quality_report/quality_report_qc_repository.dart';
@@ -25,6 +26,18 @@ class QualityReportQCProvider with ChangeNotifier {
   bool _isLoadingAlert = false;
   bool get isLoadingAlert => _isLoadingAlert;
 
+  bool _isLoadingUpdateDailyProductionRefineryData = false;
+  bool get isLoadingUpdateDailyProductionRefineryData =>
+      _isLoadingUpdateDailyProductionRefineryData;
+
+  bool _isLoadingFetchDailyProductionRefinery = false;
+  bool get isLoadingFetchDailyProductionRefinery =>
+      _isLoadingFetchDailyProductionRefinery;
+
+  bool _isLoadingCheckExistingDailyProductionRefineryData = false;
+  bool get isLoadingCheckExistingDailyProductionRefineryData =>
+      _isLoadingCheckExistingDailyProductionRefineryData;
+
   List<QualityReportQcEntity> _reportsList = [];
   List<QualityReportQcEntity> get reportsList => _reportsList;
 
@@ -37,8 +50,18 @@ class QualityReportQCProvider with ChangeNotifier {
   List<ReportNotificationDataEntity> _readyReportsList = [];
   List<ReportNotificationDataEntity> get readyReportsList => _readyReportsList;
 
+  List<DailyProductionRefineryEntity> _dailyProductionRefineryData = [];
+  List<DailyProductionRefineryEntity> get dailyProductionRefineryData =>
+      _dailyProductionRefineryData;
+
   String? _latestId;
   String? get latestId => _latestId;
+
+  String? _dailyProductionRefineryId;
+  String? get dailyProductionRefineryId => _dailyProductionRefineryId;
+
+  bool _hasExistingData = false;
+  bool get hasExistingData => _hasExistingData;
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -62,6 +85,21 @@ class QualityReportQCProvider with ChangeNotifier {
 
   void setLatestId(String value) {
     _latestId = value;
+    notifyListeners();
+  }
+
+  void _setLoadingFetchDailyProductionRefinery(bool value) {
+    _isLoadingFetchDailyProductionRefinery = value;
+    notifyListeners();
+  }
+
+  void _setLoadingCheckExistingDailyProductionRefineryData(bool value) {
+    _isLoadingCheckExistingDailyProductionRefineryData = value;
+    notifyListeners();
+  }
+
+  void _setLoadingUpdateDailyProductionRefineryData(bool value) {
+    _isLoadingUpdateDailyProductionRefineryData = value;
     notifyListeners();
   }
 
@@ -270,6 +308,47 @@ class QualityReportQCProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> sendApproveRejectReportPerDate(
+    final String username,
+    final String status,
+    final String userRole,
+    final int shift,
+    final String transactionDate,
+    final String plant,
+    final String workCenter,
+    final String? remark,
+  ) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      log("Sending Approval or Rejection for date $transactionDate report");
+      final result = await _repository.sendApproveRejectTicketPerDate(
+        username,
+        status,
+        userRole,
+        shift,
+        transactionDate,
+        plant,
+        workCenter,
+        remark ?? '',
+      );
+      log("status from provider: $result");
+
+      if (result) {
+        _setLoading(false);
+        return result;
+      } else {
+        _setLoading(false);
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage('Failed to send approval or rejection report: $e');
+      _setLoading(false);
+      return false;
+    }
+  }
+
   Future<void> fetchReportsForManager(String plantCode) async {
     _setLoading(true);
     _setErrorMessage(null);
@@ -340,6 +419,133 @@ class QualityReportQCProvider with ChangeNotifier {
     } catch (e) {
       _setErrorMessage('(QR Provider) Failed fetch filtered QR ticket: $e');
       _setLoading(false);
+    }
+  }
+
+  Future<void> getDailyProductionRefineryByFilter(
+    DateTime? transactionDate,
+    String plantCode,
+    int? shift,
+    String? workCenter,
+  ) async {
+    _setLoadingFetchDailyProductionRefinery(true);
+    _setErrorMessage(null);
+
+    try {
+      _dailyProductionRefineryData = await _repository
+          .getDailyProductionRefineryByFilter(
+            transactionDate: transactionDate,
+            plantCode: plantCode,
+            shift: shift,
+            workCenter: workCenter,
+          );
+      notifyListeners();
+    } catch (e) {
+      _setErrorMessage(
+        '(Daily Production Refinery Provider) Failed fetch filtered Daily Prod Refinery ticket: $e',
+      );
+    } finally {
+      _setLoadingFetchDailyProductionRefinery(false);
+    }
+  }
+
+  Future<void> checkExistingInterlockDailyProductionRefineryData({
+    required String plant,
+    required String workCenter,
+    required String date,
+  }) async {
+    _setLoadingCheckExistingDailyProductionRefineryData(true);
+    _setErrorMessage(null);
+    try {
+      // _dailyProductionRefineryId = null;
+      // notifyListeners();
+      String? result = await _repository
+          .checkExistingInterlockDailyProductionRefineryData(
+            plant: plant,
+            workCenter: workCenter,
+            date: date,
+          );
+
+      // LOGIC FIX: Jika result adalah string kosong "", ubah jadi null
+      if (result != null && result.isEmpty) {
+        _dailyProductionRefineryId = null;
+      } else {
+        _dailyProductionRefineryId = result;
+      }
+      log(
+        'Found interlock daily production refinery id (Provider): $_dailyProductionRefineryId',
+      );
+      notifyListeners();
+    } catch (e) {
+      _setErrorMessage(
+        'Failed to check existing daily production refinery data: $e',
+      );
+    } finally {
+      _setLoadingCheckExistingDailyProductionRefineryData(false);
+    }
+  }
+
+  Future<bool> updateInterlockDailyProductionRefineryData({
+    required String plant,
+    required String workCenter,
+    required String date, // Format: YYYY-MM-DD
+    // required String oldId,
+    required String newId,
+  }) async {
+    _setLoadingUpdateDailyProductionRefineryData(true);
+    _setErrorMessage(null);
+
+    try {
+      final isSuccess = await _repository
+          .updateInterlockDailyProductionRefineryData(
+            plant: plant,
+            workCenter: workCenter,
+            date: date,
+            // oldId: oldId,
+            newId: newId,
+          );
+
+      _setLoadingUpdateDailyProductionRefineryData(false);
+      return isSuccess;
+    } catch (e) {
+      _setErrorMessage(
+        'Failed to update interlock daily production refinery data: $e',
+      );
+      _setLoadingUpdateDailyProductionRefineryData(false);
+      return false;
+    }
+  }
+
+  Future<void> clearFetchedProductionRefineryData() async {
+    _dailyProductionRefineryData.clear();
+    notifyListeners();
+  }
+
+  // Di dalam class QualityReportQCProvider
+
+  // State Variable
+
+  // Fungsi Helper
+  Future<void> checkDataExistence({
+    required String plant,
+    required String workCenter,
+    required String date,
+  }) async {
+    _setLoading(true); // Bisa pakai loading yang sama atau buat baru
+    notifyListeners();
+
+    try {
+      _hasExistingData = await _repository.checkAnyDataExists(
+        plant: plant,
+        workCenter: workCenter,
+        date: date,
+      );
+    } catch (e) {
+      log("Error provider check existence: $e");
+      _hasExistingData = false;
+    } finally {
+      _setLoading(false);
+      notifyListeners();
     }
   }
 }

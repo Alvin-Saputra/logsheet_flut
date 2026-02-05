@@ -216,7 +216,7 @@ class _DailyProductionRefineryApprovalDetailPageState
                     'Budget Ref Tank',
                     report.uuBudgetRefTank ?? '-',
                   ),
-                  _buildDetailRow('Budget Qty', report.uuBudgetQty ?? '-'),
+                  _buildDetailRow('Budget Qty', report.uuBudgetQty.toString() ?? '-'),
                   _buildDetailRow(
                     'Total',
                     report.uuTotalCpo?.toString() ?? '-',
@@ -225,7 +225,7 @@ class _DailyProductionRefineryApprovalDetailPageState
                     'Total Steam',
                     report.uuTotalSteam?.toString() ?? '-',
                   ),
-                  _buildDetailRow('Steam/CPO', report.uuSteamCpo ?? '-'),
+                  _buildDetailRow('Steam/CPO', report.uuSteamCpo.toString() ?? '-'),
                   _buildDetailRow(
                     'Yield (%)',
                     report.uuYieldPercent != null

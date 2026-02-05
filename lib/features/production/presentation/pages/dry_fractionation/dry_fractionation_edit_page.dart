@@ -1,26 +1,26 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
-import 'package:logsheet_app/core/utils/time_picker_util.dart';
-import 'package:logsheet_app/features/production/data/model/dry_fractionation/dry_fractionation_entity.dart';
-import 'package:logsheet_app/core/widgets/custom_dropdown.dart';
+import 'package:logsheet_app/core/widgets/custom_app_bar.dart';
+import 'package:logsheet_app/core/widgets/custom_date_field.dart';
 import 'package:logsheet_app/core/widgets/custom_hour_minute_field.dart';
+import 'package:logsheet_app/core/widgets/custom_hour_minute_picker.dart';
 import 'package:logsheet_app/core/widgets/custom_save_button.dart';
-import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
+import 'package:logsheet_app/core/widgets/custom_text.dart';
 import 'package:logsheet_app/core/widgets/custom_text_field.dart';
-import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation/dry_fractionation_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/business_unit_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/product_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
+import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
+import 'package:logsheet_app/features/production/data/model/dry_fractionation/local/dry_fractionation_detail_entity.dart';
+import 'package:logsheet_app/features/production/data/model/dry_fractionation/local/dry_fractionation_header_entity.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_input_item.dart';
+import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation/dry_fractionation_provider.dart';
 import 'package:provider/provider.dart';
 
 class DryFractionationEditPage extends StatefulWidget {
-  final DryFractionationEntity entity;
-  const DryFractionationEditPage({super.key, required this.entity});
+  const DryFractionationEditPage({super.key, required this.data});
+
+  final DryFractionationHeaderEntity data;
 
   @override
   State<DryFractionationEditPage> createState() =>
@@ -28,616 +28,804 @@ class DryFractionationEditPage extends StatefulWidget {
 }
 
 class _DryFractionationEditPageState extends State<DryFractionationEditPage> {
-  // Lists
-  final List<String> shiftList = ["1", "2", "3", "4", "5", "-"];
+  DataFormNoEntity? formData;
+  final TextEditingController dateController = TextEditingController();
+  final TextEditingController feedOilIvController = TextEditingController();
 
-  // Variables for Dropdowns
-  String? selectedShift,
-      selectedWorkCenter,
-      selectedOilType,
-      selectedInitialTank;
+  final TextEditingController initialOilLevelController =
+      TextEditingController();
+  final TextEditingController coolingStartTempController =
+      TextEditingController();
+  final TextEditingController agitatorSpeedController = TextEditingController();
+  final TextEditingController waterPumpPresController = TextEditingController();
 
-  // Variables for Time Pickers
-  TimeOfDay? fillingStartTime,
-      fillingEndTime,
-      collingStartTime,
-      crystalStartTime,
-      filtrationStartTime;
+  String? selectedCrystallizer;
+  TimeOfDay? selectedFillingStartTime;
+  TimeOfDay? selectedFillingEndTime;
+  TimeOfDay?
+  selectedCoolingStartTime; // Variabel ini ada tapi belum dipakai sebelumnya
 
-  // Text Editing Controllers
-  final crystalizierController = TextEditingController();
-  final initialOilLevelController = TextEditingController();
-  final feedIVController = TextEditingController();
-  final agitatorSpeedController = TextEditingController();
-  final waterPumpPresController = TextEditingController();
-  final crystalTempController = TextEditingController();
-  final filtrationTempController = TextEditingController();
-  final filtrationCycleNumberController = TextEditingController();
-  final finalOilLevelController = TextEditingController();
-  final oleinIVRedController = TextEditingController();
-  final oleinCloudPointController = TextEditingController();
-  final stearinIVController = TextEditingController();
-  final stearinSlepPointRedController = TextEditingController();
-  final oleinYieldController = TextEditingController();
-  final remarksController = TextEditingController();
+  bool? isTicketcomplete = false;
 
-  void _populateFields() {
-    final entity = widget.entity;
-    // Dropdowns & Time Pickers
-    selectedShift = entity.shift;
-    selectedWorkCenter = entity.workCenter;
-    selectedOilType = entity.oilTypeId;
-    selectedInitialTank = entity.initialTank;
-    fillingStartTime = entity.fillingStartTime;
+  List<DryFractionationInputItem> inputItems = [];
+  void _addNewRow() {
+    setState(() {
+      inputItems.add(DryFractionationInputItem());
+    });
+  }
 
-    fillingEndTime = entity.fillingEndTime;
-    collingStartTime = entity.collingStartTime;
-    crystalStartTime = entity.crystalStartTime;
-    filtrationStartTime = entity.filtrationStartTime;
-
-    // Text Controllers
-    crystalizierController.text = entity.crystalizier ?? '';
-    initialOilLevelController.text = entity.initialOilLevel?.toString() ?? '';
-    feedIVController.text = entity.feedIV?.toString() ?? '';
-    agitatorSpeedController.text = entity.agitatorSpeed ?? '';
-    waterPumpPresController.text = entity.waterPumpPress?.toString() ?? '';
-    crystalTempController.text = entity.crystalTemp ?? '';
-    filtrationTempController.text = entity.filtrationTemp ?? '';
-    filtrationCycleNumberController.text =
-        entity.filtrationCycleNo?.toString() ?? '';
-    finalOilLevelController.text = entity.filtrationOilLevel ?? '';
-    oleinIVRedController.text = entity.oleinIVRed?.toString() ?? '';
-    oleinCloudPointController.text = entity.oleinCloudPoint?.toString() ?? '';
-    stearinIVController.text = entity.stearinIV?.toString() ?? '';
-    stearinSlepPointRedController.text =
-        entity.stearinSlepPointRed?.toString() ?? '';
-    oleinYieldController.text = entity.oleinYield?.toString() ?? '';
-    remarksController.text = entity.remarks ?? '';
+  // Fungsi Hapus Row
+  void _removeRow(int index) {
+    setState(() {
+      inputItems.removeAt(index);
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    final valueProvider = context.read<ValueProvider>();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Fetch necessary dropdown data
-      await valueProvider.fetchWorkCenterFractLists();
-      if (valueProvider.oilTypeLists.isEmpty) {
-        await valueProvider.fetchOilTypes();
-      }
-
-      if (valueProvider.toTankGroupLists.isEmpty) {
-        await valueProvider.fetchToTankGroupLists();
-      }
-      // Populate form fields with existing data
-      setState(() {
-        _populateFields();
-      });
-    });
+    if (widget.data.id.isNotEmpty) {
+      _populateData();
+    } else {
+      // Jika mode Create Baru, set tanggal hari ini & tambah 1 baris kosong
+      dateController.text =
+          formatDatetoString(DateTime.now(), 'dd-MM-yyyy') ?? '';
+      _addNewRow();
+    }
   }
 
-  @override
-  void dispose() {
-    final controllers = [
-      crystalizierController,
-      initialOilLevelController,
-      feedIVController,
-      agitatorSpeedController,
-      waterPumpPresController,
-      crystalTempController,
-      filtrationTempController,
-      filtrationCycleNumberController,
-      finalOilLevelController,
-      oleinIVRedController,
-      oleinCloudPointController,
-      stearinIVController,
-      stearinSlepPointRedController,
-      oleinYieldController,
-      remarksController,
-    ];
+  void _populateData() {
+    final data = widget.data;
 
-    for (var controller in controllers) {
-      controller.dispose();
+    // --- 1. POPULATE HEADER ---
+
+    // Date (Convert DateTime ke String format dd-MM-yyyy)
+    if (data.date != null) {
+      dateController.text =
+          formatDatetoString(DateTime.now(), 'dd-MM-yyyy') ?? '';
     }
-    super.dispose();
+
+    // Dropdown
+    selectedCrystallizer = data.crystallizer;
+
+    // Numeric Fields (Pastikan handle null dengan '??')
+    feedOilIvController.text = data.feedOilIv?.toString() ?? '';
+    initialOilLevelController.text = data.initialOilLevel?.toString() ?? '';
+    coolingStartTempController.text = data.coolingStartTemp?.toString() ?? '';
+    agitatorSpeedController.text = data.agitatorSpeed?.toString() ?? '';
+    waterPumpPresController.text = data.waterPumpPres?.toString() ?? '';
+
+    // Time Pickers (Entity Anda sudah TimeOfDay, jadi tinggal assign)
+    selectedFillingStartTime = data.fillingStartTime;
+    selectedFillingEndTime = data.fillingEndTime;
+    selectedCoolingStartTime = data.coolingStartTime;
+
+    // --- 2. POPULATE DETAILS ---
+
+    if (data.details.isNotEmpty) {
+      // Bersihkan list bawaan jika ada
+      inputItems.clear();
+
+      for (var detail in data.details) {
+        // Buat object Input Item baru (yang berisi controller2 kosong)
+        var item = DryFractionationInputItem();
+        item.id = detail.id;
+        // Isi controller di dalam item tersebut dengan data detail
+        item.filtrationTempController.text =
+            detail.filtrationTemp?.toString() ?? '';
+        item.loadController.text = detail.load?.toString() ?? '';
+        item.oleinIvController.text = detail.oleinIv?.toString() ?? '';
+        item.oleinCpController.text = detail.oleinCp?.toString() ?? '';
+        item.oleinFfaController.text = detail.oleinFfa?.toString() ?? '';
+        item.oleinColorRedController.text =
+            detail.oleinColorRed?.toString() ?? '';
+        item.stearinIvController.text = detail.stearinIv?.toString() ?? '';
+        item.stearinFfaController.text = detail.stearinFfa?.toString() ?? '';
+        item.stearinColorRedController.text =
+            detail.stearinColorRed?.toString() ?? '';
+        item.stearinPvController.text = detail.stearinPv?.toString() ?? '';
+
+        // Isi TimeOfDay untuk detail
+        item.timeStartFiltration = detail.timeStartFiltration;
+        item.timeEndFiltration = detail.timeEndFiltration;
+
+        // Masukkan item yang sudah terisi ke list utama
+        inputItems.add(item);
+      }
+    } else {
+      // Jika header ada tapi detail kosong (jarang terjadi), kasih 1 baris kosong
+      _addNewRow();
+    }
+
+    // Trigger rebuild UI agar data tampil
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    formData =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where((form) => form.isMenu == "Logsheet_Dry_Fractionation")
+            .first;
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF3F9),
-      appBar: _buildAppBar(),
-      body: _buildBody(),
-    );
-  }
-
-  AppBar _buildAppBar() {
-    return AppBar(
-      title: Text("Edit Dry Fract. (${widget.entity.id})"),
-      backgroundColor: Colors.white,
-      elevation: 1,
-      iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
-    );
-  }
-
-  Widget _buildBody() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                "Transaction Date: ",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                DateFormat(
-                  'yyyy-MM-dd',
-                ).format(widget.entity.transactionDate ?? DateTime.now()),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: CustomDropdown.fromStringItems(
-              hint: 'Shift',
-              value: selectedShift,
-              stringItems: shiftList,
-              onChanged: (value) {
-                setState(() {
-                  selectedShift = value;
-                });
-              },
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Consumer<ValueProvider>(
-              builder: (context, provider, child) {
-                if (provider.isWorkCenterFractLoading) {
-                  return _buildLoadingDropdown('Loading Work Center...');
-                }
-                if (provider.workCenterFractLists.isEmpty) {
-                  return _buildEmptyDropdown('Work Center tidak ditemukan.');
-                }
-                return DropdownButtonFormField<String>(
-                  value: selectedWorkCenter,
-                  items:
-                      provider.workCenterFractLists.map((machine) {
-                        return DropdownMenuItem<String>(
-                          value: machine.code,
-                          child: Text("${machine.code} - ${machine.name}"),
-                        );
-                      }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedWorkCenter = value;
-                    });
-                  },
-                  decoration: _buildDropdownDecoration(
-                    hintText: 'Pilih Work Center',
-                    svgIconPath: 'assets/icons/oil-refinery-tanks.svg',
+      appBar: CustomAppBar(title: 'Dry Fractionation (${formData?.code})'),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Text(
+                  'Dry Fractionation Data',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w600,
                   ),
-                );
-              },
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: Consumer<ProductProvider>(
+            SizedBox(height: 16.0),
+            // --- DATE ---
+            CustomText(
+              text: "Date",
+              size: 16,
+              weight: FontWeight.w600,
+              color: Colors.black,
+            ),
+            const SizedBox(height: 8.0),
+            CustomDateField(
+              controller: dateController,
+              label: 'Date',
+              icon: Icons.event,
+            ),
+
+            const SizedBox(height: 16.0),
+
+            // --- CRYSTALLIZER ---
+            CustomText(
+              text: "Crystallizer",
+              size: 16,
+              weight: FontWeight.w600,
+              color: Colors.black,
+            ),
+            const SizedBox(height: 8.0),
+            Consumer<ValueProvider>(
               builder: (context, provider, child) {
                 if (provider.isLoading) {
-                  return _buildLoadingDropdown('Loading Oil Types...');
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  ); // Disederhanakan untuk contoh
                 }
-                if (provider.productFractionationList.isEmpty) {
-                  return _buildEmptyDropdown('Oil Types tidak ditemukan.');
+                if (provider.tankSourceList.isEmpty) {
+                  return TextFormField(
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'CR List tidak ditemukan.',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Icon(Icons.warning_amber_rounded),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: () async {
+                          await context
+                              .read<ValueProvider>()
+                              .fetchTankSourceLists();
+                        },
+                      ),
+                    ),
+                  );
                 }
-                return DropdownButtonFormField<String>(
-                  value: selectedOilType,
+                return DropdownButtonFormField(
+                  value: selectedCrystallizer,
                   items:
-                      provider.productFractionationList.map((oil) {
-                        return DropdownMenuItem<String>(
-                          value: oil.id,
-                          child: Text("${oil.rawMaterial}"),
-                        );
-                      }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedOilType = value;
-                    });
-                  },
-                  decoration: _buildDropdownDecoration(
-                    hintText: 'Pilih Oil Type',
-                    icon: Icons.oil_barrel_rounded,
+                      provider.tankSourceList
+                          .where((element) => element.category == "CR")
+                          .map((tank) {
+                            return DropdownMenuItem(
+                              value: tank.code,
+                              child: Text("${tank.code} | ${tank.name}"),
+                            );
+                          })
+                          .toList(),
+                  onChanged:
+                      (value) => setState(() => selectedCrystallizer = value),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Select Crystallizer',
                   ),
                 );
               },
             ),
-          ),
-          const SizedBox(height: 16),
-          Card(
-            color: Colors.white,
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+
+            const SizedBox(height: 16.0),
+
+            // --- FEED OIL IV ---
+            CustomText(
+              text: "Feed Oil IV",
+              size: 16,
+              weight: FontWeight.w600,
+              color: Colors.black,
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CustomTextField(
-                    controller: crystalizierController,
-                    label: 'Crystalizier (Batch #)',
-                    icon: Icons.numbers_rounded,
+            const SizedBox(height: 8.0),
+            CustomTextField(
+              controller: feedOilIvController,
+              label: 'Feed Oil IV',
+              icon: Icons.place_rounded,
+              isNumeric: true,
+            ),
+
+            const SizedBox(height: 16.0),
+
+            // --- FILLING START TIME ---
+            CustomText(
+              text: "Filling Time",
+              size: 16,
+              weight: FontWeight.w600,
+              color: Colors.black,
+            ),
+            const SizedBox(height: 8.0),
+            CustomHourMinuteField(
+              selectedTime: selectedFillingStartTime,
+              onTap:
+                  () =>
+                      _showHourPicker(context, selectedFillingStartTime, (val) {
+                        setState(() {
+                          selectedFillingStartTime = val;
+                        });
+                      }),
+              hint: "Filling Start Time",
+            ),
+
+            const SizedBox(height: 8.0),
+            CustomHourMinuteField(
+              selectedTime: selectedFillingEndTime,
+              onTap:
+                  () => _showHourPicker(context, selectedFillingEndTime, (val) {
+                    setState(() {
+                      selectedFillingEndTime = val;
+                    });
+                  }),
+              hint: "Filling End Time",
+            ),
+
+            const SizedBox(height: 12.0),
+
+            // --- INITIAL OIL LEVEL ---
+            CustomText(
+              text: "Initial Oil Level",
+              size: 16,
+              weight: FontWeight.w600,
+              color: Colors.black,
+            ),
+            const SizedBox(height: 8.0),
+            CustomTextField(
+              controller: initialOilLevelController,
+              label: "Initial Oil Level",
+              icon: Icons.place_rounded,
+              isNumeric: true,
+            ),
+
+            const SizedBox(height: 8.0),
+
+            // --- COOLING START TEMP ---
+            CustomText(
+              text: "Cooling Start Temp",
+              size: 16,
+              weight: FontWeight.w600,
+              color: Colors.black,
+            ),
+            const SizedBox(height: 8.0),
+            CustomTextField(
+              controller: coolingStartTempController,
+              label: "Cooling Start Temp",
+              icon: Icons.place_rounded,
+              isNumeric: true,
+            ),
+
+            const SizedBox(height: 8.0),
+
+            // --- COOLING START TIME ---
+            CustomText(
+              text: "Cooling Start Time",
+              size: 16,
+              weight: FontWeight.w600,
+              color: Colors.black,
+            ),
+            const SizedBox(height: 8.0),
+            CustomHourMinuteField(
+              selectedTime: selectedCoolingStartTime,
+              onTap:
+                  () =>
+                      _showHourPicker(context, selectedCoolingStartTime, (val) {
+                        setState(() {
+                          selectedCoolingStartTime = val;
+                        });
+                      }),
+            ),
+
+            const SizedBox(height: 16.0),
+
+            // --- AGITATOR SPEED ---
+            CustomText(
+              text: "Agitator Speed (HZ)",
+              size: 16,
+              weight: FontWeight.w600,
+              color: Colors.black,
+            ),
+            const SizedBox(height: 8.0),
+            CustomTextField(
+              controller: agitatorSpeedController,
+              label: "Agitator Speed",
+              icon: Icons.place_rounded,
+              isNumeric: true,
+            ),
+
+            const SizedBox(height: 8.0),
+
+            // --- WATER PUMP PRESS ---
+            CustomText(
+              text: "Water Pump Press",
+              size: 16,
+              weight: FontWeight.w600,
+              color: Colors.black,
+            ),
+            const SizedBox(height: 8.0),
+            CustomTextField(
+              controller: waterPumpPresController,
+              label: "Water Pump Press",
+              icon: Icons.place_rounded,
+              isNumeric: true,
+            ),
+
+            const SizedBox(height: 24.0),
+            const Divider(thickness: 2),
+            const SizedBox(height: 16.0),
+
+            // --- TITLE DETAILS ---
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Text(
+                  'Dry Fractionation Details',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w600,
                   ),
-                  CustomHourMinuteField(
-                    selectedTime: fillingStartTime,
-                    hint: "Filling Start Time",
-                    onTap:
-                        () => showHourPickerAndUpdateState(
-                          context: context,
-                          selectedTime: fillingStartTime,
-                          onTimeSelected: (value) {
-                            setState(() {
-                              fillingStartTime = value;
-                            });
-                          },
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // --- LIST DETAILS ---
+            ...List.generate(inputItems.length, (index) {
+              return Card(
+                elevation: 3,
+                margin: const EdgeInsets.only(bottom: 24),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    // Header Card
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blueGrey[50],
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16),
                         ),
-                  ),
-                  CustomHourMinuteField(
-                    selectedTime: fillingEndTime,
-                    hint: "Filling End Time",
-                    onTap:
-                        () => showHourPickerAndUpdateState(
-                          context: context,
-                          selectedTime: fillingEndTime,
-                          onTimeSelected: (value) {
-                            setState(() {
-                              fillingEndTime = value;
-                            });
-                          },
-                        ),
-                  ),
-                  CustomHourMinuteField(
-                    selectedTime: collingStartTime,
-                    hint: "Colling Start Time",
-                    onTap:
-                        () => showHourPickerAndUpdateState(
-                          context: context,
-                          selectedTime: collingStartTime,
-                          onTimeSelected: (value) {
-                            setState(() {
-                              collingStartTime = value;
-                            });
-                          },
-                        ),
-                  ),
-                  CustomTextField(
-                    controller: initialOilLevelController,
-                    label: 'Initial Oil Level (%)',
-                    icon: Icons.oil_barrel_rounded,
-                    isNumeric: true,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
-                    child: Consumer<ValueProvider>(
-                      builder: (context, provider, child) {
-                        if (provider.toTankGroupLists.isEmpty) {
-                          return _buildLoadingDropdown('Loading Tanks...');
-                        }
-                        return DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          value: selectedInitialTank,
-                          items:
-                              provider.toTankGroupLists.map((tank) {
-                                return DropdownMenuItem<String>(
-                                  value: tank.code,
-                                  child: Text(
-                                    tank.code,
-                                    style: const TextStyle(fontSize: 14),
-                                  ),
-                                );
-                              }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedInitialTank = value;
-                            });
-                          },
-                          decoration: _buildDropdownDecoration(
-                            hintText: 'Initial Tank',
-                            svgIconPath: 'assets/icons/oil-refinery-tanks.svg',
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Set Data #${index + 1}",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
-                        );
-                      },
+                          if (inputItems.length > 1)
+                            InkWell(
+                              onTap: () => _removeRow(index),
+                              child: const Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
+                    // Content Card
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // 1. Filtration Temp
+                          CustomText(
+                            text: "Filtration Temp",
+                            size: 16,
+                            weight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                          const SizedBox(height: 8.0),
+                          CustomTextField(
+                            controller:
+                                inputItems[index].filtrationTempController,
+                            label: "Filtration Temp",
+                            icon: Icons.thermostat,
+                            isNumeric: true,
+                          ),
+                          const SizedBox(height: 8.0),
+
+                          // 2. Load
+                          CustomText(
+                            text: "Load",
+                            size: 16,
+                            weight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                          const SizedBox(height: 8.0),
+                          CustomTextField(
+                            controller: inputItems[index].loadController,
+                            label: "Load",
+                            icon: Icons.thermostat,
+                            isNumeric: true,
+                          ),
+                          const SizedBox(height: 8.0),
+
+                          // 3. Olein IV
+                          CustomText(
+                            text: "Olein IV",
+                            size: 16,
+                            weight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                          const SizedBox(height: 8.0),
+                          CustomTextField(
+                            controller: inputItems[index].oleinIvController,
+                            label: "Olein IV",
+                            icon: Icons.thermostat,
+                            isNumeric: true,
+                          ),
+                          const SizedBox(height: 8.0),
+
+                          // 4. Olein CP
+                          CustomText(
+                            text: "Olein CP",
+                            size: 16,
+                            weight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                          const SizedBox(height: 8.0),
+                          CustomTextField(
+                            controller: inputItems[index].oleinCpController,
+                            label: "Olein CP",
+                            icon: Icons.thermostat,
+                            isNumeric: true,
+                          ),
+                          const SizedBox(height: 8.0),
+
+                          // 5. Olein FFA
+                          CustomText(
+                            text: "Olein FFA",
+                            size: 16,
+                            weight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                          const SizedBox(height: 8.0),
+                          CustomTextField(
+                            controller: inputItems[index].oleinFfaController,
+                            label: "Olein FFA",
+                            icon: Icons.thermostat,
+                            isNumeric: true,
+                          ),
+                          const SizedBox(height: 8.0),
+
+                          // 6. Olein Color Red
+                          CustomText(
+                            text: "Olein Color Red",
+                            size: 16,
+                            weight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                          const SizedBox(height: 8.0),
+                          CustomTextField(
+                            controller:
+                                inputItems[index].oleinColorRedController,
+                            label: "Olein Color Red",
+                            icon: Icons.thermostat,
+                            isNumeric: true,
+                          ),
+                          const SizedBox(height: 8.0),
+
+                          // 7. Stearin IV
+                          CustomText(
+                            text: "Stearin IV",
+                            size: 16,
+                            weight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                          const SizedBox(height: 8.0),
+                          CustomTextField(
+                            controller: inputItems[index].stearinIvController,
+                            label: "Stearin IV",
+                            icon: Icons.thermostat,
+                            isNumeric: true,
+                          ),
+                          const SizedBox(height: 8.0),
+
+                          // 8. Stearin FFA
+                          CustomText(
+                            text: "Stearin FFA",
+                            size: 16,
+                            weight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                          const SizedBox(height: 8.0),
+                          CustomTextField(
+                            controller: inputItems[index].stearinFfaController,
+                            label: "Stearin FFA",
+                            icon: Icons.thermostat,
+                            isNumeric: true,
+                          ),
+                          const SizedBox(height: 8.0),
+
+                          // 9. Stearin Color Red
+                          CustomText(
+                            text: "Stearin Color Red",
+                            size: 16,
+                            weight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                          const SizedBox(height: 8.0),
+                          CustomTextField(
+                            controller:
+                                inputItems[index].stearinColorRedController,
+                            label: "Stearin Color Red",
+                            icon: Icons.thermostat,
+                            isNumeric: true,
+                          ),
+                          const SizedBox(height: 8.0),
+
+                          // 10. Stearin PV
+                          CustomText(
+                            text: "Stearin PV",
+                            size: 16,
+                            weight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                          const SizedBox(height: 8.0),
+                          CustomTextField(
+                            controller: inputItems[index].stearinPvController,
+                            label: "Stearin PV",
+                            icon: Icons.thermostat,
+                            isNumeric: true,
+                          ),
+                          const SizedBox(height: 8.0),
+
+                          // 11. Time Start Filtration
+                          CustomText(
+                            text: "Time Start Filtration",
+                            size: 16,
+                            weight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                          const SizedBox(height: 8.0),
+                          CustomHourMinuteField(
+                            selectedTime: inputItems[index].timeStartFiltration,
+                            onTap:
+                                () => _showHourPicker(
+                                  context,
+                                  inputItems[index].timeStartFiltration,
+                                  (val) {
+                                    setState(() {
+                                      inputItems[index].timeStartFiltration =
+                                          val;
+                                    });
+                                  },
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+            CheckboxListTile(
+              value: isTicketcomplete ?? false,
+              title: const Text("Ticket Selesai"),
+              onChanged: (value) {
+                setState(() {
+                  isTicketcomplete = value;
+                });
+              },
+              controlAffinity: ListTileControlAffinity.leading,
+            ),
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 24),
+              child: OutlinedButton.icon(
+                onPressed: _addNewRow,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.all(16),
+                  side: const BorderSide(color: Colors.redAccent, width: 2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  CustomTextField(
-                    controller: feedIVController,
-                    label: 'Feed IV',
-                    icon: Icons.input,
-                    isNumeric: true,
-                  ),
-                  CustomTextField(
-                    controller: agitatorSpeedController,
-                    label: 'Agitator Speed(Hz)',
-                    icon: Icons.autorenew,
-                    isNumeric: true,
-                  ),
-                  CustomTextField(
-                    controller: waterPumpPresController,
-                    label: 'Water Pump Pres (bar)',
-                    icon: Icons.compress,
-                    isNumeric: true,
-                  ),
-                  CustomHourMinuteField(
-                    selectedTime: crystalStartTime,
-                    hint: "Crystal Start Time",
-                    onTap:
-                        () => showHourPickerAndUpdateState(
-                          context: context,
-                          selectedTime: crystalStartTime,
-                          onTimeSelected: (value) {
-                            setState(() {
-                              crystalStartTime = value;
-                            });
-                          },
-                        ),
-                  ),
-                  CustomTextField(
-                    controller: crystalTempController,
-                    label: 'Crystal Temp (°C)',
-                    icon: Icons.thermostat_rounded,
-                    isNumeric: true,
-                  ),
-                  CustomHourMinuteField(
-                    selectedTime: filtrationStartTime,
-                    hint: "Filtration Start Time",
-                    onTap:
-                        () => showHourPickerAndUpdateState(
-                          context: context,
-                          selectedTime: filtrationStartTime,
-                          onTimeSelected: (value) {
-                            setState(() {
-                              filtrationStartTime = value;
-                            });
-                          },
-                        ),
-                  ),
-                  CustomTextField(
-                    controller: filtrationTempController,
-                    label: 'Filtration Temp (°C)',
-                    icon: Icons.thermostat_rounded,
-                    isNumeric: true,
-                  ),
-                  CustomTextField(
-                    controller: filtrationCycleNumberController,
-                    label: 'Filtration Cycle Number',
-                    icon: Icons.repeat,
-                    isNumeric: true,
-                  ),
-                  CustomTextField(
-                    controller: finalOilLevelController,
-                    label: 'Final Oil Level (%)',
-                    icon: Icons.oil_barrel_rounded,
-                    isNumeric: true,
-                  ),
-                  CustomTextField(
-                    controller: oleinIVRedController,
-                    label: 'Olein IV RED',
-                    icon: Icons.oil_barrel_rounded,
-                    isNumeric: true,
-                  ),
-                  CustomTextField(
-                    controller: oleinCloudPointController,
-                    label: 'Olein Cloud Point (°C)',
-                    icon: Icons.wb_cloudy_rounded,
-                    isNumeric: true,
-                  ),
-                  CustomTextField(
-                    controller: stearinIVController,
-                    label: 'Stearin IV RED',
-                    icon: Icons.oil_barrel_rounded,
-                    isNumeric: true,
-                  ),
-                  CustomTextField(
-                    controller: stearinSlepPointRedController,
-                    label: 'Stearin Slep Point (°C) RED',
-                    icon: Icons.oil_barrel_rounded,
-                    isNumeric: true,
-                  ),
-                  CustomTextField(
-                    controller: oleinYieldController,
-                    label: 'Olein Yield (%)',
-                    icon: Icons.trending_up_rounded,
-                    isNumeric: true,
-                  ),
-                ],
+                ),
+                icon: const Icon(Icons.add_circle_outline, size: 28),
+                label: const Text(
+                  "Tambah Set Data Details",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-            child: CustomSaveButton(
-              onPressed: () => _showAlertDialog(context),
-              label: "Update Ticket",
-            ),
-          ),
-        ],
+
+            CustomSaveButton(onPressed: _onSubmit),
+            const SizedBox(height: 30), // Extra space bottom
+          ],
+        ),
       ),
     );
   }
 
-  void _showAlertDialog(BuildContext context) {
+  // --- PERBAIKAN FUNGSI _showHourPicker ---
+  void _showHourPicker(
+    BuildContext context,
+    TimeOfDay? selectedTime,
+    Function(TimeOfDay) onTimeSelected,
+  ) {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Konfirmasi Update"),
-          content: const Text("Apakah data yang anda ubah sudah sesuai?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Tidak", style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _update(); // Call update function
+      builder: (dialogContext) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: CustomHourMinutePicker(
+              selectedTime: selectedTime,
+              onTimeSelected: (time) {
+                onTimeSelected(time);
+                // If you want the dialog to close immediately after selection, uncomment the line below:
+                // Navigator.of(context).pop();
               },
-              child: Consumer<DryFractionationProvider>(
-                builder: (context, provider, child) {
-                  if (provider.isLoading) {
-                    return const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2.0,
-                      ),
-                    );
-                  }
-                  return const Text("Ya");
-                },
-              ),
             ),
-          ],
+          ),
         );
       },
     );
   }
 
-  void _update() async {
-    // This is where you will add your update logic.
-    log("Update button clicked. Ready to implement the update function.");
-    final provider = context.read<DryFractionationProvider>();
-    final currentUser = context.read<UserProvider>().currentUser;
-    final currentPlant = context.read<PlantProvider>().currentPlant;
-    final plantCode = currentPlant!.code;
-    final companyName =
-        context.read<BusinessUnitProvider>().currentBusinessUnit?.buName;
+  Future<void> _onSubmit() async {
+    // 1. Validasi Dasar (Contoh sederhana)
 
-    try {
-      final updatedEntity = widget.entity.copyWith(
-        shift: selectedShift,
-        oilTypeId: selectedOilType,
-        crystalizier: crystalizierController.text,
-        fillingStartTime: fillingStartTime,
-        fillingEndTime: fillingEndTime,
-        collingStartTime: collingStartTime,
-        initialOilLevel: parseDouble(initialOilLevelController.text),
-        initialTank: selectedInitialTank,
-        feedIV: parseDouble(feedIVController.text),
-        agitatorSpeed: agitatorSpeedController.text,
-        waterPumpPress: parseDouble(waterPumpPresController.text),
-        crystalStartTime: crystalStartTime,
-        crystalTemp: crystalTempController.text,
-        filtrationStartTime: filtrationStartTime,
-        filtrationTemp: filtrationTempController.text,
-        filtrationCycleNo: parseInt(filtrationCycleNumberController.text),
-        filtrationOilLevel: finalOilLevelController.text,
-        oleinIVRed: parseDouble(oleinIVRedController.text),
-        oleinCloudPoint: parseDouble(oleinCloudPointController.text),
-        stearinIV: parseDouble(stearinIVController.text),
-        stearinSlepPointRed: parseDouble(stearinSlepPointRedController.text),
-        oleinYield: parseDouble(oleinYieldController.text),
-        remarks: remarksController.text == "" ? null : remarksController.text,
-        updatedBy: currentUser?.username ?? "",
-        updatedDate: DateTime.now(),
+    // 2. Mapping Details (List InputItem -> List Entity)
+    List<DryFractionationDetailEntity> detailEntities = [];
+
+    for (int i = 0; i < inputItems.length; i++) {
+      var item = inputItems[i];
+
+      detailEntities.add(
+        DryFractionationDetailEntity(
+          id: item.id ?? '',
+          filtrationCycleNumber: i + 1, // Otomatis 1, 2, 3...
+          // Asumsi inputItems menyimpan DateTime di variabel terpisah atau parsing controller
+          filtrationDate:
+              DateTime.now(), // Sebaiknya ambil dari inputItems[i].selectedDate jika ada
+          filtrationTemp: parseDouble(item.filtrationTempController.text),
+          timeStartFiltration: item.timeStartFiltration, // Konversi disini
+          timeEndFiltration: item.timeEndFiltration, // Konversi disini
+          load: parseDouble(item.loadController.text),
+          oleinIv: parseDouble(item.oleinIvController.text),
+          oleinCp: parseDouble(item.oleinCpController.text),
+          oleinFfa: parseDouble(item.oleinFfaController.text),
+          oleinColorRed: parseDouble(item.oleinColorRedController.text),
+          stearinIv: parseDouble(item.stearinIvController.text),
+          stearinFfa: parseDouble(item.stearinFfaController.text),
+          stearinColorRed: parseDouble(item.stearinColorRedController.text),
+          stearinPv: parseDouble(item.stearinPvController.text),
+          idHdr: '',
+        ),
       );
-
-      log("Attempting to update ticket ID: ${updatedEntity.id}");
-
-      final success = await provider.updateTicket(
-        updatedEntity,
-        currentUser?.username ?? "",
-        currentUser?.role ?? "",
-        plantCode,
-      );
-
-      if (success) {
-        if (!mounted) return;
-        showSnackBar('Laporan berhasil diperbarui', context);
-        Navigator.of(context).pop(); // Close dialog
-        Navigator.pop(context, updatedEntity);
-      }
-    } catch (e) {
-      log("Error updating report: $e");
-      if (!mounted) return;
-      showSnackBar("Terjadi kesalahan: $e", context);
     }
-  }
 
-  // Helper Widgets for cleaner build method
-  Widget _buildLoadingDropdown(String hint) {
-    return DropdownButtonFormField<String>(
-      value: null,
-      items: [],
-      onChanged: null,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: const Color(0xFFF0ECE9),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        hintText: hint,
-        prefixIcon: const Padding(
-          padding: EdgeInsets.all(12.0),
-          child: SizedBox(
-            height: 20,
-            width: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
+    // 3. Mapping Header
+    DryFractionationHeaderEntity headerData = DryFractionationHeaderEntity(
+      id: widget.data.id.isNotEmpty ? widget.data.id : '',
+      date: changeStringDateFormat(
+        dateController.text,
+        'dd-MM-yyyy',
+        'yyyy-MM-dd',
+        returnDateTime: true,
+      ),
+      postingDate: DateTime.now(), // Atau sama dengan date
+      company: "PS", // Hardcode atau ambil dari User Session
+      plant: "PS21", // Hardcode atau ambil dari User Session
+      crystallizer: selectedCrystallizer,
+      feedOilIv: parseDouble(feedOilIvController.text),
+      initialOilLevel: parseDouble(initialOilLevelController.text),
+      fillingStartTime: selectedFillingStartTime,
+      fillingEndTime: selectedFillingEndTime,
+      coolingStartTemp: parseDouble(coolingStartTempController.text),
+      coolingStartTime: selectedCoolingStartTime,
+      agitatorSpeed: parseInt(agitatorSpeedController.text),
+      waterPumpPres: parseDouble(waterPumpPresController.text),
+      remarks: "", // Tambahkan controller remarks jika perlu
+      details: detailEntities,
+      flag: '',
+      entryBy: '',
+      entryDate: null,
+      preparedBy: '',
+      preparedDate: null,
+      preparedStatus: '',
+      preparedStatusRemarks: '',
+      approvedBy: '',
+      approvedDate: null,
+      approvedStatus: '',
+      approvedStatusRemarks: '',
+      updatedBy: '',
+      updatedDate: null,
+      formNo: '',
+      dateIssued: null,
+      revisionNo: '',
+      revisionDate: null,
+      isCompleted: isTicketcomplete,
+    );
+
+    // 4. Panggil Provider
+    final provider = Provider.of<DryFractionationProvider>(
+      context,
+      listen: false,
+    );
+
+    // Asumsi provider Anda memiliki parameter menuId
+    final isSuccess = await provider.updateReport(
+      headerInput: headerData,
+      menuId: formData?.id.toString() ?? '0',
+    );
+
+    if (mounted) {
+      if (isSuccess) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Data berhasil disimpan!")),
+        );
+        Navigator.pop(context, true); // Kembali ke halaman sebelumnya
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Gagal menyimpan data ${provider.errorMessage}" ??
+                  "Gagal menyimpan data",
+            ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyDropdown(String hint) {
-    return TextFormField(
-      readOnly: true,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: const Color(0xFFF0ECE9),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        hintText: hint,
-        prefixIcon: const Padding(
-          padding: EdgeInsets.all(12.0),
-          child: Icon(Icons.warning_amber_rounded),
-        ),
-      ),
-    );
-  }
-
-  InputDecoration _buildDropdownDecoration({
-    required String hintText,
-    String? svgIconPath,
-    IconData? icon,
-  }) {
-    return InputDecoration(
-      filled: true,
-      fillColor: const Color(0xFFF0ECE9),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
-      hintText: hintText,
-      prefixIcon: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child:
-            svgIconPath != null
-                ? SvgPicture.asset(svgIconPath, height: 24, width: 24)
-                : Icon(icon),
-      ),
-    );
+        );
+      }
+    }
   }
 }

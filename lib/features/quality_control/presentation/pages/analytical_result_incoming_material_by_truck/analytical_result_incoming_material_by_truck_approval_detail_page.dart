@@ -90,7 +90,7 @@ class _AnalyticalResultIncomingMaterialByTruckApprovalDetailPageState
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           _buildInfoCard(
-                            'Date',
+                            'Transaction Date',
                             _formatDateString(
                               widget.data.transactionDate.toString(),
                             ),
@@ -107,7 +107,11 @@ class _AnalyticalResultIncomingMaterialByTruckApprovalDetailPageState
                       _buildDataRow('Material', widget.data.material ?? ''),
                       _buildDataRow(
                         'Arrival',
-                        widget.data.arrival.toString() ?? '',
+                        formatDatetoString(
+                              widget.data.arrival!,
+                              'dd-MM-yyyy',
+                            ) ??
+                            '',
                       ),
 
                       _buildDataRow('Supplier', widget.data.supplier ?? ''),
@@ -126,129 +130,128 @@ class _AnalyticalResultIncomingMaterialByTruckApprovalDetailPageState
 
                     SizedBox(height: 12.0),
                     _buildSection('Details', [
-                      Center(
-                        child: SmoothPageIndicator(
-                          controller:
-                              detailPageControllers, // Gunakan satu controller untuk semua
-                          count: widget.data.details.length,
-                          effect: const WormEffect(
-                            dotHeight: 8,
-                            dotWidth: 8,
-                            activeDotColor:
-                                Colors.blue, // Sesuaikan warna tema Anda
-                            dotColor: Colors.grey,
+                      // 1. Check if details exist before building the pager
+                      if (widget.data.details.isNotEmpty) ...[
+                        Center(
+                          child: SmoothPageIndicator(
+                            controller: detailPageControllers,
+                            count: widget.data.details.length,
+                            effect: const WormEffect(
+                              dotHeight: 8,
+                              dotWidth: 8,
+                              activeDotColor: Colors.blue,
+                              dotColor: Colors.grey,
+                            ),
+                            onDotClicked: (index) {
+                              detailPageControllers.animateToPage(
+                                index,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
                           ),
-                          onDotClicked: (index) {
-                            detailPageControllers.animateToPage(
-                              index,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
                         ),
-                      ),
-
-                      SizedBox(height: 12.0),
-
-                      SizedBox(
-                        child: ExpandablePageView.builder(
-                          controller: detailPageControllers,
-                          itemCount: widget.data.details.length,
-                          itemBuilder: (context, pageIndex) {
-                            return Column(
-                              children: [
-                                Text(
-                                  "Detail Data Ke - ${pageIndex + 1}",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                        const SizedBox(height: 12.0),
+                        SizedBox(
+                          child: ExpandablePageView.builder(
+                            controller: detailPageControllers,
+                            itemCount: widget.data.details.length,
+                            itemBuilder: (context, pageIndex) {
+                              return Column(
+                                children: [
+                                  Text(
+                                    "Detail Data Ke - ${pageIndex + 1}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
                                   ),
-                                ),
-
-                                // --- Section PALKA S ---
-                                _buildSection("Details", [
-                                  _buildDataRow(
-                                    'No',
-                                    widget.data.details[pageIndex].no
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Sampling Date',
-                                    formatDatetoString(
-                                          widget
-                                              .data
-                                              .details[pageIndex]
-                                              .samplingDate!,
-                                          'dd-MM-yyyy',
-                                        ) ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Police No',
-                                    widget.data.details[pageIndex].policeNo ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'FFA',
-                                    widget.data.details[pageIndex].pFfa
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Moisture',
-                                    widget.data.details[pageIndex].pMoisture
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'IV',
-                                    widget.data.details[pageIndex].pIv
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'DOBI',
-                                    widget.data.details[pageIndex].pDobi
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'PV',
-                                    widget.data.details[pageIndex].pPv
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Color R',
-                                    widget.data.details[pageIndex].pColorR
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Color Y',
-                                    widget.data.details[pageIndex].pColorY
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Analis',
-                                    widget.data.details[pageIndex].analis
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Remarks',
-                                    widget.data.details[pageIndex].remarks
-                                            .toString() ??
-                                        '',
-                                  ),
-                                ]),
-                              ],
-                            );
-                          },
+                                  // --- Section PALKA S ---
+                                  _buildSection("Details", [
+                                    _buildDataRow(
+                                      'No',
+                                      widget.data.details[pageIndex].no
+                                          .toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'Sampling Date',
+                                      formatDatetoString(
+                                            widget
+                                                .data
+                                                .details[pageIndex]
+                                                .samplingDate!,
+                                            'dd-MM-yyyy',
+                                          ) ??
+                                          '',
+                                    ),
+                                    _buildDataRow(
+                                      'Police No',
+                                      widget.data.details[pageIndex].policeNo ??
+                                          '',
+                                    ),
+                                    _buildDataRow(
+                                      'FFA',
+                                      widget.data.details[pageIndex].pFfa
+                                          .toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'Moisture',
+                                      widget.data.details[pageIndex].pMoisture
+                                          .toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'IV',
+                                      widget.data.details[pageIndex].pIv
+                                          .toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'DOBI',
+                                      widget.data.details[pageIndex].pDobi
+                                          .toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'PV',
+                                      widget.data.details[pageIndex].pPv
+                                          .toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'Color R',
+                                      widget.data.details[pageIndex].pColorR
+                                          .toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'Color Y',
+                                      widget.data.details[pageIndex].pColorY
+                                          .toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'Analis',
+                                      widget.data.details[pageIndex].analis ??
+                                          '',
+                                    ),
+                                    _buildDataRow(
+                                      'Remarks',
+                                      widget.data.details[pageIndex].remarks ??
+                                          '',
+                                    ),
+                                  ]),
+                                ],
+                              );
+                            },
+                          ),
                         ),
-                      ),
+                      ] else ...[
+                        // 2. Fallback if no data exists
+                        const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Center(
+                            child: Text(
+                              "Tidak ada detail data",
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                      ],
                     ]),
 
                     if ((AppRoles.leadQC.contains(

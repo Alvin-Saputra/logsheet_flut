@@ -117,6 +117,28 @@ class QualityReportQCMySQLService {
       String baseQuery;
       final Map<String, dynamic> params = {};
 
+      const String dailyProductionColumns = """
+      a.daily_production_refinery_id,
+      c.be_ref_tank,
+      c.be_ref_qty,
+      c.be_total_bag,
+      c.be_total_jenis,
+      c.be_lot_batch_number,
+      c.be_yield_percent,
+      c.pa_ref_tank,
+      c.pa_ref_qty,
+      c.pa_total,
+      c.pa_lot_batch_number,
+      c.pa_yield_percent,
+      c.uu_item,
+      c.uu_budget_ref_tank,
+      c.uu_budget_qty,
+      c.uu_total_cpo,
+      c.uu_total_steam,
+      c.uu_steam_cpo,
+      c.uu_yield_percent
+    """;
+
       switch (role) {
         case 'LEAD' || 'LEAD_QC':
           baseQuery = """
@@ -180,16 +202,17 @@ class QualityReportQCMySQLService {
             a.form_no,
             a.date_issued,
             a.revision_no,
-            a.revision_date
+            a.revision_date,
+            $dailyProductionColumns
           FROM
             t_quality_report_qc AS a
           JOIN 
             m_product AS b
           ON 
             a.oil_type = b.id
-
+          LEFT JOIN t_daily_production_refinery AS c ON a.daily_production_refinery_id = c.id
           WHERE
-             plant = :plantCode AND (flag IS NULL OR flag = 'T') AND prepared_status IS NULL AND checked_status IS NULL
+             a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T') AND a.prepared_status IS NULL AND a.checked_status IS NULL
         """;
           params["plantCode"] = plantCode;
           break;
@@ -254,16 +277,18 @@ class QualityReportQCMySQLService {
             a.form_no,
             a.date_issued,
             a.revision_no,
-            a.revision_date
+            a.revision_date,
+            $dailyProductionColumns
           FROM
             t_quality_report_qc AS a
           JOIN 
             m_product AS b
           ON 
             a.oil_type = b.id
+          LEFT JOIN t_daily_production_refinery AS c ON a.daily_production_refinery_id = c.id
 
           WHERE
-             plant = :plantCode AND (flag IS NULL OR flag = 'T')
+             a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
         """;
 
           params["plantCode"] = plantCode;
@@ -331,15 +356,17 @@ class QualityReportQCMySQLService {
             a.form_no,
             a.date_issued,
             a.revision_no,
-            a.revision_date
+            a.revision_date,
+            $dailyProductionColumns
           FROM
             t_quality_report_qc AS a
           JOIN 
             m_product AS b
           ON 
             a.oil_type = b.id
+            LEFT JOIN t_daily_production_refinery AS c ON a.daily_production_refinery_id = c.id
           WHERE
-             plant = :plantCode AND (flag IS NULL OR flag = 'T')
+             a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
         """;
           params["status"] = "Approved";
           params["plantCode"] = plantCode;
@@ -406,16 +433,18 @@ class QualityReportQCMySQLService {
             a.form_no,
             a.date_issued,
             a.revision_no,
-            a.revision_date
+            a.revision_date,
+            $dailyProductionColumns
           FROM
             t_quality_report_qc AS a
           JOIN 
             m_product AS b
           ON 
             a.oil_type = b.id
+            LEFT JOIN t_daily_production_refinery AS c ON a.daily_production_refinery_id = c.id
 
           WHERE
-             plant = :plantCode AND (flag IS NULL OR flag = 'T')
+             a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
           """;
           params["plantCode"] = plantCode;
           break;
@@ -671,15 +700,36 @@ class QualityReportQCMySQLService {
             a.form_no,
             a.date_issued,
             a.revision_no,
-            a.revision_date
+            a.revision_date,
+            a.daily_production_refinery_id,
+            c.be_ref_tank,
+            c.be_ref_qty,
+            c.be_total_bag,
+            c.be_total_jenis,
+            c.be_lot_batch_number,
+            c.be_yield_percent,
+            c.pa_ref_tank,
+            c.pa_ref_qty,
+            c.pa_total,
+            c.pa_lot_batch_number,
+            c.pa_yield_percent,
+            c.uu_item,
+            c.uu_budget_ref_tank,
+            c.uu_budget_qty,
+            c.uu_total_cpo,
+            c.uu_total_steam,
+            c.uu_steam_cpo,
+            c.uu_yield_percent
           FROM
             t_quality_report_qc AS a
           JOIN 
             m_product AS b
           ON 
             a.oil_type = b.id
+             LEFT JOIN 
+          t_daily_production_refinery AS c ON a.daily_production_refinery_id = c.id
           WHERE
-           prepared_status = 'Approved' AND plant = :plantCode AND (flag IS NULL OR flag = 'T')
+           a.prepared_status = 'Approved' AND a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
         """,
         {"plantCode": plantCode},
       );
@@ -688,12 +738,6 @@ class QualityReportQCMySQLService {
     } catch (e) {
       log('Error fetching all prepared transactions: $e');
       return [];
-    } finally {
-      try {
-        await closeMySQLConnection(connection);
-      } catch (e) {
-        log("$e");
-      }
     }
   }
 
@@ -749,6 +793,78 @@ class QualityReportQCMySQLService {
       }
     } catch (e) {
       log("Error sending approve or reject ticket");
+      return false;
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+      } catch (e) {
+        log('$e');
+      }
+    }
+  }
+
+  Future<bool> sendApproveRejectTicketPerDate(
+    final String username,
+    final String status,
+    final String userRole,
+    final int shift,
+    final String transactionDate,
+    final String plant,
+    final String workCenter,
+    final String? remark,
+    // Removed 'final String id'
+  ) async {
+    MySQLConnection? connection;
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log(
+          'Failed to get MySQL connection for sending approve/reject ticket.',
+        );
+        return false;
+      }
+
+      connection = connResult.connection;
+      final date = DateTime.now();
+
+      // 1. Define the parameters map once, as it is used in both branches
+      // (excluding the specific SET columns which vary by role)
+      final parameters = {
+        "username": username,
+        "status": status,
+        "date": date,
+        "remark": remark,
+        "plant": plant,
+        "transactionDate": transactionDate,
+        "workCenter": workCenter,
+        "shift": shift,
+      };
+
+      if (userRole == "MGR" || userRole == "MGR_QC") {
+        // 2. Updated SQL for Managers
+        final sql =
+            "UPDATE t_quality_report_qc SET checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE plant = :plant AND DATE(transaction_date) = :transactionDate AND work_center = :workCenter AND shift = :shift";
+
+        final result = await connection!.execute(sql, parameters);
+
+        log("Query Sent: $sql");
+        log("Affected Rows: ${result.affectedRows}");
+        return result.affectedRows > BigInt.from(0);
+      } else {
+        // 3. Updated SQL for other roles
+        final sql =
+            "UPDATE t_quality_report_qc SET prepared_by = :username, prepared_status = :status, prepared_date = :date, prepared_status_remarks = :remark WHERE plant = :plant AND DATE(transaction_date) = :transactionDate AND work_center = :workCenter AND shift = :shift";
+
+        final result = await connection!.execute(sql, parameters);
+
+        log("Query Sent: $sql");
+        log("Affected Rows: ${result.affectedRows}");
+        return result.affectedRows > BigInt.from(0);
+      }
+    } catch (e) {
+      log(
+        "Error sending approve or reject ticket: $e",
+      ); // Added $e to log the actual error
       return false;
     } finally {
       try {
@@ -974,16 +1090,39 @@ class QualityReportQCMySQLService {
             a.form_no,
             a.date_issued,
             a.revision_no,
-            a.revision_date
-          FROM
-            t_quality_report_qc AS a
-          JOIN 
-            m_product AS b
-          ON 
-            a.oil_type = b.id
-          WHERE 
-            DATE(posting_date) = :dateFilter AND plant = :plantCode AND (flag IS NULL OR flag = 'T')
-           """;
+            a.revision_date,
+            a.daily_production_refinery_id,
+            c.be_ref_tank,
+            c.be_ref_qty,
+            c.be_total_bag,
+            c.be_total_jenis,
+            c.be_lot_batch_number,
+            c.be_yield_percent,
+            c.pa_ref_tank,
+            c.pa_ref_qty,
+            c.pa_total,
+            c.pa_lot_batch_number,
+            c.pa_yield_percent,
+            c.uu_item,
+            c.uu_budget_ref_tank,
+            c.uu_budget_qty,
+            c.uu_total_cpo,
+            c.uu_total_steam,
+            c.uu_steam_cpo,
+            c.uu_yield_percent
+          
+        FROM
+          t_quality_report_qc AS a
+        JOIN 
+          m_product AS b ON a.oil_type = b.id
+        LEFT JOIN 
+          t_daily_production_refinery AS c ON a.daily_production_refinery_id = c.id
+          
+        WHERE 
+          DATE(a.posting_date) = :dateFilter 
+          AND a.plant = :plantCode 
+          AND (a.flag IS NULL OR a.flag = 'T')
+         """;
 
       dateFilter ??= DateTime.now();
 
@@ -1011,6 +1150,222 @@ class QualityReportQCMySQLService {
         await connection.close();
         log('(QR MySQL) MySQL connection closed for getTickets.');
       }
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getDailyProductionRefineryByFilter({
+    required String plantCode,
+    DateTime? transactionDate,
+    String? workCenter,
+    int? shift,
+  }) async {
+    MySQLConnection? connection;
+
+    try {
+      final connResult = await getMySQLConnection();
+      connection = connResult.connection;
+
+      if (connection == null) {
+        log('Failed to get MySQL connection.');
+        return [];
+      }
+
+      String query = """
+      SELECT
+        a.id,
+        a.transaction_date,
+        a.work_center,
+        a.shift,
+        a.cpo_tank,
+        a.form_no,
+        a.flag,
+        a.be_ref_tank,
+        a.be_ref_qty,
+        a.be_total_bag,
+        a.be_total_jenis,
+        a.be_lot_batch_number,
+        a.be_yield_percent,
+        a.pa_ref_tank,
+        a.pa_ref_qty,
+        a.pa_total,
+        a.pa_lot_batch_number,
+        a.pa_yield_percent,
+        a.uu_item,
+        a.uu_budget_ref_tank,
+        a.uu_budget_qty,
+        a.uu_total_cpo,
+        a.uu_total_steam,
+        a.uu_steam_cpo,
+        a.uu_yield_percent
+      FROM t_daily_production_refinery a
+      WHERE a.plant = :plantCode
+        AND (a.flag IS NULL OR a.flag = 'T')
+    """;
+
+      final params = <String, dynamic>{"plantCode": plantCode};
+
+      if (transactionDate != null) {
+        query += " AND DATE (a.transaction_date) = :transactionDate";
+        params["transactionDate"] = transactionDate;
+      }
+
+      if (workCenter != null && workCenter.isNotEmpty) {
+        query += " AND a.work_center = :workCenter";
+        params["workCenter"] = workCenter;
+      }
+
+      if (shift != null) {
+        query += " AND a.shift = :shift";
+        params["shift"] = shift;
+      }
+
+      query += " ORDER BY a.transaction_date DESC";
+
+      final result = await connection.execute(query, params);
+
+      log('Fetched ${result.rows.length} production records.');
+
+      return result.rows.map((row) => row.assoc()).toList();
+    } catch (e) {
+      log('Error fetching production data: $e');
+      return [];
+    } finally {
+      await closeMySQLConnection(connection);
+    }
+  }
+
+  // Di dalam class QualityReportQCMySQLService
+
+  Future<String?> checkExistingInterlockDailyProductionRefineryData({
+    required String plant,
+    required String workCenter,
+    required String date, // Format: YYYY-MM-DD
+  }) async {
+    MySQLConnection? connection;
+    try {
+      // 1. Buka Koneksi (mengikuti pola yang ada di file anda)
+      var connResult = await getMySQLConnection();
+      if (connResult.connection == null) return null;
+      connection = connResult.connection;
+
+      // 2. Query untuk mencari kakak tertua (data pertama) hari ini
+      // Asumsi nama kolom foreign key adalah 'production_refinery_id'
+      // Sesuaikan nama tabel dan kolom jika berbeda
+      const String sql = """
+      SELECT daily_production_refinery_id 
+      FROM t_quality_report_qc 
+      WHERE plant = :plant
+        AND work_center = :workCenter
+        AND DATE(transaction_date) = :date
+        AND daily_production_refinery_id IS NOT NULL
+        AND flag = 'T'
+      LIMIT 1
+    """;
+
+      final params = {"plant": plant, "workCenter": workCenter, "date": date};
+
+      var result = await connection!.execute(sql, params);
+
+      // 3. Jika ketemu, kembalikan ID-nya
+      if (result.rows.isNotEmpty) {
+        // Mengambil nilai kolom pertama
+        final id = result.rows.first.colAt(0);
+        log('Found interlock daily production refinery id: $id');
+        return id;
+      }
+
+      return null; // Tidak ditemukan, berarti user harus pilih manual
+    } catch (e) {
+      log("Error checking interlock: $e");
+      return null;
+    } finally {
+      // 4. Tutup koneksi
+      await closeMySQLConnection(connection);
+    }
+  }
+
+  Future<bool> updateInterlockDailyProductionRefineryData({
+    required String plant,
+    required String workCenter,
+    required String date,
+    required String newId,
+    // parameter oldId kita hapus atau abaikan saja
+  }) async {
+    MySQLConnection? connection;
+    try {
+      var connResult = await getMySQLConnection();
+      if (connResult.connection == null) return false;
+      connection = connResult.connection;
+
+      // PERUBAHAN DI SINI:
+      // Saya menghapus "AND daily_production_refinery_id = :oldId"
+      // Logikanya: "Apapun isinya dulu (Null/Isi), timpa dengan yang baru untuk hari & mesin ini"
+      const String sql = """ 
+      UPDATE t_quality_report_qc 
+      SET daily_production_refinery_id = :newId
+      WHERE plant = :plant
+        AND work_center = :workCenter
+        AND DATE(transaction_date) = :date
+        AND (flag IS NULL OR flag = 'T') 
+    """;
+
+      final params = {
+        "newId": newId,
+        "plant": plant,
+        "workCenter": workCenter,
+        "date": date,
+        // "oldId": oldId, // Tidak perlu lagi
+      };
+
+      var result = await connection!.execute(sql, params);
+
+      // Kita cek affected rows.
+      // Walaupun 0 (karena belum ada data QC sama sekali), return true tidak masalah
+      // karena tujuannya adalah memastikan "kalau ada data, update".
+      return true;
+    } catch (e) {
+      log("Error updating interlock: $e");
+      return false;
+    } finally {
+      await closeMySQLConnection(connection);
+    }
+  }
+
+  // Di dalam class QualityReportQCMySQLService
+
+  Future<bool> checkAnyDataExists({
+    required String plant,
+    required String workCenter,
+    required String date, // Format: YYYY-MM-DD
+  }) async {
+    MySQLConnection? connection;
+    try {
+      var connResult = await getMySQLConnection();
+      if (connResult.connection == null) return false;
+      connection = connResult.connection;
+
+      // Query ringan: Cukup cari 1 baris saja
+      const String sql = """
+      SELECT 1 
+      FROM t_quality_report_qc 
+      WHERE plant = :plant
+        AND work_center = :workCenter
+        AND DATE(transaction_date) = :date
+        AND (flag IS NULL OR flag = 'T')
+      LIMIT 1
+    """;
+
+      final params = {"plant": plant, "workCenter": workCenter, "date": date};
+
+      var result = await connection!.execute(sql, params);
+
+      // Jika ada row, berarti data sudah ada (return true)
+      return result.rows.isNotEmpty;
+    } catch (e) {
+      log("Error checking data existence: $e");
+      return false;
+    } finally {
+      await closeMySQLConnection(connection);
     }
   }
 }

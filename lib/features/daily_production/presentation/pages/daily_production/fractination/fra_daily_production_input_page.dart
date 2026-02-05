@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/features/daily_production/data/model/daily_production/daily_production_fractionation_entity.dart';
+import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/fractination/fra_input_item.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/tank_entity.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/value_entity.dart';
@@ -20,6 +21,7 @@ import 'package:logsheet_app/core/widgets/custom_text_field.dart';
 import 'package:logsheet_app/core/widgets/section_card.dart';
 import 'package:logsheet_app/features/daily_production/presentation/provider/daily_production/daily_production_fractionation_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/business_unit_provider.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/crystallizer_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/product_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
@@ -63,8 +65,8 @@ class _DailyProductionFractionPageState
   // String? selectedMachine;
 
   DateTime selectedTransactionDate = DateTime.now();
-
   String? selectedWorkCenter;
+  String? selectedShift;
   String? budgetValue;
 
   // Dummy data
@@ -99,9 +101,7 @@ class _DailyProductionFractionPageState
       TextEditingController();
 
   final TextEditingController flowMeterController = TextEditingController();
-  final TextEditingController no1Controller = TextEditingController();
-  final TextEditingController no2Controller = TextEditingController();
-  final TextEditingController no3Controller = TextEditingController();
+  final TextEditingController noController = TextEditingController();
   final TextEditingController cr1Controller = TextEditingController();
   final TextEditingController cr2Controller = TextEditingController();
 
@@ -115,6 +115,8 @@ class _DailyProductionFractionPageState
   final uuListrikController = TextEditingController();
   final uuAirController = TextEditingController();
 
+  List<FractionationInputItem> inputItems = [];
+
   @override
   void dispose() {
     flowmeter1AwalController.dispose();
@@ -126,9 +128,7 @@ class _DailyProductionFractionPageState
     flowmeter3AwalController.dispose();
     flowmeter3AkhirController.dispose();
     flowmeter3TotalController.dispose();
-    no1Controller.dispose();
-    no2Controller.dispose();
-    no3Controller.dispose();
+    noController.dispose();
     cr1Controller.dispose();
     cr2Controller.dispose();
     flowMeterController.dispose();
@@ -149,6 +149,20 @@ class _DailyProductionFractionPageState
 
     flowmeter3AwalController.removeListener(_calculateTotalFlowmeter);
     flowmeter3AkhirController.removeListener(_calculateTotalFlowmeter);
+  }
+
+  void _addNewRow() {
+    setState(() {
+      inputItems.add(FractionationInputItem());
+    });
+  }
+
+  // Fungsi Hapus Row
+  void _removeRow(int index) {
+    setState(() {
+      inputItems[index].dispose(); // Bersihkan memory controller
+      inputItems.removeAt(index);
+    });
   }
 
   void _calculateTotalFlowmeter() {
@@ -229,27 +243,45 @@ class _DailyProductionFractionPageState
     Function(TimeOfDay) onTimeSelected,
     TimeOfDay? selectedTime,
   ) {
-    showModalBottomSheet(
+    // showModalBottomSheet(
+    //   context: context,
+    //   backgroundColor: Colors.white,
+    //   shape: const RoundedRectangleBorder(
+    //     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    //   ),
+    //   builder:
+    //       (context) => CustomHourMinutePicker(
+    //         selectedTime: selectedTime,
+    //         onTimeSelected: (time) {
+    //           onTimeSelected(time);
+    //         },
+    //       ),
+    // );
+
+    showDialog(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      builder: (context) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // Takes only necessary height
+          children: [
+            // Optional: You might want to wrap this in a specific height or width 
+            // container if the picker doesn't have a defined size.
+            CustomHourMinutePicker(
+              selectedTime: selectedTime,
+              onTimeSelected: (time) {
+                onTimeSelected(time);
+                // If you want the dialog to close immediately after selection, uncomment the line below:
+                // Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
       ),
-      builder:
-          (context) => CustomHourMinutePicker(
-            selectedTime: selectedTime,
-            onTimeSelected: (time) {
-              onTimeSelected(time);
-            },
-          ),
-      // builder:
-      //     (context) => CustomHourPicker(
-      //       selectedHour: selectedHour,
-      //       onHourSelected: (hour) {
-      //         onHourSelected(hour);
-      //         // Navigator.pop(context);
-      //       },
-      //     ),
     );
   }
 
@@ -276,14 +308,18 @@ class _DailyProductionFractionPageState
   @override
   void initState() {
     super.initState();
+    _addNewRow();
     final valueProvider = context.read<ValueProvider>();
     final productProvider = context.read<ProductProvider>();
+    final crystallizerProvider = context.read<CrystallizerProvider>();
 
     if (valueProvider.tankSourceList.isEmpty ||
-        productProvider.productFractionationList.isEmpty) {
+        productProvider.productFractionationList.isEmpty ||
+        crystallizerProvider.crystallizerList.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
         await valueProvider.fetchAllInitialData();
         await productProvider.fetchProducts();
+        await crystallizerProvider.fetchCrystallizer();
         tankLists = valueProvider.tankSourceList;
       });
     }
@@ -486,211 +522,274 @@ class _DailyProductionFractionPageState
                 ),
               ),
             ),
+
             const SizedBox(height: 8),
 
-            // Oil Type Dropdown
-            Consumer<ProductProvider>(
-              builder: (context, provider, child) {
-                if (provider.isLoading) {
-                  // Return a disabled dropdown with a loading indicator or message
-                  return DropdownButtonFormField<String>(
-                    value: null,
-                    items: [],
-                    onChanged: null, // Disable the dropdown
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFFF0ECE9),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+            DropdownButtonFormField<String>(
+              value: selectedShift,
+              items:
+                  dummyShiftOptions.map((item) {
+                    return DropdownMenuItem<String>(
+                      value: item,
+                      child: Text(
+                        "${item}",
+                        style: const TextStyle(fontSize: 14),
                       ),
-                      hintText: 'Loading Oil Types...',
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                    ),
-                  );
-                }
-
-                if (provider.productFractionationList.isEmpty) {
-                  log(
-                    "FRACTIONATION LIST LENGTH: ${provider.productFractionationList.length}",
-                  );
-                  return TextFormField(
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFFF0ECE9),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      hintText: 'Oil Types tidak ditemukan.',
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: Icon(Icons.warning_amber_rounded),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.refresh),
-                        onPressed: () async {
-                          await provider.fetchProducts();
-                        },
-                      ),
-                    ),
-                  );
-                }
-                log(
-                  "FRACTIONATION LIST LENGTH: ${provider.productFractionationList.length}",
-                );
-                return DropdownButtonFormField<String>(
-                  value: selectedOilRm,
-                  items:
-                      provider.productFractionationList.map((oil) {
-                        return DropdownMenuItem<String>(
-                          value: oil.id,
-                          child: Text(
-                            oil.rawMaterial!,
-                            style: TextStyle(fontSize: 14),
-                          ),
-                        );
-                      }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedOilRm = value;
-
-                      selectedOilFg =
-                          provider.productFractionationList
-                              .firstWhere((item) => item.id == selectedOilRm)
-                              .id;
-
-                      selectedOilBp =
-                          provider.productFractionationList
-                              .firstWhere((item) => item.id == selectedOilRm)
-                              .id;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: const Color(0xFFF0ECE9),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    hintText: 'Pilih Oil Type',
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Icon(Icons.oil_barrel_rounded),
-                    ),
-                  ),
-                );
+                    );
+                  }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedShift = value;
+                });
               },
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFFF0ECE9),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                labelText: 'Pilih Shift',
+                floatingLabelBehavior: FloatingLabelBehavior.auto,
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: SvgPicture.asset(
+                    'assets/icons/oil-refinery-tanks.svg',
+                    height: 24,
+                    width: 24,
+                  ),
+                ),
+              ),
             ),
-            const SizedBox(height: 8),
-            const SizedBox(height: 16),
 
-            if (selectedOilRm == null) ...[
+            if (selectedWorkCenter == null) ...[
               const Center(
                 child: Text(
-                  'Silakan pilih part terlebih dahulu',
+                  'Silakan pilih workCenter terlebih dahulu',
                   style: TextStyle(color: Colors.grey),
                 ),
               ),
             ] else ...[
-              // === Section: RBDPO/ROL/RPS ===
-              FraSectionRbdpoRolRps(
-                noController: no1Controller,
-                crController: cr1Controller,
-                dummyTanks: tankLists ?? [],
-                selectedTank: selected1Tank,
-                onTankChanged: (value) => setState(() => selected1Tank = value),
-                selectedTimeAwal: selectedTime1Awal,
-                selectedTimeAkhir: selectedTime1Akhir,
-                onTimeTapAwal:
-                    () => _showHourPickerAndUpdateState(
-                      (hour) => setState(() {
-                        selectedTime1Awal = hour;
-                      }),
-                      selectedTime1Awal,
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Production Data Details',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.w600,
                     ),
-                onTimeTapAkhir:
-                    () => _showHourPickerAndUpdateState(
-                      (hour) => setState(() {
-                        selectedTime1Akhir = hour;
-                      }),
-                      selectedTime1Akhir,
-                    ),
-                flowmeterAwalController: flowmeter1AwalController,
-                flowmeterAkhirController: flowmeter1AkhirController,
-                flowmeterTotalController: flowmeter1TotalController,
+                  ),
+                ],
               ),
+              const SizedBox(height: 8),
 
-              // === Section:OLEIN/SUPER OLEIN/SOFT STEARIN
-              FraSectionOleinSoleinSstearin(
-                noController: no2Controller,
-                crController: cr2Controller,
-                tankLists: tankLists ?? [],
-                selectedTank: selected2Tank,
-                onTankChanged: (value) => setState(() => selected2Tank = value),
-                selectedTimeAwal: selectedTime2Awal,
-                selectedTimeAkhir: selectedTime2Akhir,
-                onTimeTapAwal:
-                    () => _showHourPickerAndUpdateState(
-                      (hour) => setState(() {
-                        selectedTime2Awal = hour;
-                      }),
-                      selectedTime2Awal,
+              ...inputItems.asMap().entries.map((entry) {
+                int index = entry.key;
+                FractionationInputItem item = entry.value;
+
+                return Card(
+                  elevation: 3,
+                  margin: const EdgeInsets.only(
+                    bottom: 24,
+                  ), // Jarak antar Grup besar
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // HEADER CARD (Judul + Tombol Hapus)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blueGrey[50],
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(16),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Set Data #${index + 1}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            // Tombol Hapus (Hanya muncul jika item > 1)
+                            if (inputItems.length > 1)
+                              InkWell(
+                                onTap: () => _removeRow(index),
+                                child: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          children: [
+                            // 1. SECTION RAW MATERIAL
+                            const Text(
+                              "1. Raw Material (RBDPO/ROL/RPS)",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            FraSectionRbdpoRolRps(
+                              dummyTanks: tankLists ?? [],
+                              selectedTank: item.selectedTankRm,
+                              onTankChanged:
+                                  (val) =>
+                                      setState(() => item.selectedTankRm = val),
+                              selectedTimeAwal: item.timeAwalRm,
+                              selectedTimeAkhir: item.timeAkhirRm,
+                              onTimeTapAwal:
+                                  () => _showHourPickerAndUpdateState(
+                                    (t) => setState(() => item.timeAwalRm = t),
+                                    item.timeAwalRm,
+                                  ),
+                              onTimeTapAkhir:
+                                  () => _showHourPickerAndUpdateState(
+                                    (t) => setState(() => item.timeAkhirRm = t),
+                                    item.timeAkhirRm,
+                                  ),
+                              flowmeterAwalController: item.flowAwalRm,
+                              flowmeterAkhirController: item.flowAkhirRm,
+                              flowmeterTotalController: item.flowTotalRm,
+                              onCrystallizerChanged:
+                                  (val) => setState(
+                                    () => item.selectedCrystallizerRm = val,
+                                  ),
+                              onOilRmChanged:
+                                  (val) =>
+                                      setState(() => item.selectedOilRm = val),
+                              selectedOil: item.selectedOilRm,
+                            ),
+                            SizedBox(height: 16.0),
+                            const Divider(height: 32, thickness: 2),
+                            SizedBox(height: 16.0),
+                            // 2. SECTION FINISH GOODS
+                            const Text(
+                              "2. Finish Goods (Olein/Solein)",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            FraSectionOleinSoleinSstearin(
+                              tankLists: tankLists ?? [],
+                              selectedTank: item.selectedTankFg,
+                              onTankChanged:
+                                  (val) =>
+                                      setState(() => item.selectedTankFg = val),
+                              selectedTimeAwal: item.timeAwalFg,
+                              selectedTimeAkhir: item.timeAkhirFg,
+                              onTimeTapAwal:
+                                  () => _showHourPickerAndUpdateState(
+                                    (t) => setState(() => item.timeAwalFg = t),
+                                    item.timeAwalFg,
+                                  ),
+                              onTimeTapAkhir:
+                                  () => _showHourPickerAndUpdateState(
+                                    (t) => setState(() => item.timeAkhirFg = t),
+                                    item.timeAkhirFg,
+                                  ),
+                              flowmeterAwalController: item.flowAwalFg,
+                              flowmeterAkhirController: item.flowAkhirFg,
+                              flowmeterTotalController: item.flowTotalFg,
+                              // Logic selectedOilFg:
+                              // Jika ingin otomatis mengikuti 'selectedOilFg' global:
+                              // selectedOil: selectedOilFg,
+                              // Jika user bisa ganti per baris, gunakan item.selectedOilFg
+                              selectedOil: item.selectedOilFg ?? selectedOilFg,
+                              onOilFgChanged:
+                                  (val) =>
+                                      setState(() => item.selectedOilFg = val),
+                              onCrystallizerChanged:
+                                  (val) => setState(
+                                    () => item.selectedCrystallizerFg = val,
+                                  ),
+                            ),
+
+                            SizedBox(height: 16.0),
+                            const Divider(height: 32, thickness: 2),
+                            SizedBox(height: 16.0),
+                            // 3. SECTION BY PRODUCT
+                            const Text(
+                              "3. By Product (Stearin/PMF)",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            FraSectionStearinPmfHstrearin(
+                              tanksList: tankLists ?? [],
+                              selectedTank: item.selectedTankBp,
+                              onTankChanged:
+                                  (val) =>
+                                      setState(() => item.selectedTankBp = val),
+                              selectedTimeAwal: item.timeAwalBp,
+                              selectedTimeAkhir: item.timeAkhirBp,
+                              onTimeTapAwal:
+                                  () => _showHourPickerAndUpdateState(
+                                    (t) => setState(() => item.timeAwalBp = t),
+                                    item.timeAwalBp,
+                                  ),
+                              onTimeTapAkhir:
+                                  () => _showHourPickerAndUpdateState(
+                                    (t) => setState(() => item.timeAkhirBp = t),
+                                    item.timeAkhirBp,
+                                  ),
+                              flowmeterAwalController: item.flowAwalBp,
+                              flowmeterAkhirController: item.flowAkhirBp,
+                              flowmeterTotalController: item.flowTotalBp,
+                              selectedOil: item.selectedOilBp ?? selectedOilBp,
+                              onOilBpChanged:
+                                  (val) =>
+                                      setState(() => item.selectedOilBp = val),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 24),
+                child: OutlinedButton.icon(
+                  onPressed: _addNewRow,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.all(16),
+                    side: const BorderSide(color: Colors.redAccent, width: 2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                onTimeTapAkhir:
-                    () => _showHourPickerAndUpdateState(
-                      (hour) => setState(() {
-                        selectedTime2Akhir = hour;
-                      }),
-                      selectedTime2Akhir,
-                    ),
-                flowmeterAwalController: flowmeter2AwalController,
-                flowmeterAkhirController: flowmeter2AkhirController,
-                flowmeterTotalController: flowmeter2TotalController,
-                selectedOil: selectedOilFg,
-                onOilFgChanged:
-                    (oil) => setState(() {
-                      selectedOilFg = oil;
-                    }),
-              ),
-              // === Section:STEARIN/PMF/HARD STEARIN
-              FraSectionStearinPmfHstrearin(
-                noController: no3Controller,
-                tanksList: tankLists ?? [],
-                onTankChanged: (value) => setState(() => selected2Tank = value),
-                selectedTank: selected3Tank,
-                selectedTimeAwal: selectedTime3Awal,
-                selectedTimeAkhir: selectedTime3Akhir,
-                onTimeTapAwal:
-                    () => _showHourPickerAndUpdateState(
-                      (hour) => setState(() {
-                        selectedTime3Awal = hour;
-                      }),
-                      selectedTime3Awal,
-                    ),
-                onTimeTapAkhir:
-                    () => _showHourPickerAndUpdateState(
-                      (hour) => setState(() {
-                        selectedTime3Akhir = hour;
-                      }),
-                      selectedTime3Akhir,
-                    ),
-                flowmeterAwalController: flowmeter3AwalController,
-                flowmeterAkhirController: flowmeter3AkhirController,
-                flowmeterTotalController: flowmeter3TotalController,
-                selectedOil: selectedOilBp,
-                onOilFgChanged:
-                    (oil) => setState(() {
-                      selectedOilBp = oil;
-                    }),
+                  ),
+                  icon: const Icon(Icons.add_circle_outline, size: 28),
+                  label: const Text(
+                    "Tambah Set Data (RM + FG + BP)",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
 
               CheckboxListTile(
@@ -832,43 +931,82 @@ class _DailyProductionFractionPageState
     final currentPlant = context.read<PlantProvider>().currentPlant;
     final plantCode = currentPlant!.code;
     final companyName =
-        context.read<BusinessUnitProvider>().currentBusinessUnit?.buName;
+        context.read<BusinessUnitProvider>().currentBusinessUnit?.buCode;
 
     DateTime getTransactionDate() {
       final DateTime now = selectedTransactionDate;
+      final DateTime timeNow = DateTime.now();
       return DateTime(
         now.year,
         now.month,
         now.day,
-        now.hour,
-        now.minute,
-        now.second,
+        // now.hour,
+        // now.minute,
+        // now.second,
       );
     }
 
-    DateTime getPostingDate() {
-      final DateTime now = selectedTransactionDate;
+    // DateTime getPostingDate() {
+    //   final DateTime now = selectedTransactionDate;
 
-      final int hour = now.hour;
+    //   final int hour = now.hour;
+
+    //   if (hour <= 7) {
+    //     final DateTime previousDay = now.subtract(const Duration(days: 1));
+    //     return DateTime(
+    //       previousDay.year,
+    //       previousDay.month,
+    //       previousDay.day,
+    //       previousDay.hour,
+    //       previousDay.minute,
+    //       previousDay.second,
+    //     );
+    //   } else {
+    //     return DateTime(
+    //       now.year,
+    //       now.month,
+    //       now.day,
+    //       now.hour,
+    //       now.minute,
+    //       now.second,
+    //     );
+    //   }
+    // }
+
+    DateTime getPostingDate() {
+      // 1. Ambil tanggal dari pilihan user (jamnya 00:00:00)
+      final DateTime dateSelected = selectedTransactionDate;
+
+      // 2. Ambil waktu REALTIME dari sistem HP saat tombol save ditekan
+      final DateTime timeNow = DateTime.now();
+
+      // 3. Gunakan jam dari 'timeNow', bukan dari 'dateSelected'
+      final int hour = timeNow.hour;
 
       if (hour <= 7) {
-        final DateTime previousDay = now.subtract(const Duration(days: 1));
+        // Logic: Jika subuh (00:00 - 07:00), tanggal posting mundur 1 hari
+        // Kita kurangi 1 hari dari TANGGAL yang dipilih user
+        final DateTime previousDayDate = dateSelected.subtract(
+          const Duration(days: 1),
+        );
+
         return DateTime(
-          previousDay.year,
-          previousDay.month,
-          previousDay.day,
-          previousDay.hour,
-          previousDay.minute,
-          previousDay.second,
+          previousDayDate.year,
+          previousDayDate.month,
+          previousDayDate.day,
+          timeNow.hour, // <--- Pakai jam realtime
+          timeNow.minute, // <--- Pakai menit realtime
+          timeNow.second, // <--- Pakai detik realtime
         );
       } else {
+        // Logic: Normal
         return DateTime(
-          now.year,
-          now.month,
-          now.day,
-          now.hour,
-          now.minute,
-          now.second,
+          dateSelected.year,
+          dateSelected.month,
+          dateSelected.day,
+          timeNow.hour, // <--- Pakai jam realtime
+          timeNow.minute, // <--- Pakai menit realtime
+          timeNow.second, // <--- Pakai detik realtime
         );
       }
     }
@@ -884,27 +1022,71 @@ class _DailyProductionFractionPageState
         .read<DailyProductionFractionationProvider>()
         .fetchLatestId(plantCode);
 
-    Future<String> buildTicketNumber() async {
+    // Future<String> buildTicketNumber() async {
+    //   log("TICKET NUMBER FROM PROVIDER: $latestTicketIdFromProvider");
+    //   if (latestTicketIdFromProvider == null) {
+    //     // return error snackbar saying plant code is not registered.
+    //     log("id is null");
+    //     return "";
+    //   }
+    //   log("lastDigit: ${latestTicketIdFromProvider.substring(9)}");
+    //   int digit = (int.parse((latestTicketIdFromProvider.substring(9))) + 1);
+    //   final update = await context
+    //       .read<DailyProductionFractionationProvider>()
+    //       .updateAutoNumber(plantCode, digit);
+    //   String lastDigit = digit.toString().padLeft(6, '0');
+    //   if (lastDigit == "") {
+    //     lastDigit = "1";
+    //   }
+    //   log("Last Digit: $lastDigit, is update successful: $update");
+    //   String ticketPrefixQc = latestTicketIdFromProvider.substring(0, 9);
+    //   log(ticketPrefixQc + lastDigit);
+
+    //   return ticketPrefixQc + lastDigit;
+    // }
+
+    Future<List<String>> buildTicketNumbers(int batchSize) async {
       log("TICKET NUMBER FROM PROVIDER: $latestTicketIdFromProvider");
+
       if (latestTicketIdFromProvider == null) {
-        // return error snackbar saying plant code is not registered.
         log("id is null");
-        return "";
+        return [];
       }
-      log("lastDigit: ${latestTicketIdFromProvider.substring(9)}");
-      int digit = (int.parse((latestTicketIdFromProvider.substring(9))) + 1);
+
+      // 1. Ambil prefix dan angka terakhir saat ini
+      // Asumsi format: PREFIX(9 char) + NUMBER(6 char)
+      String ticketPrefix = latestTicketIdFromProvider!.substring(0, 9);
+      String numberPart = latestTicketIdFromProvider!.substring(9);
+
+      int currentLastNumber = int.parse(numberPart);
+
+      // 2. Hitung angka terakhir yang baru setelah ditambah jumlah data (batchSize)
+      int newLastNumber = currentLastNumber + batchSize;
+
+      // 3. Update database autonumber ke angka TERAKHIR sekaligus
+      // Jadi jika batchSize 5, autonumber langsung lompat 5 angka.
       final update = await context
           .read<DailyProductionFractionationProvider>()
-          .updateAutoNumber(plantCode, digit);
-      String lastDigit = digit.toString().padLeft(6, '0');
-      if (lastDigit == "") {
-        lastDigit = "1";
-      }
-      log("Last Digit: $lastDigit, is update successful: $update");
-      String ticketPrefixQc = latestTicketIdFromProvider.substring(0, 9);
-      log(ticketPrefixQc + lastDigit);
+          .updateAutoNumber(plantCode, newLastNumber);
 
-      return ticketPrefixQc + lastDigit;
+      log("Updating autonumber to: $newLastNumber, success: $update");
+
+      if (!update) {
+        // Handle error jika gagal update DB
+        return [];
+      }
+
+      // 4. Generate List ID untuk dikembalikan ke UI
+      List<String> generatedIds = [];
+
+      for (int i = 1; i <= batchSize; i++) {
+        // Generate urutan: current + 1, current + 2, dst...
+        int sequenceNumber = currentLastNumber + i;
+        String formattedNumber = sequenceNumber.toString().padLeft(6, '0');
+        generatedIds.add(ticketPrefix + formattedNumber);
+      }
+
+      return generatedIds;
     }
 
     int? parseInt(String value) {
@@ -945,85 +1127,90 @@ class _DailyProductionFractionPageState
 
     final dataForm = widget.dataForm;
 
-    final ticketId = await buildTicketNumber();
-
-    if (ticketId == "") {
-      return;
-    }
     // log("${convertStringTimeToDateTime(selectedTime1Awal)}");
     // log("${convertStringTimeToDateTime(selectedHour2Awal)}");
     // log("${convertStringTimeToDateTime(selectedHour3Awal)}");
     log('SELECTED TIME 1 AWAL: $selectedTime1Awal');
 
     try {
-      final entity = DailyProductionFractionationEntity(
-        id: ticketId,
-        company: companyName,
-        plant: currentPlant.code,
-        transactionDate: getTransactionDate(),
-        postingDate: postingDate,
-        workCenter: selectedWorkCenter,
-        shift: getShiftBasedOnTimeAndDate(postingDate).toString(),
-        // cpoTank: selected1Tank,
-        oilTypeRmId: selectedOilRm,
-        oilTypeRmNo: parseInt(no1Controller.text),
-        oilTypeRmCr: parseInt(cr1Controller.text),
-        oilTypeRmFromTank: selected1Tank,
-        oilTypeRmAwalJam: selectedTime1Awal,
-        oilTypeRmAwalFlowmeter: parseInt(flowmeter1AwalController.text),
-        oilTypeRmAkhirJam: selectedTime1Akhir,
-        oilTypeRmAkhirFlowmeter: parseInt(flowmeter1AkhirController.text),
-        oilTypeRmTotal: parseInt(flowmeter1TotalController.text),
-        oilTypeFgsId: selectedOilFg,
-        oilTypeFgsNo: parseInt(no2Controller.text),
-        oilTypeFgsCr: parseInt(cr2Controller.text),
-        oilTypeFgsAwalJam: selectedTime2Awal,
-        oilTypeFgsAwalFlowmeter: parseInt(flowmeter2AwalController.text),
-        oilTypeFgsAkhirJam: selectedTime2Akhir,
-        oilTypeFgsAkhirFlowmeter: parseInt(flowmeter2AkhirController.text),
-        oilTypeFgsTotal: parseInt(flowmeter2TotalController.text),
-        oilTypeFgsToTank: selected2Tank,
-        oilTypeFghId: selectedOilBp,
-        oilTypeFghNo: parseInt(no3Controller.text),
-        oilTypeFghAwalJam: selectedTime3Awal,
-        oilTypeFghAwalFlowmeter: parseDouble(flowmeter3AwalController),
-        oilTypeFghAkhirJam: selectedTime3Akhir,
-        oilTypeFghAkhirFlowmeter: parseDouble(flowmeter3AkhirController),
-        oilTypeFghTotal: parseDouble(flowmeter3TotalController),
-        oilTypeFghToTank: selected3Tank,
-        uuItem: steamItem,
-        uuBudgetRefQty: budgetValue,
-        uuFlowmeterBefore: parseInt(uuFlowmeterBefore.text),
-        uuFlowmeterAfter: parseInt(uuFlowmeterAfter.text),
-        uuFlowmeterTotal: parseInt(uuFlowmeterTotal.text),
-        uuListrik: parseInt(uuListrikController.text),
-        uuAir: parseInt(uuAirController.text),
-        uuYieldPercent: parseDouble(uuYieldController),
-        remarks: remarksController.text,
-        flag: 'T',
-        entryBy: currentUser?.username,
-        entryDate: DateTime.now(),
-        preparedBy: null,
-        preparedDate: null,
-        preparedStatus: null,
-        preparedStatusRemarks: null,
-        verifiedBy: null,
-        verifiedDate: null,
-        verifiedStatus: null,
-        verifiedStatusRemarks: null,
-        checkedBy: null,
-        checkedDate: null,
-        checkedStatus: null,
-        checkedStatusRemarks: null,
-        formNo: dataForm.code,
-        dateIssued: dataForm.dateIssued,
-        revisionNo: dataForm.revisionNo,
-        revisionDate: dataForm.revisionDate,
-      );
+      List<String> newTicketIds = await buildTicketNumbers(inputItems.length);
+
+      if (newTicketIds.isEmpty || newTicketIds.length != inputItems.length) {
+        // Handle error, misal show snackbar "Gagal generate Ticket ID"
+        return;
+      }
+      final entities =
+          inputItems.asMap().entries.map((entry) {
+            int index = entry.key;
+            FractionationInputItem item = entry.value;
+
+            return DailyProductionFractionationEntity(
+              id: newTicketIds[index],
+              company: companyName,
+              plant: currentPlant.code,
+              transactionDate: getTransactionDate(),
+              postingDate: postingDate,
+              workCenter: selectedWorkCenter,
+              shift: selectedShift,
+              no: index + 1,
+              oilTypeRmId: item.selectedOilRm,
+              oilTypeRmCr: item.selectedCrystallizerRm,
+              oilTypeRmFromTank: item.selectedTankRm,
+              oilTypeRmAwalJam: item.timeAwalRm,
+              oilTypeRmAwalFlowmeter: parseInt(item.flowAwalRm.text),
+              oilTypeRmAkhirJam: item.timeAkhirRm,
+              oilTypeRmAkhirFlowmeter: parseInt(item.flowAkhirRm.text),
+              oilTypeRmTotal: parseInt(item.flowTotalRm.text),
+              oilTypeFgsId: item.selectedOilFg,
+              oilTypeFgsCr: item.selectedCrystallizerFg,
+              oilTypeFgsAwalJam: item.timeAwalFg,
+              oilTypeFgsAwalFlowmeter: parseInt(item.flowAwalFg.text),
+              oilTypeFgsAkhirJam: item.timeAkhirFg,
+              oilTypeFgsAkhirFlowmeter: parseInt(item.flowAkhirFg.text),
+              oilTypeFgsTotal: parseInt(item.flowTotalFg.text),
+              oilTypeFgsToTank: item.selectedTankFg,
+              oilTypeFghId: item.selectedOilBp,
+              oilTypeFghAwalJam: item.timeAwalBp,
+              oilTypeFghAwalFlowmeter: parseDouble(item.flowAwalBp),
+              oilTypeFghAkhirJam: item.timeAkhirBp,
+              oilTypeFghAkhirFlowmeter: parseDouble(item.flowAkhirBp),
+              oilTypeFghTotal: parseDouble(item.flowTotalBp),
+              oilTypeFghToTank: item.selectedTankBp,
+              remarks: remarksController.text,
+              flag: 'T',
+              uuItem: steamItem,
+              uuBudgetRefQty: budgetValue,
+              uuFlowmeterBefore: parseInt(uuFlowmeterBefore.text),
+              uuFlowmeterAfter: parseInt(uuFlowmeterAfter.text),
+              uuFlowmeterTotal: parseInt(uuFlowmeterTotal.text),
+              uuYieldPercent: parseDouble(uuYieldController),
+              uuListrik: parseInt(uuListrikController.text),
+              uuAir: parseInt(uuAirController.text),
+              entryBy: currentUser?.username,
+              entryDate: DateTime.now(),
+              preparedBy: null,
+              preparedDate: null,
+              preparedStatus: null,
+              preparedStatusRemarks: null,
+              verifiedBy: null,
+              verifiedDate: null,
+              verifiedStatus: null,
+              verifiedStatusRemarks: null,
+              checkedBy: null,
+              checkedDate: null,
+              checkedStatus: null,
+              checkedStatusRemarks: null,
+              formNo: dataForm.code,
+              dateIssued: dataForm.dateIssued,
+              revisionNo: dataForm.revisionNo,
+              revisionDate: dataForm.revisionDate,
+              isCompleted: false,
+            );
+          }).toList();
 
       bool? success;
 
-      success = await provider.insertTicket(entity);
+      success = await provider.insertTicket(entities);
 
       log("is success? $success");
       if (success) {
@@ -1043,7 +1230,9 @@ class _DailyProductionFractionPageState
       }
     } catch (e) {
       log("Gagal menyimpan laporan: $e");
-      _showSnackBar("Gagal menyimpan laporan: $e");
+
+      final message = e.toString().replaceFirst('Exception: ', '');
+      _showSnackBar("Gagal menyimpan laporan: $message");
     }
   }
 

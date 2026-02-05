@@ -90,6 +90,7 @@ class _DailyProductionPageState
   // final List<String> oilTypeFg = ['RBDPO', 'RRBDPO', 'RRPS'];
   // final List<String> oilTypeBp = ['PFAD'];
   final List<String> dummyShiftOptions = ['1', '2', '3', "4", "5"];
+  String? selectedShift;
 
   final TextEditingController flowmeter1AwalController =
       TextEditingController();
@@ -111,7 +112,7 @@ class _DailyProductionPageState
       TextEditingController();
   final TextEditingController flowmeter3TotalController =
       TextEditingController();
-
+  final oilTypeRmOipController = TextEditingController();
   final oilTypeRmTotalController = TextEditingController();
   final oilTypefgController = TextEditingController();
   final oilTypefgTotalController = TextEditingController();
@@ -136,6 +137,8 @@ class _DailyProductionPageState
   final TextEditingController bleachingBagController = TextEditingController();
   final TextEditingController bleachingTypeController = TextEditingController();
   final TextEditingController bleachingBatchController =
+      TextEditingController();
+  final TextEditingController bleachingYieldPercentController =
       TextEditingController();
 
   // Phosphoric Acid
@@ -204,18 +207,43 @@ class _DailyProductionPageState
     TimeOfDay? selectedTime,
     Function(TimeOfDay) onTimeSelected,
   ) {
-    showModalBottomSheet(
+    // showModalBottomSheet(
+    //   context: context,
+    //   backgroundColor: Colors.white,
+    //   shape: const RoundedRectangleBorder(
+    //     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    //   ),
+    //   builder:
+    //       (context) => CustomHourMinutePicker(
+    //         selectedTime: selectedTime,
+    //         onTimeSelected: (time) {
+    //           onTimeSelected(time);
+    //         },
+    //       ),
+    // );
+
+    showDialog(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder:
-          (context) => CustomHourMinutePicker(
-            selectedTime: selectedTime,
-            onTimeSelected: (time) {
-              onTimeSelected(time);
-            },
+          (context) => Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // Takes only necessary height
+              children: [
+                // Optional: You might want to wrap this in a specific height or width
+                // container if the picker doesn't have a defined size.
+                CustomHourMinutePicker(
+                  selectedTime: selectedTime,
+                  onTimeSelected: (time) {
+                    onTimeSelected(time);
+                  },
+                ),
+              ],
+            ),
           ),
     );
   }
@@ -642,6 +670,43 @@ class _DailyProductionPageState
             ),
             const SizedBox(height: 16),
 
+            DropdownButtonFormField<String>(
+              value: selectedShift,
+              items:
+                  dummyShiftOptions.map((item) {
+                    return DropdownMenuItem<String>(
+                      value: item,
+                      child: Text(
+                        "${item}",
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    );
+                  }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedShift = value;
+                });
+              },
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFFF0ECE9),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                labelText: 'Pilih Shift',
+                floatingLabelBehavior: FloatingLabelBehavior.auto,
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: SvgPicture.asset(
+                    'assets/icons/oil-refinery-tanks.svg',
+                    height: 24,
+                    width: 24,
+                  ),
+                ),
+              ),
+            ),
+
             if (selectedOilRm == null) ...[
               const Center(
                 child: Text(
@@ -675,6 +740,7 @@ class _DailyProductionPageState
                 onTankChanged: (value) => setState(() => selected1Tank = value),
                 flowRateAwalController: flowmeter1AwalController,
                 flowRateAkhirController: flowmeter1AkhirController,
+                oipController: oilTypeRmOipController,
                 flowRateTotalController: flowmeter1TotalController,
               ),
               const SizedBox(height: 16),
@@ -766,6 +832,8 @@ class _DailyProductionPageState
                   bleachingBagController: bleachingBagController,
                   bleachingTypeController: bleachingTypeController,
                   bleachingBatchController: bleachingBatchController,
+                  bleachingBatchYieldPercentController:
+                      bleachingYieldPercentController,
                   ref500Bleaching: ref500Bleaching,
                   ref150Bleaching: ref150Bleaching,
                   phosphoricWeightController: phosphoricWeightController,
@@ -873,21 +941,25 @@ class _DailyProductionPageState
                           controller: totalOilController,
                           label: 'Total $selectedOilRm',
                           icon: Icons.functions,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: totalSteamController,
                           label: 'Total Steam',
                           icon: Icons.functions,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: steamOilTypeController,
                           label: 'Steam: $selectedOilRm',
                           icon: Icons.functions,
+                          isNumeric: true,
                         ),
                         CustomTextField(
                           controller: yieldPercentController,
                           label: 'Yield %',
                           icon: Icons.functions,
+                          isNumeric: true,
                         ),
                       ],
                     ),
@@ -910,7 +982,7 @@ class _DailyProductionPageState
                       context,
                       onConfirm: () async => await submitReport(context),
                     ),
-                label: 'Submit Laporan',
+                label: 'Submit Draft Laporan',
               ),
             ],
           ],
@@ -1033,14 +1105,32 @@ class _DailyProductionPageState
     double? flow1Awal, flow1Akhir, flow2Awal, flow2Akhir, flow3Awal, flow3Akhir;
 
     if (selectedRefineryMachine == "REF-01") {
-      flow1Awal = parseInt(flowmeter1AwalController.text)! / 1000;
-      flow1Akhir = parseInt(flowmeter1AkhirController.text)! / 1000;
+      flow1Awal =
+          parseInt(flowmeter1AwalController.text) != null
+              ? parseInt(flowmeter1AwalController.text)! / 1000
+              : null;
+      flow1Akhir =
+          parseInt(flowmeter1AkhirController.text) != null
+              ? parseInt(flowmeter1AkhirController.text)! / 1000
+              : null;
 
-      flow2Awal = parseInt(flowmeter2AwalController.text)! / 1000;
-      flow2Akhir = parseInt(flowmeter2AkhirController.text)! / 1000;
+      flow2Awal =
+          parseInt(flowmeter2AwalController.text) != null
+              ? parseInt(flowmeter2AwalController.text)! / 1000
+              : null;
+      flow2Akhir =
+          parseInt(flowmeter2AkhirController.text) != null
+              ? parseInt(flowmeter2AkhirController.text)! / 1000
+              : null;
 
-      flow3Awal = parseInt(flowmeter3AwalController.text)! / 1000;
-      flow3Akhir = parseInt(flowmeter3AkhirController.text)! / 1000;
+      flow3Awal =
+          parseInt(flowmeter3AwalController.text) != null
+              ? parseInt(flowmeter3AwalController.text)! / 1000
+              : null;
+      flow3Akhir =
+          parseInt(flowmeter3AkhirController.text) != null
+              ? parseInt(flowmeter3AkhirController.text)! / 1000
+              : null;
     } else {
       flow1Awal = parseDouble(flowmeter1AwalController);
       flow1Akhir = parseDouble(flowmeter1AkhirController);
@@ -1061,15 +1151,14 @@ class _DailyProductionPageState
         transactionDate: getTransactionDate(),
         postingDate: postingDate,
         workCenter: selectedRefineryMachine,
-        shift:
-            selectedShiftBleaching ??
-            getShiftBasedOnTimeAndDate(postingDate).toString(),
+        shift: selectedShift ?? '',
         cpoTank: selected1Tank,
         oilTypeRmId: selectedOilRm,
         oilTypeRmAwalJam: selectedTime1Awal,
         oilTypeRmAwalFlowmeter: flow1Awal,
         oilTypeRmAkhirJam: selectedTime1Akhir,
         oilTypeRmAkhirFlowmeter: flow1Akhir,
+        oilTypeRmOip: parseDouble(oilTypeRmOipController),
         oilTypeRmTotal: (flow1Akhir ?? 0.0) - (flow1Awal ?? 0.0),
         oilTypeFgId: selectedOilFg,
         oilTypeFgAwalJam: selectedTime2Awal,
@@ -1090,7 +1179,7 @@ class _DailyProductionPageState
         beTotalBag: bleachingBagController.text,
         beTotalJenis: bleachingTypeController.text,
         beLotBatchNumber: parseInt(bleachingBatchController.text),
-        beYieldPercent: parseDouble(yieldPercentController),
+        beYieldPercent: parseDouble(bleachingYieldPercentController),
         paRefTank: selectedRefineryMachine,
         paRefQty: paValue,
         paTotal: phosphoricTotalController.text,
@@ -1100,10 +1189,15 @@ class _DailyProductionPageState
         flag: 'T',
         uuItem: steamItem,
         uuBudgetRefTank: selectedRefineryMachine,
-        uuBudgetQty: budgetValue,
-        uuTotalCpo: parseInt(totalOilController.text),
-        uuTotalSteam: parseInt(totalSteamController.text),
-        uuSteamCpo: steamOilTypeController.text,
+        // uuBudgetQty: budgetValue,
+        // uuTotalCpo: parseInt(totalOilController.text),
+        // uuTotalSteam: parseInt(totalSteamController.text),
+        // uuSteamCpo: steamOilTypeController.text,
+        // uuYieldPercent: parseDouble(yieldPercentController),
+        uuBudgetQty: budgetValue != null ? double.tryParse(budgetValue!) : null,
+        uuTotalCpo: parseDouble(totalOilController),
+        uuTotalSteam: parseDouble(totalSteamController),
+        uuSteamCpo: parseDouble(steamOilTypeController),
         uuYieldPercent: parseDouble(yieldPercentController),
         entryBy: currentUser?.username,
         entryDate: DateTime.now(),
@@ -1121,6 +1215,7 @@ class _DailyProductionPageState
         dateIssued: dataForm.dateIssued,
         revisionNo: dataForm.revisionNo,
         revisionDate: dataForm.revisionDate,
+        isCompleted: false,
       );
       bool? success;
 

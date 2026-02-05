@@ -1,50 +1,61 @@
-import 'dart:developer';
-
-import 'package:flutter/widgets.dart';
-import 'package:logsheet_app/features/production/data/model/dry_fractionation/dry_fractionation_entity.dart';
-import 'package:logsheet_app/features/production/data/repository/dry_fractionation/dry_fractionation_repository.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
+import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
+import 'package:logsheet_app/features/production/data/datasources/dry_fractionation/dry_fractionation_api_service.dart';
+import 'package:logsheet_app/features/production/data/model/dry_fractionation/local/dry_fractionation_header_entity.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_api_service.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_header_entity.dart';
 
 class DryFractionationProvider with ChangeNotifier {
-  final className = "Dry Fractionation";
-  final DryFractionationRepository _repository;
+  final DryFractionationApiService _apiService;
+  final StorageService _storageService;
 
-  DryFractionationProvider(this._repository);
+  DryFractionationProvider(this._apiService, this._storageService);
 
+  // Loading state for fetching
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  // Loading state for input
+  bool _isLoadingInput = false;
+  bool get isLoadingInput => _isLoadingInput;
+
+  // Loading state for edit
+  bool _isLoadingEdit = false;
+  bool get isLoadingEdit => _isLoadingEdit;
+
+  // Loading state for delete
   bool _isLoadingDelete = false;
   bool get isLoadingDelete => _isLoadingDelete;
 
-  bool _isLoadingUpdate = false;
-  bool get isLoadingUpdate => _isLoadingUpdate;
-
+  // Loading state for approval
   bool _isLoadingApproval = false;
   bool get isLoadingApproval => _isLoadingApproval;
 
-  bool _isLoadingFetchTickets = false;
-  bool get isLoadingFetchTickets => _isLoadingFetchTickets;
-
-  bool _isLoadingFilterTicket = false;
-  bool get isLoadingFilterTicket => _isLoadingFilterTicket;
-
+  // Error Message
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
-
-  List<DryFractionationEntity> _reportsList = [];
-  List<DryFractionationEntity> get reportsList => _reportsList;
-
-  List<DryFractionationEntity> _filteredTickets = [];
-  List<DryFractionationEntity> get filteredTickets => _filteredTickets;
-
-  List<DryFractionationEntity> _reportsForManager = [];
-  List<DryFractionationEntity> get reportsForManager => _reportsForManager;
 
   String? _latestId;
   String? get latestId => _latestId;
 
+  List<DryFractionationHeaderEntity> _reportList = [];
+  List<DryFractionationHeaderEntity> get reportList => _reportList;
+
   void _setLoading(bool value) {
     _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setLoadingInput(bool value) {
+    _isLoadingInput = value;
+    notifyListeners();
+  }
+
+  void _setLoadingEdit(bool value) {
+    _isLoadingEdit = value;
     notifyListeners();
   }
 
@@ -53,243 +64,543 @@ class DryFractionationProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void _setLoadingUpdate(bool value) {
-    _isLoadingUpdate = value;
-    notifyListeners();
-  }
-
   void _setLoadingApproval(bool value) {
     _isLoadingApproval = value;
     notifyListeners();
   }
 
-  void _setLoadingFetchTickets(bool value) {
-    _isLoadingFetchTickets = value;
+  // Set Error Message
+  void _setErrorMessage(String? value) {
+    // _setErrorMessage(value);
+    _errorMessage = value;
     notifyListeners();
   }
 
-  void _setLoadingFilterTicket(bool value) {
-    _isLoadingFilterTicket = value;
-    notifyListeners();
-  }
-
-  void setLatestId(String value) {
-    _latestId = value;
-    notifyListeners();
-  }
-
-  void _setErrorMessage(String? message) {
-    _errorMessage = message;
-    notifyListeners();
-  }
-
-  Future<String?> fetchLatestId(String plantCode) async {
-    _setLoading(true);
-    _setErrorMessage(null);
+  Future<bool> insertReport({
+    required DryFractionationHeaderEntity headerInput,
+    required String menuId,
+  }) async {
+    _setLoadingInput(true);
 
     try {
-      _latestId = await _repository.getLatestTicketId(plantCode);
-      log("latest ID = $_latestId");
-      return _latestId;
-    } catch (e) {
-      _setErrorMessage('Failed to get latest id: $e');
-    } finally {
-      _setLoading(false);
-    }
-  }
+      final body = {
+        "date": formatDatetoString(headerInput.date, 'yyyy-MM-dd HH:mm:ss'),
+        "posting_date": formatDatetoString(
+          headerInput.postingDate,
+          'yyyy-MM-dd HH:mm:ss',
+        ),
+        "company": headerInput.company,
+        "plant": headerInput.plant,
+        "crystallizer": headerInput.crystallizer,
+        "feed_oil_iv": headerInput.feedOilIv,
+        "initial_oil_level": headerInput.initialOilLevel,
+        "filling_start_time": formatTimeOfDay(
+          headerInput.fillingStartTime,
+          showSecond: false,
+        ),
+        "filling_end_time": formatTimeOfDay(
+          headerInput.fillingEndTime,
+          showSecond: false,
+        ),
+        "cooling_start_temp": headerInput.coolingStartTemp,
+        "cooling_start_time": formatTimeOfDay(
+          headerInput.coolingStartTime,
+          showSecond: false,
+        ),
+        "agitator_speed": headerInput.agitatorSpeed,
+        "water_pump_pres": headerInput.waterPumpPres,
+        "remarks": headerInput.remarks,
+        "is_completed":
+            headerInput.isCompleted == null
+                ? null
+                : (headerInput.isCompleted! ? 1 : 0),
+        "details":
+            headerInput.details
+                .map(
+                  (detail) => {
+                    "filtration_cycle_number": detail.filtrationCycleNumber,
+                    "filtration_date": formatDatetoString(
+                      detail.filtrationDate,
+                      'yyyy-MM-dd',
+                    ),
+                    "filtration_temp": detail.filtrationTemp,
+                    "time_start_filtration": formatTimeOfDay(
+                      detail.timeStartFiltration,
+                      showSecond: false,
+                    ),
+                    "time_end_filtration": formatTimeOfDay(
+                      detail.timeEndFiltration,
+                      showSecond: false,
+                    ),
+                    "load": detail.load,
+                    "olein_iv": detail.oleinIv,
+                    "olein_cp": detail.oleinCp,
+                    "olein_ffa": detail.oleinFfa,
+                    "olein_color_red": detail.oleinColorRed,
+                    "stearin_iv": detail.stearinIv,
+                    "stearin_ffa": detail.stearinFfa,
+                    "stearin_color_red": detail.stearinColorRed,
+                    "stearin_pv": detail.stearinPv,
+                  },
+                )
+                .toList(),
+      };
 
-  Future<bool> updateAutoNumber(String plantCode, int newAutoNumber) async {
-    _setLoading(true);
-    _setErrorMessage(null);
-    try {
-      _setLoading(false);
-      log('Update auto number...');
-      final result = await _repository.updateAutoNumber(
-        plantCode,
-        newAutoNumber,
-      );
-      log(result.toString());
-      return result;
-    } catch (e) {
-      _setErrorMessage('Failed to update autonumber: $e');
-      _setLoading(false);
-      return false;
-    }
-  }
+      String token = await _storageService.readSessionToken() ?? '';
 
-  Future<bool> insertTicket(DryFractionationEntity entity) async {
-    _setLoading(false);
-    _setErrorMessage(null);
+      final response = await _apiService.insertReport(body, 'Bearer $token');
 
-    try {
-      _setLoading(true);
-      _setErrorMessage(null);
-      final result = await _repository.insert(entity);
-      notifyListeners();
-      if (result) {
-        return result;
+      if (response.success == true) {
+        notifyListeners();
+        return true;
       } else {
-        _setErrorMessage('Failed to insert report.');
+        // Jika server return 200 tapi success: false (jarang terjadi di REST standard, tapi jaga-jaga)
+        _setErrorMessage(response.message ?? 'Insert report failed.');
+        notifyListeners();
         return false;
       }
+    } on DioException catch (e) {
+      // --- MENANGKAP ERROR DARI API (400, 422, 500) ---
+
+      String msg = 'Terjadi kesalahan jaringan.';
+
+      if (e.response != null) {
+        // Ambil data JSON error dari server
+        final errorData = e.response?.data;
+
+        // Cek apakah response berupa Map/JSON
+        if (errorData is Map<String, dynamic>) {
+          // Prioritas 1: Ambil key 'message' (Ini yang dikirim oleh Controller Laravel Anda)
+          if (errorData.containsKey('message')) {
+            msg = errorData['message'];
+          }
+          // Prioritas 2: Ambil key 'error' (Format error default lain)
+          else if (errorData.containsKey('error')) {
+            msg = errorData['error'];
+          }
+
+          // Opsi Tambahan: Jika ada validasi field spesifik (Laravel biasanya kirim key 'errors')
+          // if (errorData.containsKey('errors')) {
+          //   msg += "\nDetail: ${errorData['errors']}";
+          // }
+        } else {
+          // Jika error body berupa string mentah
+          msg = errorData.toString();
+        }
+      } else {
+        // Error tanpa response (Timeout, No Internet)
+        msg = e.message ?? 'Koneksi gagal.';
+      }
+
+      _setErrorMessage(msg);
+      notifyListeners();
+      return false;
     } catch (e) {
-      _setErrorMessage('Failed to insert report: $e');
+      _setErrorMessage(e.toString());
+      notifyListeners();
       return false;
     } finally {
-      _setLoading(false);
+      _setLoadingInput(false);
+      notifyListeners();
     }
   }
 
-  Future<void> fetchAllTickets(
-    DateTime? dateFilter,
-    String? time,
-    String username,
-    String role,
-    String plantCode, {
-    bool filter = true,
+  Future<void> fetchReport(
+    String plantId,
+    String? date,
+    String? startDate,
+    String? endDate, {
+    String? role,
   }) async {
-    _setLoadingFetchTickets(true);
+    _setLoading(true);
     _setErrorMessage(null);
 
     try {
-      log('Fetching reports...');
-      _reportsList = await _repository.getAllTickets(
-        dateFilter,
-        time,
-        username,
-        role,
-        plantCode,
-      );
-      notifyListeners();
+      String token = await _storageService.readSessionToken() ?? '';
 
-      if (filter) {
-        _reportsList =
-            _reportsList.where((report) => report.preparedBy == null).toList();
+      // DEBUG LOG 1
+      print('DEBUG: Start fetching...');
+
+      final response = await _apiService.fetchReports(
+        'Bearer $token',
+        plantId ?? '',
+        date,
+        startDate,
+        endDate,
+      );
+
+      // DEBUG LOG 2
+      print('DEBUG: Response received. Success: ${response?.success}');
+
+      if (response != null && response.success == true) {
+        final data = response.data;
+
+        // DEBUG LOG 3
+        print('DEBUG: Data raw length: ${data?.length}');
+
+        // PERBAIKAN: Gunakan List.from untuk keamanan tipe data
+        _reportList = data ?? [];
+
+        if (AppRoles.leadProd.contains(role) ||
+            AppRoles.productionQualityManagerApproval.contains(role)) {
+          _reportList =
+              _reportList.where((report) => report.preparedBy == null).toList();
+          notifyListeners();
+        }
+
+        // DEBUG LOG 4
+        print('DEBUG: _reportList updated. Length: ${_reportList.length}');
+
         notifyListeners();
+      } else {
+        print('DEBUG: Fetch failed logic triggered');
+        _setErrorMessage('Fetch report failed.');
       }
-      log('Report List length: ${_reportsList.length}');
-    } catch (e) {
-      _setErrorMessage('Failed to fetch Quality Reports: $e');
+      // Hapus notifyListeners() kedua disini karena sudah ada di dalam if dan finally
+      // notifyListeners();
+    } catch (e, stacktrace) {
+      // Tambahkan stacktrace
+      // DEBUG LOG ERROR
+      print('DEBUG ERROR: $e');
+      print('DEBUG STACKTRACE: $stacktrace');
+
+      _setErrorMessage("$e");
+      notifyListeners();
     } finally {
-      _setLoadingFetchTickets(false);
+      _setLoading(false);
+      // notifyListeners(); // Ini sebenarnya redundant karena _setLoading sudah memanggil notifyListeners
     }
   }
 
-  // Delete Ticket Provider
-  Future<bool> deleteTicketById(String id, String username) async {
+  Future<void> fetchReportForManager(
+    String plantId,
+    String? date,
+    String? startDate,
+    String? endDate, {
+    String? role,
+  }) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      String token = await _storageService.readSessionToken() ?? '';
+
+      // DEBUG LOG 1
+      print('DEBUG: Start fetching...');
+
+      final response = await _apiService.fetchReports(
+        'Bearer $token',
+        plantId ?? '',
+        date,
+        startDate,
+        endDate,
+      );
+
+      // DEBUG LOG 2
+      print('DEBUG: Response received. Success: ${response?.success}');
+
+      if (response != null && response.success == true) {
+        final data = response.data;
+
+        // DEBUG LOG 3
+        print('DEBUG: Data raw length: ${data?.length}');
+
+        // PERBAIKAN: Gunakan List.from untuk keamanan tipe data
+        _reportList = data ?? [];
+
+        if (AppRoles.productionQualityManagerApproval.contains(role)) {
+          // DEBUG LOG: Cek data sebelum di-filter
+          print(
+            "DEBUG FILTER: Total data sebelum filter: ${_reportList.length}",
+          );
+          if (_reportList.isNotEmpty) {
+            print(
+              "DEBUG FILTER: Sample Status 1: '${_reportList.first.preparedStatus}'",
+            );
+          }
+
+          _reportList =
+              _reportList.where((report) {
+                // Ambil status, trim spasi, dan ubah ke huruf kecil untuk perbandingan aman
+                final status = report.preparedStatus?.trim().toLowerCase();
+                return status == "approved";
+              }).toList();
+
+          // DEBUG LOG: Cek hasil setelah filter
+          print(
+            "DEBUG FILTER: Total data SETELAH filter: ${_reportList.length}",
+          );
+
+          notifyListeners();
+        }
+
+        // DEBUG LOG 4
+        print('DEBUG: _reportList updated. Length: ${_reportList.length}');
+
+        notifyListeners();
+      } else {
+        print('DEBUG: Fetch failed logic triggered');
+        _setErrorMessage('Fetch report failed.');
+      }
+      // Hapus notifyListeners() kedua disini karena sudah ada di dalam if dan finally
+      // notifyListeners();
+    } catch (e, stacktrace) {
+      // Tambahkan stacktrace
+      // DEBUG LOG ERROR
+      print('DEBUG ERROR: $e');
+      print('DEBUG STACKTRACE: $stacktrace');
+
+      _setErrorMessage("$e");
+      notifyListeners();
+    } finally {
+      _setLoading(false);
+      // notifyListeners(); // Ini sebenarnya redundant karena _setLoading sudah memanggil notifyListeners
+    }
+  }
+
+  Future<bool> deleteReport({required String id}) async {
     _setLoadingDelete(true);
     _setErrorMessage(null);
 
     try {
-      final response = await _repository.deleteTicket(id, username);
-      log("$className Provider deleteTicketById response: $response");
-      _reportsList.removeWhere((e) => e.id == id);
+      String token = await _storageService.readSessionToken() ?? '';
+      final response = await _apiService.deleteReport('Bearer $token', id);
 
-      return response;
+      if (response != null && response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage('Delete Report Failed');
+        notifyListeners();
+        return false;
+      }
     } catch (e) {
-      _setErrorMessage('($className Provider) Failed to delete report: $e');
-      log("($className Provider) Pretreatment Provider: $e");
-
+      _setErrorMessage("$e");
+      notifyListeners();
       return false;
     } finally {
       _setLoadingDelete(false);
-    }
-  }
-
-  // Update Ticket Provider
-  Future<bool> updateTicket(
-    DryFractionationEntity entity,
-    String username,
-    String role,
-    String plantCode,
-  ) async {
-    _setLoadingUpdate(true);
-    _setErrorMessage(null);
-
-    try {
-      final result = await _repository.update(entity);
-
-      await fetchAllTickets(null, null, username, role, plantCode);
-
-      return result;
-    } catch (e) {
-      log("$e");
-      _setErrorMessage("$e");
-      return false;
-    } finally {
-      _setLoadingUpdate(false);
-    }
-  }
-
-  // Send Approve Reject Ticket Provider
-  Future<bool> sendApproveRejectReport(
-    String username,
-    String status,
-    String userRole,
-    String? remark,
-    String id,
-    String plantCode,
-  ) async {
-    _setLoadingApproval(true);
-    _setErrorMessage(null);
-
-    try {
-      log("($className Provider) Sending Approval or Rejection");
-      final result = await _repository.sendApproveRejectTicket(
-        username,
-        status,
-        userRole,
-        remark,
-        id,
-      );
-      log("($className Provider) status from provider: $result");
-      await fetchAllTickets(null, null, username, userRole, plantCode);
-      return result;
-    } catch (e) {
-      _setErrorMessage('$e');
-      return false;
-    } finally {
-      _setLoadingApproval(false);
-    }
-  }
-
-  // Fetch Filtered Tickets
-  Future<void> fetchFilteredTickets(
-    DateTime? dateFilter,
-    String plantCode,
-    String? shift,
-  ) async {
-    _setLoadingFilterTicket(true);
-    _setErrorMessage(null);
-
-    try {
-      //
-      _filteredTickets = await _repository.getFilteredTickets(
-        dateFilter,
-        plantCode,
-        shift,
-      );
       notifyListeners();
-    } catch (e) {
-      _setErrorMessage(
-        '($className Provider) Failed fetch filtered Daily Prod Refinery ticket: $e',
-      );
-    } finally {
-      _setLoadingFilterTicket(false);
     }
   }
 
-  Future<void> fetchReportsForManager(String plantCode) async {
-    _setLoadingFetchTickets(true);
+  Future<bool> updateReport({
+    required DryFractionationHeaderEntity headerInput,
+    required String menuId,
+  }) async {
+    _setLoadingInput(true);
+
+    try {
+      final body = {
+        "date": formatDatetoString(headerInput.date, 'yyyy-MM-dd HH:mm:ss'),
+        "posting_date": formatDatetoString(
+          headerInput.postingDate,
+          'yyyy-MM-dd HH:mm:ss',
+        ),
+        "company": headerInput.company,
+        "plant": headerInput.plant,
+        "crystallizer": headerInput.crystallizer,
+        "feed_oil_iv": headerInput.feedOilIv,
+        "initial_oil_level": headerInput.initialOilLevel,
+        "filling_start_time": formatTimeOfDay(
+          headerInput.fillingStartTime,
+          showSecond: false,
+        ),
+        "filling_end_time": formatTimeOfDay(
+          headerInput.fillingEndTime,
+          showSecond: false,
+        ),
+        "cooling_start_temp": headerInput.coolingStartTemp,
+        "cooling_start_time": formatTimeOfDay(
+          headerInput.coolingStartTime,
+          showSecond: false,
+        ),
+        "agitator_speed": headerInput.agitatorSpeed,
+        "water_pump_pres": headerInput.waterPumpPres,
+        "remarks": headerInput.remarks,
+        "is_completed":
+            headerInput.isCompleted == null
+                ? null
+                : (headerInput.isCompleted! ? 1 : 0),
+        "details":
+            headerInput.details
+                .map(
+                  (detail) => {
+                    "id": detail.id,
+                    "filtration_cycle_number": detail.filtrationCycleNumber,
+                    // "filtration_date": formatDatetoString(
+                    //   detail.filtrationDate ?? DateTime.now(),
+                    //   'yyyy-MM-dd',
+                    // ),
+                    "filtration_temp": detail.filtrationTemp,
+                    "time_start_filtration": formatTimeOfDay(
+                      detail.timeStartFiltration,
+                      showSecond: false,
+                    ),
+                    "time_end_filtration": formatTimeOfDay(
+                      detail.timeEndFiltration,
+                      showSecond: false,
+                    ),
+                    "load": detail.load,
+                    "olein_iv": detail.oleinIv,
+                    "olein_cp": detail.oleinCp,
+                    "olein_ffa": detail.oleinFfa,
+                    "olein_color_red": detail.oleinColorRed,
+                    "stearin_iv": detail.stearinIv,
+                    "stearin_ffa": detail.stearinFfa,
+                    "stearin_color_red": detail.stearinColorRed,
+                    "stearin_pv": detail.stearinPv,
+                  },
+                )
+                .toList(),
+      };
+
+      String token = await _storageService.readSessionToken() ?? '';
+
+      final response = await _apiService.updateReport(
+        'Bearer $token',
+        body,
+        headerInput.id,
+      );
+
+      if (response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        // Jika server return 200 tapi success: false (jarang terjadi di REST standard, tapi jaga-jaga)
+        _setErrorMessage(response.message ?? 'Insert report failed.');
+        notifyListeners();
+        return false;
+      }
+    } on DioException catch (e) {
+      // --- MENANGKAP ERROR DARI API (400, 422, 500) ---
+
+      String msg = 'Terjadi kesalahan jaringan.';
+
+      if (e.response != null) {
+        // Ambil data JSON error dari server
+        final errorData = e.response?.data;
+
+        // Cek apakah response berupa Map/JSON
+        if (errorData is Map<String, dynamic>) {
+          // Prioritas 1: Ambil key 'message' (Ini yang dikirim oleh Controller Laravel Anda)
+          if (errorData.containsKey('message')) {
+            msg = errorData['message'];
+          }
+          // Prioritas 2: Ambil key 'error' (Format error default lain)
+          else if (errorData.containsKey('error')) {
+            msg = errorData['error'];
+          }
+
+          // Opsi Tambahan: Jika ada validasi field spesifik (Laravel biasanya kirim key 'errors')
+          // if (errorData.containsKey('errors')) {
+          //   msg += "\nDetail: ${errorData['errors']}";
+          // }
+        } else {
+          // Jika error body berupa string mentah
+          msg = errorData.toString();
+        }
+      } else {
+        // Error tanpa response (Timeout, No Internet)
+        msg = e.message ?? 'Koneksi gagal.';
+      }
+
+      _setErrorMessage(msg);
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _setErrorMessage(e.toString());
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoadingInput(false);
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateApproveRejectReport({
+    required String status,
+    String? remarks,
+    required String plant,
+    required DateTime date,
+    required String crystallizer,
+  }) async {
+    _setLoadingEdit(true);
     _setErrorMessage(null);
     try {
-      _reportsForManager = await _repository.getReportsForManager(plantCode);
-    } catch (e) {
-      _setErrorMessage(
-        '(PBE Provider) Failed to fetch reports for manager: $e',
+      final body = {
+        "approve_status": status,
+        "remark": remarks,
+        "plant": plant,
+        "date": formatDatetoString(date, 'yyyy-MM-dd'),
+        "crystallizer": crystallizer,
+      };
+
+      String token = await _storageService.readSessionToken() ?? '';
+      final response = await _apiService.updateApproveRejectReport(
+        'Bearer $token',
+        body,
       );
+
+      if (response != null && response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage('Update Approve/Reject Report Failed');
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage(e.toString());
+      notifyListeners();
+      return false;
     } finally {
-      _setLoadingFetchTickets(false);
+      _setLoadingEdit(false);
+      notifyListeners();
     }
+  }
+
+  Future<bool> updateApproveRejectPerDateReport({
+    required String status,
+    String? remarks,
+    required String plant,
+    required DateTime date,
+  }) async {
+    _setLoadingEdit(true);
+    _setErrorMessage(null);
+    try {
+      final body = {
+        "approve_status": status,
+        "remark": remarks,
+        "plant": plant,
+        "date": formatDatetoString(date, 'yyyy-MM-dd'),
+      };
+
+      String token = await _storageService.readSessionToken() ?? '';
+      final response = await _apiService.updateApproveRejectReportPerDate(
+        'Bearer $token',
+        body,
+      );
+
+      if (response != null && response.success == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage('Update Approve/Reject Report Failed');
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage(e.toString());
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoadingEdit(false);
+      notifyListeners();
+    }
+  }
+
+  void clearReports() {
+    _reportList.clear();
   }
 }

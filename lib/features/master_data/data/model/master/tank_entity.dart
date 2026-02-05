@@ -3,12 +3,14 @@ class TankEntity {
   final String name;
   final String capacity;
   final String isActive;
+  final String? category;
 
   TankEntity({
     required this.code,
     required this.name,
     required this.capacity,
     required this.isActive,
+    required this.category,
   });
 
   factory TankEntity.fromMap(Map<String, dynamic> map) {
@@ -17,6 +19,7 @@ class TankEntity {
       name: map['name'],
       capacity: map['capacity'],
       isActive: map['isactive'],
+      category: map['category'],
     );
   }
 
@@ -26,6 +29,7 @@ class TankEntity {
       'name': name,
       'capacity': capacity,
       'isactive': isActive,
+      'category': category,
     };
   }
 }

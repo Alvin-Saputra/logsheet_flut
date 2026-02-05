@@ -243,6 +243,7 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
     DateTime? dateFilter,
     String plantCode,
     String? shift,
+    [String? workCenter]
   ) async {
     _setLoadingFilterTicket(true);
     _setErrorMessage(null);
@@ -252,6 +253,7 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
         dateFilter,
         plantCode,
         shift,
+        workCenter,
       );
       _setLoadingFilterTicket(false);
       notifyListeners();

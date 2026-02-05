@@ -4,6 +4,7 @@ import 'package:expandable_page_view/expandable_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_header_entity.dart';
 import 'package:logsheet_app/core/widgets/custom_remark_field.dart';
@@ -100,204 +101,217 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                     ]),
 
                     _buildSection('Analytical Information', [
-                      _buildDataRow('Material', _data.material ?? ''),
-                      _buildDataRow('Arrival', _data.arrival.toString() ?? ''),
+                      _buildDataRow('Material', _data.material ?? '-'),
+                      _buildDataRow('Arrival', formatDatetoString(_data.arrival, "yyyy-MM-dd") ?? '-'),
                       _buildDataRow(
                         'Quantity',
-                        _data.quantity.toString() ?? '',
+                        _data.quantity?.toString() ?? '-',
                       ),
-                      _buildDataRow('Supplier', _data.supplier ?? ''),
-                      _buildDataRow("Ship's Name", _data.shipName ?? ''),
+                      _buildDataRow('Supplier', _data.supplier ?? '-'),
+                      _buildDataRow("Ship's Name", _data.shipName ?? '-'),
                       _buildDataRow(
                         'Contract/DO No',
-                        _data.contractDoNomor ?? '',
+                        _data.contractDoNomor ?? '-',
                       ),
-                      _buildDataRow('FFA', _data.ffa.toString() ?? ''),
-                      _buildDataRow('M&I', _data.mni.toString() ?? ''),
-                      _buildDataRow('Dobi', _data.dobi.toString() ?? ''),
-                      _buildDataRow('Others', _data.others ?? ''),
+                      _buildDataRow('FFA', _data.ffa?.toString() ?? '-'),
+                      _buildDataRow('M&I', _data.mni?.toString() ?? '-'),
+                      _buildDataRow('Dobi', _data.dobi?.toString() ?? '-'),
+                      _buildDataRow('Others', _data.others?.toString() ?? '-'),
                     ]),
 
                     SizedBox(height: 12.0),
-                    _buildSection('Details', [
-                      Center(
-                        child: SmoothPageIndicator(
-                          controller:
-                              detailPageControllers, // Gunakan satu controller untuk semua
-                          count: _data.details.length,
-                          effect: const WormEffect(
-                            dotHeight: 8,
-                            dotWidth: 8,
-                            activeDotColor:
-                                Colors.blue, // Sesuaikan warna tema Anda
-                            dotColor: Colors.grey,
+                    if (widget.data.details.isNotEmpty) ...[
+                      _buildSection('Details', [
+                        Center(
+                          child: SmoothPageIndicator(
+                            controller:
+                                detailPageControllers, // Gunakan satu controller untuk semua
+                            count: _data.details.length,
+                            effect: const WormEffect(
+                              dotHeight: 8,
+                              dotWidth: 8,
+                              activeDotColor:
+                                  Colors.blue, // Sesuaikan warna tema Anda
+                              dotColor: Colors.grey,
+                            ),
+                            onDotClicked: (index) {
+                              detailPageControllers.animateToPage(
+                                index,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
                           ),
-                          onDotClicked: (index) {
-                            detailPageControllers.animateToPage(
-                              index,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
+                        ),
+
+                        SizedBox(height: 12.0),
+
+                        SizedBox(
+                          child: ExpandablePageView.builder(
+                            controller: detailPageControllers,
+                            itemCount: _data.details.length,
+                            itemBuilder: (context, pageIndex) {
+                              return Column(
+                                children: [
+                                  Text(
+                                    "Detail Data Ke - ${pageIndex + 1}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+
+                                  // --- Section PALKA S ---
+                                  _buildSection("Palka S", [
+                                    _buildDataRow(
+                                      'Palka S No',
+                                      _data.details[pageIndex].palkaSNo
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka S FFA',
+                                      _data.details[pageIndex].palkaSFfa
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka S IV',
+                                      _data.details[pageIndex].palkaSIv
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka S M&I',
+                                      _data.details[pageIndex].palkaSMni
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka S Dobi',
+                                      _data.details[pageIndex].palkaSDobi
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                  ]),
+
+                                  const SizedBox(height: 8),
+                                  const Divider(),
+
+                                  // --- Section PALKA S ---
+                                  _buildSection("Palka C", [
+                                    _buildDataRow(
+                                      'Palka C No',
+                                      _data.details[pageIndex].palkaCNo
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka C FFA',
+                                      _data.details[pageIndex].palkaCFfa
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka C IV',
+                                      _data.details[pageIndex].palkaCIv
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka C M&I',
+                                      _data.details[pageIndex].palkaCMni
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka C Dobi',
+                                      _data.details[pageIndex].palkaCDobi
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                  ]),
+
+                                  const SizedBox(height: 8),
+                                  const Divider(),
+
+                                  // --- FORM PALKA P ---
+                                  _buildSection("Palka P", [
+                                    _buildDataRow(
+                                      'Palka P No',
+                                      _data.details[pageIndex].palkaPNo
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka P FFA',
+                                      _data.details[pageIndex].palkaPFfa
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka P IV',
+                                      _data.details[pageIndex].palkaPIv
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka P M&I',
+                                      _data.details[pageIndex].palkaPMni
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka P Dobi',
+                                      _data.details[pageIndex].palkaPDobi
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                  ]),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ]),
+                    ] else ...[
+                      // 2. Fallback if no data exists
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Center(
+                          child: Text(
+                            "Tidak ada detail data",
+                            style: TextStyle(color: Colors.grey),
+                          ),
                         ),
                       ),
-
-                      SizedBox(height: 12.0),
-
-                      SizedBox(
-                        child: ExpandablePageView.builder(
-                          controller: detailPageControllers,
-                          itemCount: _data.details.length,
-                          itemBuilder: (context, pageIndex) {
-                            return Column(
-                              children: [
-                                Text(
-                                  "Detail Data Ke - ${pageIndex + 1}",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-
-                                // --- Section PALKA S ---
-                                _buildSection("Palka S", [
-                                  _buildDataRow(
-                                    'Palka S No',
-                                    _data.details[pageIndex].palkaSNo
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka S FFA',
-                                    _data.details[pageIndex].palkaSFfa
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka S IV',
-                                    _data.details[pageIndex].palkaSIv
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka S M&I',
-                                    _data.details[pageIndex].palkaSMni
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka S Dobi',
-                                    _data.details[pageIndex].palkaSDobi
-                                            .toString() ??
-                                        '',
-                                  ),
-                                ]),
-
-                                const SizedBox(height: 8),
-                                const Divider(),
-
-                                // --- Section PALKA S ---
-                                _buildSection("Palka C", [
-                                  _buildDataRow(
-                                    'Palka C No',
-                                    _data.details[pageIndex].palkaCNo
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka C FFA',
-                                    _data.details[pageIndex].palkaCFfa
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka C IV',
-                                    _data.details[pageIndex].palkaCIv
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka C M&I',
-                                    _data.details[pageIndex].palkaCMni
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka C Dobi',
-                                    _data.details[pageIndex].palkaCDobi
-                                            .toString() ??
-                                        '',
-                                  ),
-                                ]),
-
-                                const SizedBox(height: 8),
-                                const Divider(),
-
-                                // --- FORM PALKA P ---
-                                _buildSection("Palka P", [
-                                  _buildDataRow(
-                                    'Palka P No',
-                                    _data.details[pageIndex].palkaPNo
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka P FFA',
-                                    _data.details[pageIndex].palkaPFfa
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka P IV',
-                                    _data.details[pageIndex].palkaPIv
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka P M&I',
-                                    _data.details[pageIndex].palkaPMni
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka P Dobi',
-                                    _data.details[pageIndex].palkaPDobi
-                                            .toString() ??
-                                        '',
-                                  ),
-                                ]),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ]),
+                    ],
 
                     _buildSection('Palka Component Analysis Result', [
                       _buildDataRow(
                         'FFA (as Palmitic) %',
-                        _data.hasilAnalisaFfa.toString() ?? '',
+                        _data.hasilAnalisaFfa?.toString() ?? '-',
                       ),
                       _buildDataRow(
                         'IV (Wijs), grl2/100gr',
-                        _data.hasilAnalisaIv.toString() ?? '',
+                        _data.hasilAnalisaIv?.toString() ?? '-',
                       ),
                       _buildDataRow(
                         'Moisture %',
-                        _data.hasilAnalisaMoisture.toString() ?? '',
+                        _data.hasilAnalisaMoisture?.toString() ?? '-',
                       ),
                       _buildDataRow(
                         'DOBI',
-                        _data.hasilAnalisaDobi.toString() ?? '',
+                        _data.hasilAnalisaDobi?.toString() ?? '-',
                       ),
                       _buildDataRow(
                         "PV, meqO2/kg",
-                        _data.hasilAnalisaPv.toString() ?? '',
+                        _data.hasilAnalisaPv?.toString() ?? '-',
                       ),
 
                       _buildDataRow(
                         "AnV",
-                        _data.hasilAnalisaAnv.toString() ?? '',
+                        _data.hasilAnalisaAnv?.toString() ?? '-',
                       ),
                     ]),
 
@@ -305,7 +319,7 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                       Row(
                         children: [
                           Expanded(
-                            child: Text(_data?.remarks ?? '', softWrap: true),
+                            child: Text(_data.remarks ?? '-', softWrap: true),
                           ),
                         ],
                       ),

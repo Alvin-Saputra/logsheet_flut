@@ -9,12 +9,11 @@ class DailyProductionFractionationEntity {
   final DateTime? postingDate;
   final String? workCenter;
   final String? shift;
+  final int? no;
 
-  // Oil Type - Raw Material
   final String? oilTypeRmId;
-  final String? oilTypeRm;
-  final int? oilTypeRmNo;
-  final int? oilTypeRmCr;
+  final String? oilTypeRmName;
+  final String? oilTypeRmCr;
   final String? oilTypeRmFromTank;
   final TimeOfDay? oilTypeRmAwalJam;
   final int? oilTypeRmAwalFlowmeter;
@@ -22,11 +21,9 @@ class DailyProductionFractionationEntity {
   final int? oilTypeRmAkhirFlowmeter;
   final int? oilTypeRmTotal;
 
-  // Oil Type - Finish Good
   final String? oilTypeFgsId;
-  final String? oilTypeFgs;
-  final int? oilTypeFgsNo;
-  final int? oilTypeFgsCr;
+  final String? oilTypeFgsName;
+  final String? oilTypeFgsCr;
   final TimeOfDay? oilTypeFgsAwalJam;
   final int? oilTypeFgsAwalFlowmeter;
   final TimeOfDay? oilTypeFgsAkhirJam;
@@ -34,10 +31,8 @@ class DailyProductionFractionationEntity {
   final int? oilTypeFgsTotal;
   final String? oilTypeFgsToTank;
 
-  // Oil Type - By Product
   final String? oilTypeFghId;
-  final String? oilTypeFgh;
-  final int? oilTypeFghNo;
+  final String? oilTypeFghName;
   final TimeOfDay? oilTypeFghAwalJam;
   final double? oilTypeFghAwalFlowmeter;
   final TimeOfDay? oilTypeFghAkhirJam;
@@ -81,6 +76,8 @@ class DailyProductionFractionationEntity {
   final int? revisionNo;
   final DateTime? revisionDate;
 
+  bool? isCompleted;
+
   DailyProductionFractionationEntity({
     required this.id,
     required this.company,
@@ -89,9 +86,9 @@ class DailyProductionFractionationEntity {
     required this.postingDate,
     required this.workCenter,
     required this.shift,
+    required this.no,
     required this.oilTypeRmId,
-    this.oilTypeRm,
-    required this.oilTypeRmNo,
+    this.oilTypeRmName,
     required this.oilTypeRmCr,
     required this.oilTypeRmFromTank,
     required this.oilTypeRmAwalJam,
@@ -99,9 +96,9 @@ class DailyProductionFractionationEntity {
     required this.oilTypeRmAkhirJam,
     required this.oilTypeRmAkhirFlowmeter,
     required this.oilTypeRmTotal,
+
     required this.oilTypeFgsId,
-    this.oilTypeFgs,
-    required this.oilTypeFgsNo,
+    this.oilTypeFgsName,
     required this.oilTypeFgsCr,
     required this.oilTypeFgsAwalJam,
     required this.oilTypeFgsAwalFlowmeter,
@@ -109,9 +106,9 @@ class DailyProductionFractionationEntity {
     required this.oilTypeFgsAkhirFlowmeter,
     required this.oilTypeFgsTotal,
     required this.oilTypeFgsToTank,
+
     required this.oilTypeFghId,
-    this.oilTypeFgh,
-    required this.oilTypeFghNo,
+    this.oilTypeFghName,
     required this.oilTypeFghAwalJam,
     required this.oilTypeFghAwalFlowmeter,
     required this.oilTypeFghAkhirJam,
@@ -146,6 +143,7 @@ class DailyProductionFractionationEntity {
     required this.dateIssued,
     required this.revisionNo,
     required this.revisionDate,
+    required this.isCompleted,
   });
 
   factory DailyProductionFractionationEntity.fromMap(Map<String, dynamic> map) {
@@ -184,6 +182,14 @@ class DailyProductionFractionationEntity {
       return null;
     }
 
+    bool? parseBool(dynamic value) {
+      if (value == null) return null;
+      if (value is bool) return value;
+      if (value is int) return value == 1;
+      if (value is String) return value == '1' || value.toLowerCase() == 'true';
+      return null;
+    }
+
     return DailyProductionFractionationEntity(
       id: map['id'] as String,
       company: map['company'] as String?,
@@ -192,30 +198,28 @@ class DailyProductionFractionationEntity {
       postingDate: parseDateTime(map['posting_date']),
       workCenter: map['work_center'] as String?,
       shift: map['shift'] as String?,
-      oilTypeRmId: map['oil_type_rm_id'] as String?,
-      oilTypeRm: map['oil_type_rm'] as String?,
-      oilTypeRmNo: parseInt(map['oil_type_rm_no']),
-      oilTypeRmCr: parseInt(map['oil_type_rm_cr']),
+      no: parseInt(map['no']),
+      oilTypeRmId: map['oil_type_rm'] as String?,
+      oilTypeRmName: map['oil_type_rm_name'] as String?,
+      oilTypeRmCr: map['oil_type_rm_cr'] as String?,
       oilTypeRmFromTank: map['oil_type_rm_from_tank'] as String?,
       oilTypeRmAwalJam: parseTimeOfDay(map['oil_type_rm_awal_jam']),
       oilTypeRmAwalFlowmeter: parseInt(map['oil_type_rm_awal_flowmeter']),
       oilTypeRmAkhirJam: parseTimeOfDay(map['oil_type_rm_akhir_jam']),
       oilTypeRmAkhirFlowmeter: parseInt(map['oil_type_rm_akhir_flowmeter']),
       oilTypeRmTotal: parseInt(map['oil_type_rm_total']),
-      oilTypeFgsId: map['oil_type_fgs_id'] as String?,
-      oilTypeFgs: map['oil_type_fgs'] as String?,
-      oilTypeFgsNo: parseInt(map['oil_type_fgs_no']),
-      oilTypeFgsCr: parseInt(map['oil_type_fgs_cr']),
+      oilTypeFgsId: map['oil_type_fgs'] as String?,
+      oilTypeFgsName: map['oil_type_fgs_name'] as String?,
+      oilTypeFgsCr: map['oil_type_fgs_cr'] as String?,
       oilTypeFgsAwalJam: parseTimeOfDay(map['oil_type_fgs_awal_jam']),
       oilTypeFgsAwalFlowmeter: parseInt(map['oil_type_fgs_awal_flowmeter']),
       oilTypeFgsAkhirJam: parseTimeOfDay(map['oil_type_fgs_akhir_jam']),
       oilTypeFgsAkhirFlowmeter: parseInt(map['oil_type_fgs_akhir_flowmeter']),
       oilTypeFgsTotal: parseInt(map['oil_type_fgs_total']),
       oilTypeFgsToTank: map['oil_type_fgs_to_tank'] as String?,
-      oilTypeFghId: map['oil_type_fgh_id'] as String?,
-      oilTypeFgh: map['oil_type_fgh'] as String?,
-      oilTypeFghNo: parseInt(map['oil_type_fgh_no']),
-      oilTypeFghAwalJam: parseTimeOfDay(map['oil_type_bp_awal_jam']),
+      oilTypeFghId: map['oil_type_fgh'] as String?,
+      oilTypeFghName: map['oil_type_fgh_name'] as String?,
+      oilTypeFghAwalJam: parseTimeOfDay(map['oil_type_fgh_awal_jam']),
       oilTypeFghAwalFlowmeter: parseDouble(map['oil_type_fgh_awal_flowmeter']),
       oilTypeFghAkhirJam: parseTimeOfDay(map['oil_type_fgh_akhir_jam']),
       oilTypeFghAkhirFlowmeter: parseDouble(
@@ -251,6 +255,7 @@ class DailyProductionFractionationEntity {
       dateIssued: parseDateTime(map['date_issued']),
       revisionNo: parseInt(map['revision_no']),
       revisionDate: parseDateTime(map['revision_date']),
+      isCompleted: parseBool(map['is_completed']),
     );
   }
 
@@ -273,8 +278,8 @@ class DailyProductionFractionationEntity {
       'posting_date': postingDate?.toIso8601String(),
       'work_center': workCenter,
       'shift': shift,
+      'no': no,
       'oil_type_rm': oilTypeRmId,
-      'oil_type_rm_no': oilTypeRmNo,
       'oil_type_rm_cr': oilTypeRmCr,
       'oil_type_rm_from_tank': oilTypeRmFromTank,
       'oil_type_rm_awal_jam': formatTimeOfDay(oilTypeRmAwalJam),
@@ -283,7 +288,6 @@ class DailyProductionFractionationEntity {
       'oil_type_rm_akhir_flowmeter': oilTypeRmAkhirFlowmeter,
       'oil_type_rm_total': oilTypeRmTotal,
       'oil_type_fgs': oilTypeFgsId,
-      'oil_type_fgs_no': oilTypeFgsNo,
       'oil_type_fgs_cr': oilTypeFgsCr,
       'oil_type_fgs_awal_jam': formatTimeOfDay(oilTypeFgsAwalJam),
       'oil_type_fgs_awal_flowmeter': oilTypeFgsAwalFlowmeter,
@@ -292,7 +296,6 @@ class DailyProductionFractionationEntity {
       'oil_type_fgs_total': oilTypeFgsTotal,
       'oil_type_fgs_to_tank': oilTypeFgsToTank,
       'oil_type_fgh': oilTypeFghId,
-      'oil_type_fgh_no': oilTypeFghNo,
       'oil_type_fgh_awal_jam': formatTimeOfDay(oilTypeFghAwalJam),
       'oil_type_fgh_awal_flowmeter': oilTypeFghAwalFlowmeter,
       'oil_type_fgh_akhir_jam': formatTimeOfDay(oilTypeFghAkhirJam),
@@ -327,6 +330,7 @@ class DailyProductionFractionationEntity {
       'date_issued': dateIssued?.toIso8601String(),
       'revision_no': revisionNo,
       'revision_date': revisionDate?.toIso8601String(),
+      'is_completed': isCompleted == null ? null : (isCompleted! ? 1 : 0),
     };
   }
 }

@@ -79,6 +79,29 @@ class QualityReportQcEntity {
   int? revisionNo;
   DateTime? revisionDate;
 
+  String? dailyProductionId;
+
+  final String? beRefTank;
+  final String? beRefQty;
+  final String? beTotalBag;
+  final String? beTotalJenis;
+  final int? beLotBatchNumber;
+  final double? beYieldPercent;
+
+  final String? paRefTank;
+  final String? paRefQty;
+  final String? paTotal;
+  final int? paLotBatchNumber;
+  final double? paYieldPercent;
+
+  final String? uuItem;
+  final String? uuBudgetRefTank;
+  final double? uuBudgetQty;
+  final double? uuTotalCpo;
+  final double? uuTotalSteam;
+  final double? uuSteamCpo;
+  final double? uuYieldPercent;
+
   QualityReportQcEntity({
     required this.oilTypeId,
     this.oilType,
@@ -149,6 +172,25 @@ class QualityReportQcEntity {
     required this.dateIssued,
     required this.revisionNo,
     required this.revisionDate,
+    this.dailyProductionId,
+    this.beRefTank,
+    this.beRefQty,
+    this.beTotalBag,
+    this.beTotalJenis,
+    this.beLotBatchNumber,
+    this.beYieldPercent,
+    this.paRefTank,
+    this.paRefQty,
+    this.paTotal,
+    this.paLotBatchNumber,
+    this.paYieldPercent,
+    this.uuItem,
+    this.uuBudgetRefTank,
+    this.uuBudgetQty,
+    this.uuTotalCpo,
+    this.uuTotalSteam,
+    this.uuSteamCpo,
+    this.uuYieldPercent,
   });
 
   factory QualityReportQcEntity.fromMap(Map<String, dynamic> map) {
@@ -248,6 +290,25 @@ class QualityReportQcEntity {
       dateIssued: parseDateTime(map['date_issued']),
       revisionNo: parseInt(map['revision_no']),
       revisionDate: parseDateTime(map['revision_date']),
+      dailyProductionId: map['daily_production_refinery_id'] as String?,
+      beRefTank: map['be_ref_tank'] as String?,
+      beRefQty: map['be_ref_qty'] as String?,
+      beTotalBag: map['be_total_bag'] as String?,
+      beTotalJenis: map['be_total_jenis'] as String?,
+      beLotBatchNumber: parseInt(map['be_lot_batch_number']),
+      beYieldPercent: parseDouble(map['be_yield_percent']),
+      paRefTank: map['pa_ref_tank'] as String?,
+      paRefQty: map['pa_ref_qty'] as String?,
+      paTotal: map['pa_total'] as String?,
+      paLotBatchNumber: parseInt(map['pa_lot_batch_number']),
+      paYieldPercent: parseDouble(map['pa_yield_percent']),
+      uuItem: map['uu_item'] as String?,
+      uuBudgetRefTank: map['uu_budget_ref_tank'] as String?,
+      uuBudgetQty: parseDouble(map['uu_budget_qty']),
+      uuTotalCpo: parseDouble(map['uu_total_cpo']),
+      uuTotalSteam: parseDouble(map['uu_total_steam']),
+      uuSteamCpo: parseDouble(map['uu_steam_cpo']),
+      uuYieldPercent: parseDouble(map['uu_yield_percent']),
     );
   }
 
@@ -317,6 +378,7 @@ class QualityReportQcEntity {
       'date_issued': dateIssued,
       'revision_no': revisionNo,
       'revision_date': revisionDate,
+      'daily_production_refinery_id': dailyProductionId,
     };
   }
 
@@ -335,7 +397,7 @@ class QualityReportQcEntity {
       shift: shift,
       rmFlowRate: rmFlowRate,
       rmTankSource: rmTankSource,
-      rmTemp: rmTemp,
+      rmTemp: null,
       rmFFA: rmFFA,
       rmIV: rmIV,
       rmDobi: rmDobi,
@@ -358,7 +420,8 @@ class QualityReportQcEntity {
       fgColorR: fgColorR,
       fgColorY: fgColorY,
       fgColorB: fgColorB,
-      fgTankTo: fgTankTo,
+      // fgTankTo: fgTankTo,
+      fgTankTo: null,
       fgTankToOthersRemarks: fgTankToOthersRemarks,
       bpFFA: bpFFA,
       bpMNI: bpMNI,

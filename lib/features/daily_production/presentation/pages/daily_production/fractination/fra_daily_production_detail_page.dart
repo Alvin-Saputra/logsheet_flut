@@ -1,22 +1,29 @@
+import 'package:expandable_page_view/expandable_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
+import 'package:logsheet_app/core/widgets/custom_info_card.dart';
+import 'package:logsheet_app/core/widgets/custom_section_card.dart';
+import 'package:logsheet_app/core/widgets/custom_section_card_data.dart';
 import 'package:logsheet_app/features/daily_production/data/model/daily_production/daily_production_fractionation_entity.dart';
+import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/fractination/fra_daily_production_edit_page.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/user_entity.dart';
-import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/fractination/fra_daily_production_edit_page.dart';
 import 'package:logsheet_app/features/daily_production/presentation/provider/daily_production/daily_production_fractionation_provider.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/product_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class DailyProductionFractionationDetailPage extends StatefulWidget {
-  final DailyProductionFractionationEntity item;
+  final List<DailyProductionFractionationEntity> listItem;
   final DataFormNoEntity formData;
   final bool isDisplayed;
 
   const DailyProductionFractionationDetailPage({
     super.key,
-    required this.item,
+    required this.listItem,
     this.isDisplayed = true,
     required this.formData,
   });
@@ -29,12 +36,22 @@ class DailyProductionFractionationDetailPage extends StatefulWidget {
 class _DailyProductionFractionationDetailPageState
     extends State<DailyProductionFractionationDetailPage> {
   final TextEditingController _remarkController = TextEditingController();
-  late DailyProductionFractionationEntity _currentReport;
+  late List<DailyProductionFractionationEntity> _listCurrentReport;
+
+  String? oilTypeRmName;
+  String? oilTypeFgsName;
+  String? oilTypeFghName;
+
+  final PageController detailPageControllers = PageController();
 
   @override
   void initState() {
     super.initState();
-    _currentReport = widget.item;
+    final productProvider = context.read<ProductProvider>();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await productProvider.fetchProducts();
+    });
+    _listCurrentReport = widget.listItem;
   }
 
   // Helper to display values, defaulting to '-' for nulls
@@ -47,7 +64,7 @@ class _DailyProductionFractionationDetailPageState
     return date != null ? DateFormat('yyyy-MM-dd HH:mm').format(date) : '-';
   }
 
-  Widget _buildInfoCard(String title, String value) {
+  Widget CustomInfoCard(String title, String value) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
@@ -77,7 +94,7 @@ class _DailyProductionFractionationDetailPageState
     );
   }
 
-  Widget _buildDataRow(String label, String value) {
+  Widget CustomSectionCardData(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -101,7 +118,7 @@ class _DailyProductionFractionationDetailPageState
     );
   }
 
-  Widget _buildSection(String title, List<Widget> children) {
+  Widget CustomSectionCard(String title, List<Widget> children) {
     return Card(
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -132,10 +149,12 @@ class _DailyProductionFractionationDetailPageState
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().currentUser;
     final String formattedDate =
-        _currentReport.transactionDate != null
-            ? DateFormat('dd MMMM yyyy').format(_currentReport.transactionDate!)
+        _listCurrentReport[0].transactionDate != null
+            ? DateFormat(
+              'dd MMMM yyyy',
+            ).format(_listCurrentReport[0].transactionDate!)
             : '-';
-    final String shift = _displayValue(_currentReport.shift);
+    final String shift = _displayValue(_listCurrentReport[0].shift);
 
     String formatTime(TimeOfDay? time) =>
         time != null
@@ -160,7 +179,8 @@ class _DailyProductionFractionationDetailPageState
       centerTitle: true,
       iconTheme: const IconThemeData(color: Colors.black),
       actions: [
-        if (_currentReport.preparedStatus == null)
+        if (_listCurrentReport[0].preparedStatus == null &&
+            _listCurrentReport[0].isCompleted == false)
           IconButton(
             onPressed: () async {
               // Navigate to your edit page
@@ -169,20 +189,20 @@ class _DailyProductionFractionationDetailPageState
                   builder:
                       (context) => FraDailyProductionEditPage(
                         dataForm: widget.formData,
-                        entity: _currentReport,
+                        listReport: _listCurrentReport,
                       ),
                 ),
               );
               if (result != null &&
-                  result is DailyProductionFractionationEntity) {
+                  result is List<DailyProductionFractionationEntity>) {
                 setState(() {
-                  _currentReport = result;
+                  _listCurrentReport = result;
                 });
               }
             },
             icon: const Icon(Icons.edit),
           ),
-        if (_currentReport.preparedStatus == null)
+        if (_listCurrentReport[0].preparedStatus == null)
           IconButton(
             onPressed: () async => _showDeleteConfirmationDialog(context),
             icon: const Icon(Icons.delete_rounded, color: Colors.red),
@@ -202,6 +222,7 @@ class _DailyProductionFractionationDetailPageState
     String formattedDate,
     String shift,
   ) {
+    final productProvider = context.read<ProductProvider>();
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -217,236 +238,381 @@ class _DailyProductionFractionationDetailPageState
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildInfoCard('Tanggal', formattedDate),
+                  CustomInfoCard('Tanggal', formattedDate),
                   const SizedBox(width: 8),
-                  _buildInfoCard(
+                  CustomInfoCard(
                     'Work Center',
-                    _displayValue(_currentReport.workCenter),
+                    _displayValue(_listCurrentReport[0].workCenter),
                   ),
                   const SizedBox(width: 8),
-                  _buildInfoCard('Shift', shift),
+                  CustomInfoCard('Shift', shift),
                 ],
               ),
             ),
 
-            _buildSection('ID & General Info', [
-              _buildDataRow('Ticket ID', _currentReport.id),
-              _buildDataRow('Company', _displayValue(_currentReport.company)),
-              _buildDataRow('Plant', _displayValue(_currentReport.plant)),
-            ]),
-
-            _buildSection('Raw Material (RM)', [
-              _buildDataRow(
-                'Oil Type',
-                _displayValue(_currentReport.oilTypeRm),
+            CustomSectionCard('ID & General Info', [
+              CustomSectionCardData(
+                'Company',
+                _displayValue(_listCurrentReport[0].company),
               ),
-              _buildDataRow('No', _displayValue(_currentReport.oilTypeRmNo)),
-              _buildDataRow('Cr', _displayValue(_currentReport.oilTypeRmCr)),
-              _buildDataRow(
-                'From Tank',
-                _displayValue(_currentReport.oilTypeRmFromTank),
-              ),
-              _buildDataRow(
-                'Awal Jam',
-                _displayTime(_currentReport.oilTypeRmAwalJam),
-              ),
-              _buildDataRow(
-                'Awal Flowmeter',
-                _displayValue(_currentReport.oilTypeRmAwalFlowmeter),
-              ),
-              _buildDataRow(
-                'Akhir Jam',
-                _displayTime(_currentReport.oilTypeRmAkhirJam),
-              ),
-              _buildDataRow(
-                'Akhir Flowmeter',
-                _displayValue(_currentReport.oilTypeRmAkhirFlowmeter),
-              ),
-              _buildDataRow(
-                'Total',
-                _displayValue(_currentReport.oilTypeRmTotal),
+              CustomSectionCardData(
+                'Plant',
+                _displayValue(_listCurrentReport[0].plant),
               ),
             ]),
 
-            _buildSection('Finished Goods (FG)', [
-              _buildDataRow(
-                'Oil Type',
-                _displayValue(_currentReport.oilTypeFgs),
+            CustomSectionCard('Detail Data', [
+              Center(
+                child: SmoothPageIndicator(
+                  controller:
+                      detailPageControllers, // Gunakan satu controller untuk semua
+                  count: _listCurrentReport.length,
+                  effect: const WormEffect(
+                    dotHeight: 8,
+                    dotWidth: 8,
+                    activeDotColor: Colors.blue, // Sesuaikan warna tema Anda
+                    dotColor: Colors.grey,
+                  ),
+                  onDotClicked: (index) {
+                    detailPageControllers.animateToPage(
+                      index,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  },
+                ),
               ),
-              _buildDataRow('No', _displayValue(_currentReport.oilTypeFgsNo)),
-              _buildDataRow('Cr', _displayValue(_currentReport.oilTypeFgsCr)),
-              _buildDataRow(
-                'Awal Jam',
-                _displayTime(_currentReport.oilTypeFgsAwalJam),
-              ),
-              _buildDataRow(
-                'Awal Flowmeter',
-                _displayValue(_currentReport.oilTypeFgsAwalFlowmeter),
-              ),
-              _buildDataRow(
-                'Akhir Jam',
-                _displayTime(_currentReport.oilTypeFgsAkhirJam),
-              ),
-              _buildDataRow(
-                'Akhir Flowmeter',
-                _displayValue(_currentReport.oilTypeFgsAkhirFlowmeter),
-              ),
-              _buildDataRow(
-                'Total',
-                _displayValue(_currentReport.oilTypeFgsTotal),
-              ),
-              _buildDataRow(
-                'To Tank',
-                _displayValue(_currentReport.oilTypeFgsToTank),
+
+              ExpandablePageView.builder(
+                controller: detailPageControllers,
+                itemCount: _listCurrentReport.length,
+                itemBuilder: (context, pageIndex) {
+                  return Column(
+                    children: [
+                      SizedBox(height: 12.0),
+                      CustomSectionCardData(
+                        'Ticket ID',
+                        _listCurrentReport[pageIndex].id,
+                      ),
+                      SizedBox(height: 12.0),
+                      CustomSectionCard('Raw Material (RM)', [
+                        CustomSectionCardData(
+                          'Oil Type Id',
+                          _displayValue(
+                            _listCurrentReport[pageIndex].oilTypeRmId,
+                          ),
+                        ),
+
+                        CustomSectionCardData(
+                          'Oil Type Name',
+                          _displayValue(
+                            _listCurrentReport[pageIndex].oilTypeRmName,
+                          ),
+                        ),
+                        // CustomSectionCardData('No', _displayValue(_currentReport.oilTypeRmNo)),
+                        CustomSectionCardData(
+                          'Cr',
+                          _displayValue(
+                            _listCurrentReport[pageIndex].oilTypeRmCr,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'From Tank',
+                          _displayValue(
+                            _listCurrentReport[pageIndex].oilTypeRmFromTank,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'Awal Jam',
+                          _displayTime(
+                            _listCurrentReport[pageIndex].oilTypeRmAwalJam,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'Awal Flowmeter',
+                          _displayValue(
+                            _listCurrentReport[pageIndex]
+                                .oilTypeRmAwalFlowmeter,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'Akhir Jam',
+                          _displayTime(
+                            _listCurrentReport[pageIndex].oilTypeRmAkhirJam,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'Akhir Flowmeter',
+                          _displayValue(
+                            _listCurrentReport[pageIndex]
+                                .oilTypeRmAkhirFlowmeter,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'Total',
+                          _displayValue(
+                            _listCurrentReport[pageIndex].oilTypeRmTotal,
+                          ),
+                        ),
+                      ]),
+
+                      CustomSectionCard('Finished Goods (FG)', [
+                        CustomSectionCardData(
+                          'Oil Type',
+                          _displayValue(
+                            _listCurrentReport[pageIndex].oilTypeFgsId,
+                          ),
+                        ),
+
+                        CustomSectionCardData(
+                          'Oil Type Name',
+                          _displayValue(
+                            _listCurrentReport[pageIndex].oilTypeFgsName,
+                          ),
+                        ),
+                        // CustomSectionCardData('No', _displayValue(_currentReport.oilTypeFgsNo)),
+                        CustomSectionCardData(
+                          'Cr',
+                          _displayValue(
+                            _listCurrentReport[pageIndex].oilTypeFgsCr,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'Awal Jam',
+                          _displayTime(
+                            _listCurrentReport[pageIndex].oilTypeFgsAwalJam,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'Awal Flowmeter',
+                          _displayValue(
+                            _listCurrentReport[pageIndex]
+                                .oilTypeFgsAwalFlowmeter,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'Akhir Jam',
+                          _displayTime(
+                            _listCurrentReport[pageIndex].oilTypeFgsAkhirJam,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'Akhir Flowmeter',
+                          _displayValue(
+                            _listCurrentReport[pageIndex]
+                                .oilTypeFgsAkhirFlowmeter,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'Total',
+                          _displayValue(
+                            _listCurrentReport[pageIndex].oilTypeFgsTotal,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'To Tank',
+                          _displayValue(
+                            _listCurrentReport[pageIndex].oilTypeFgsToTank,
+                          ),
+                        ),
+                      ]),
+
+                      CustomSectionCard('By-Product (BP)', [
+                        // CustomSectionCardData(
+                        //   'Oil Type',
+                        //   _displayValue(_currentReport.oilTypeFgh),
+                        // ),
+                        // CustomSectionCardData('No', _displayValue(_currentReport.oilTypeFghNo)),
+                        CustomSectionCardData(
+                          'Oil Type',
+                          _displayValue(
+                            _listCurrentReport[pageIndex].oilTypeFghId,
+                          ),
+                        ),
+
+                        CustomSectionCardData(
+                          'Oil Type Name',
+                          _displayValue(
+                            _listCurrentReport[pageIndex].oilTypeFghName,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'Awal Jam',
+                          _displayTime(
+                            _listCurrentReport[pageIndex].oilTypeFghAwalJam,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'Awal Flowmeter',
+                          _displayValue(
+                            _listCurrentReport[pageIndex]
+                                .oilTypeFghAwalFlowmeter,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'Akhir Jam',
+                          _displayTime(
+                            _listCurrentReport[pageIndex].oilTypeFghAkhirJam,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'Akhir Flowmeter',
+                          _displayValue(
+                            _listCurrentReport[pageIndex]
+                                .oilTypeFghAkhirFlowmeter,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'Total',
+                          _displayValue(
+                            _listCurrentReport[pageIndex].oilTypeFghTotal,
+                          ),
+                        ),
+                        CustomSectionCardData(
+                          'To Tank',
+                          _displayValue(
+                            _listCurrentReport[pageIndex].oilTypeFghToTank,
+                          ),
+                        ),
+                      ]),
+                    ],
+                  );
+                },
               ),
             ]),
 
-            _buildSection('By-Product (BP)', [
-              // _buildDataRow(
-              //   'Oil Type',
-              //   _displayValue(_currentReport.oilTypeFgh),
-              // ),
-              _buildDataRow('No', _displayValue(_currentReport.oilTypeFghNo)),
-              _buildDataRow(
-                'Awal Jam',
-                _displayTime(_currentReport.oilTypeFghAwalJam),
+            CustomSectionCard('Utility Usage (UU)', [
+              CustomSectionCardData(
+                'Item',
+                _displayValue(_listCurrentReport[0].uuItem),
               ),
-              _buildDataRow(
-                'Awal Flowmeter',
-                _displayValue(_currentReport.oilTypeFghAwalFlowmeter),
-              ),
-              _buildDataRow(
-                'Akhir Jam',
-                _displayTime(_currentReport.oilTypeFghAkhirJam),
-              ),
-              _buildDataRow(
-                'Akhir Flowmeter',
-                _displayValue(_currentReport.oilTypeFghAkhirFlowmeter),
-              ),
-              _buildDataRow(
-                'Total',
-                _displayValue(_currentReport.oilTypeFghTotal),
-              ),
-              _buildDataRow(
-                'To Tank',
-                _displayValue(_currentReport.oilTypeFghToTank),
-              ),
-            ]),
-
-            _buildSection('Utility Usage (UU)', [
-              _buildDataRow('Item', _displayValue(_currentReport.uuItem)),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Budget Ref Qty',
-                _displayValue(_currentReport.uuBudgetRefQty),
+                _displayValue(_listCurrentReport[0].uuBudgetRefQty),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Flowmeter Before',
-                _displayValue(_currentReport.uuFlowmeterBefore),
+                _displayValue(_listCurrentReport[0].uuFlowmeterBefore),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Flowmeter After',
-                _displayValue(_currentReport.uuFlowmeterAfter),
+                _displayValue(_listCurrentReport[0].uuFlowmeterAfter),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Flowmeter Total',
-                _displayValue(_currentReport.uuFlowmeterTotal),
+                _displayValue(_listCurrentReport[0].uuFlowmeterTotal),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Yield (%)',
-                _displayValue(_currentReport.uuYieldPercent),
+                _displayValue(_listCurrentReport[0].uuYieldPercent),
               ),
-              _buildDataRow('Listrik', _displayValue(_currentReport.uuListrik)),
-              _buildDataRow('Air', _displayValue(_currentReport.uuAir)),
+              CustomSectionCardData(
+                'Listrik',
+                _displayValue(_listCurrentReport[0].uuListrik),
+              ),
+              CustomSectionCardData(
+                'Air',
+                _displayValue(_listCurrentReport[0].uuAir),
+              ),
             ]),
 
-            _buildSection('Metadata & Remarks', [
-              _buildDataRow(
+            CustomSectionCard('Metadata & Remarks', [
+              CustomSectionCardData(
                 'Transaction Date',
-                _formatDateTime(_currentReport.transactionDate),
+                _formatDateTime(_listCurrentReport[0].transactionDate),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Posting Date',
-                _formatDateTime(_currentReport.postingDate),
+                _formatDateTime(_listCurrentReport[0].postingDate),
               ),
-              _buildDataRow('Remarks', _displayValue(_currentReport.remarks)),
-              _buildDataRow('Flag', _displayValue(_currentReport.flag)),
+              CustomSectionCardData(
+                'Remarks',
+                _displayValue(_listCurrentReport[0].remarks),
+              ),
+              CustomSectionCardData(
+                'Flag',
+                _displayValue(_listCurrentReport[0].flag),
+              ),
             ]),
 
-            _buildSection('Status & History', [
-              _buildDataRow(
+            CustomSectionCard('Status & History', [
+              CustomSectionCardData(
                 'Entried By',
-                _displayValue(_currentReport.entryBy),
+                _displayValue(_listCurrentReport[0].entryBy),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Entry Date',
-                _formatDateTime(_currentReport.entryDate),
+                _formatDateTime(_listCurrentReport[0].entryDate),
               ),
               const Divider(),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Prepared By',
-                _displayValue(_currentReport.preparedBy),
+                _displayValue(_listCurrentReport[0].preparedBy),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Prepared Date',
-                _formatDateTime(_currentReport.preparedDate),
+                _formatDateTime(_listCurrentReport[0].preparedDate),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Prepared Status',
-                _displayValue(_currentReport.preparedStatus),
+                _displayValue(_listCurrentReport[0].preparedStatus),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Prepared Remarks',
-                _displayValue(_currentReport.preparedStatusRemarks),
+                _displayValue(_listCurrentReport[0].preparedStatusRemarks),
               ),
               const Divider(),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Verified By',
-                _displayValue(_currentReport.verifiedBy),
+                _displayValue(_listCurrentReport[0].verifiedBy),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Verified Date',
-                _formatDateTime(_currentReport.verifiedDate),
+                _formatDateTime(_listCurrentReport[0].verifiedDate),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Verified Status',
-                _displayValue(_currentReport.verifiedStatus),
+                _displayValue(_listCurrentReport[0].verifiedStatus),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Verified Remarks',
-                _displayValue(_currentReport.verifiedStatusRemarks),
+                _displayValue(_listCurrentReport[0].verifiedStatusRemarks),
               ),
               const Divider(),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Checked By',
-                _displayValue(_currentReport.checkedBy),
+                _displayValue(_listCurrentReport[0].checkedBy),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Checked Date',
-                _formatDateTime(_currentReport.checkedDate),
+                _formatDateTime(_listCurrentReport[0].checkedDate),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Checked Status',
-                _displayValue(_currentReport.checkedStatus),
+                _displayValue(_listCurrentReport[0].checkedStatus),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Checked Remarks',
-                _displayValue(_currentReport.checkedStatusRemarks),
+                _displayValue(_listCurrentReport[0].checkedStatusRemarks),
               ),
             ]),
 
-            _buildSection('Form Info', [
-              _buildDataRow('Form No', _displayValue(_currentReport.formNo)),
-              _buildDataRow(
+            CustomSectionCard('Form Info', [
+              CustomSectionCardData(
+                'Form No',
+                _displayValue(_listCurrentReport[0].formNo),
+              ),
+              CustomSectionCardData(
                 'Date Issued',
-                _formatDateTime(_currentReport.dateIssued),
+                _formatDateTime(_listCurrentReport[0].dateIssued),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Revision No',
-                _displayValue(_currentReport.revisionNo),
+                _displayValue(_listCurrentReport[0].revisionNo),
               ),
-              _buildDataRow(
+              CustomSectionCardData(
                 'Revision Date',
-                _formatDateTime(_currentReport.revisionDate),
+                _formatDateTime(_listCurrentReport[0].revisionDate),
               ),
             ]),
 
@@ -463,7 +629,7 @@ class _DailyProductionFractionationDetailPageState
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: ElevatedButton(
                             onPressed: () {
-                              _showApprovedRejectedBottomSheet(
+                             _showApprovedRejectedBottomSheet(
                                 context,
                                 false,
                                 shift,
@@ -518,9 +684,7 @@ class _DailyProductionFractionationDetailPageState
           builder:
               (context, provider, userProvider, child) => AlertDialog(
                 title: const Text('Hapus Ticket'),
-                content: Text(
-                  "Apakah anda yakin ingin menghapus Ticket ${_currentReport.id}?",
-                ),
+                content: Text("Apakah anda yakin ingin menghapus Ticket "),
                 actions: <Widget>[
                   TextButton(
                     child: const Text("Tidak"),
@@ -546,14 +710,23 @@ class _DailyProductionFractionationDetailPageState
                             ),
                     onPressed: () async {
                       final result = await provider.deleteTicketById(
-                        _currentReport.id,
                         userProvider.currentUser?.username ?? "",
+                        _listCurrentReport[0].shift ?? "",
+                        _listCurrentReport[0].plant ?? "",
+                        formatDatetoString(
+                              _listCurrentReport[0].transactionDate,
+                              'yyyy-MM-dd HH:mm:ss',
+                            ) ??
+                            "",
                       );
 
                       if (result) {
                         if (!context.mounted) return;
                         Navigator.pop(context); // Close dialog
                         Navigator.pop(context); // Go back from detail page
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Report berhasil di-delete")),
+                        );
                       }
                       // if (!context.mounted) return;
                       // Navigator.pop(context); // Close dialog
@@ -615,10 +788,15 @@ class _DailyProductionFractionationDetailPageState
                           user.username,
                           isApproved ? "Approved" : "Rejected",
                           user.role,
-                          int.parse(shift),
+                          _listCurrentReport[0].shift ?? "",
                           isApproved ? null : _remarkController.text,
-                          widget.item.id,
-                          widget.item.plant!,
+                          _listCurrentReport[0].plant ?? "",
+                          formatDatetoString(
+                                _listCurrentReport[0].transactionDate,
+                                'yyyy-MM-dd HH:mm:ss',
+                              ) ??
+                              "",
+                          _listCurrentReport[0].workCenter ?? "",
                         );
 
                     if (result) {
@@ -627,8 +805,8 @@ class _DailyProductionFractionationDetailPageState
                         SnackBar(
                           content: Text(
                             isApproved
-                                ? "N ${_currentReport.id} berhasil diapprove"
-                                : "Number ${_currentReport.id} berhasil direject",
+                                ? "Report berhasil diapprove"
+                                : "Report berhasil direject",
                           ),
                         ),
                       );
@@ -640,8 +818,8 @@ class _DailyProductionFractionationDetailPageState
                         SnackBar(
                           content: Text(
                             isApproved
-                                ? "ID Transaksi ${_currentReport.id} gagal diapprove"
-                                : "ID Transaksi ${_currentReport.id} gagal direject",
+                                ? "Report gagal diapprove"
+                                : "Report gagal direject",
                           ),
                         ),
                       );

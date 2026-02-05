@@ -342,9 +342,11 @@ class _QualityDetailProductionPageState
             ]),
 
             _buildSection('Raw Material', [
-              _buildDataRow('Oil Type', _currentReport.oilType ?? '-'),
+              _buildDataRow('Oil Type Prod', _currentReport.oilType ?? '-'),
+              _buildDataRow('Oil Type QC', _currentReport.qcOilTypeName ?? '-'),
               _buildDataRow('Work Center', _currentReport.workCenter ?? '-'),
-              _buildDataRow('Tank Source', _currentReport.rmTankSource ?? '-'),
+              _buildDataRow('Tank Source Prod', _currentReport.rmTankSource ?? '-'),
+              _buildDataRow('Tank Source QC', _currentReport.qcRmTankSource ?? '-'),
               _buildDataRow("Flow Rate", _currentReport.rmFlowRate.toString()),
               _buildDataRow('Temp (°C)', isNull(_currentReport.rmTemp)),
               _buildDataRow('FFA (%)', isNull(_currentReport.rmFFA)),
@@ -381,9 +383,14 @@ class _QualityDetailProductionPageState
                 'Color B',
                 _currentReport.fgColorB?.toStringAsFixed(0) ?? '-',
               ),
-              _buildDataRow('Tank Destination', _currentReport.fgTankTo ?? '-'),
+              _buildDataRow('Tank Destination Prod', _currentReport.fgTankTo ?? '-'),
+              _buildDataRow('Tank Destination QC', _currentReport.qcFgTankTo ?? '-'),
               _buildDataRow(
-                'Tank Others Remarks',
+                'Tank Others Remarks QC',
+                _currentReport.qcfgTankToOthersRemarks.toString(),
+              ),
+              _buildDataRow(
+                'Tank Others Remarks Prod',
                 _currentReport.fgTankToOthersRemarks.toString(),
               ),
             ]),
@@ -405,7 +412,13 @@ class _QualityDetailProductionPageState
                 formatDate(_currentReport.transactionDate),
               ),
               _buildDataRow(
-                'Remarks',
+                'Remarks QC',
+                _currentReport.qcRemarks != null
+                    ? "${_currentReport.remarks}"
+                    : "-",
+              ),
+               _buildDataRow(
+                'Remarks Prod',
                 _currentReport.remarks != null
                     ? "${_currentReport.remarks}"
                     : "-",

@@ -1,24 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:logsheet_app/core/config/app_env.dart';
 import 'package:logsheet_app/core/network/api_config.dart';
+import 'package:logsheet_app/core/theme/app_theme.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
 import 'package:logsheet_app/features/auth/data/datasources/remote/auth_api_service.dart';
-import 'package:logsheet_app/core/theme/app_theme.dart';
+import 'package:logsheet_app/features/auth/presentation/pages/login_page.dart';
 import 'package:logsheet_app/features/auth/presentation/provider/auth_provider.dart';
+import 'package:logsheet_app/features/daily_production/data/datasources/daily_production/daily_production_fractionation_mysql_service.dart';
+import 'package:logsheet_app/features/daily_production/data/datasources/daily_production/daily_production_refinery_mysql_service.dart';
 import 'package:logsheet_app/features/daily_production/data/repository/daily_production/daily_production_fractionation_repository.dart';
 import 'package:logsheet_app/features/daily_production/data/repository/daily_production/daily_production_refinery_repository.dart';
-import 'package:logsheet_app/features/production/data/repository/dry_fractionation/dry_fractionation_repository.dart';
-import 'package:logsheet_app/features/production/data/repository/logsheet/deodorizing_filtration_repository.dart';
-import 'package:logsheet_app/features/production/data/repository/logsheet/pretreatment_bleaching_filtration_repository.dart';
+import 'package:logsheet_app/features/daily_production/presentation/provider/daily_production/daily_production_fractionation_provider.dart';
+import 'package:logsheet_app/features/daily_production/presentation/provider/daily_production/daily_production_refinery_provider.dart';
+import 'package:logsheet_app/features/form_transfer/data/datasources/remote/form_transfer_api_service.dart';
+import 'package:logsheet_app/features/form_transfer/data/repository/form_transfer_repository.dart';
+import 'package:logsheet_app/features/form_transfer/presentation/provider/form_transfer_provider.dart';
+import 'package:logsheet_app/features/maintenance/data/datasources/change_product_checklist/change_product_checklist_mysql_service.dart';
+import 'package:logsheet_app/features/maintenance/data/datasources/maintenance_lamps_and_glass_mysql_service.dart';
+import 'package:logsheet_app/features/maintenance/data/datasources/start_up_produksi_checklist/start_up_produksi_checklist_mysql_service.dart';
 import 'package:logsheet_app/features/maintenance/data/repository/change_product_checklist_repository/change_product_checklist_repository.dart';
 import 'package:logsheet_app/features/maintenance/data/repository/maintenance_lamps_and_glass_repository.dart';
 import 'package:logsheet_app/features/maintenance/data/repository/start_up_produksi_checklist_repository/start_up_produksi_checklist_repository.dart';
+import 'package:logsheet_app/features/maintenance/presentation/provider/change_product_checklist/maintenance_change_product_checklist_provider.dart';
+import 'package:logsheet_app/features/maintenance/presentation/provider/maintenance_lamps_and_glass_provider.dart';
+import 'package:logsheet_app/features/maintenance/presentation/provider/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_provider.dart';
+import 'package:logsheet_app/features/master_data/data/datasources/master/business_unit_mysql_service.dart';
+import 'package:logsheet_app/features/master_data/data/datasources/master/cryztallizer_mysql_service.dart';
+import 'package:logsheet_app/features/master_data/data/datasources/master/data_form_no_mysql_service.dart';
+import 'package:logsheet_app/features/master_data/data/datasources/master/plant_mysql_service.dart';
+import 'package:logsheet_app/features/master_data/data/datasources/master/product_mysql_service.dart';
+import 'package:logsheet_app/features/master_data/data/datasources/master/user_mysql_service.dart';
+import 'package:logsheet_app/features/master_data/data/datasources/master/value_mysql_service.dart';
 import 'package:logsheet_app/features/master_data/data/repository/master/business_unit_repository.dart';
+import 'package:logsheet_app/features/master_data/data/repository/master/crystallizer_repository.dart';
 import 'package:logsheet_app/features/master_data/data/repository/master/data_form_no_repository.dart';
 import 'package:logsheet_app/features/master_data/data/repository/master/plant_repository.dart';
 import 'package:logsheet_app/features/master_data/data/repository/master/product_repository.dart';
 import 'package:logsheet_app/features/master_data/data/repository/master/user_repository.dart';
+import 'package:logsheet_app/features/master_data/data/repository/master/value_repository.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/business_unit_provider.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/crystallizer_provider.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/product_provider.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
+import 'package:logsheet_app/features/production/data/datasources/dry_fractionation/dry_fractionation_api_service.dart';
+import 'package:logsheet_app/features/production/data/datasources/logsheet/deodorizing_filtration_mysql_service.dart';
+import 'package:logsheet_app/features/production/data/datasources/logsheet/pretreatment_bleaching_filtration_mysql_service.dart';
+import 'package:logsheet_app/features/production/data/repository/logsheet/deodorizing_filtration_repository.dart';
+import 'package:logsheet_app/features/production/data/repository/logsheet/pretreatment_bleaching_filtration_repository.dart';
+import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation/dry_fractionation_provider.dart';
+import 'package:logsheet_app/features/production/presentation/provider/logsheet/deodorizing_filtration_provider.dart';
+import 'package:logsheet_app/features/production/presentation/provider/logsheet/pretreatment_bleaching_filtration_provider.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_mysql_service.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/local/daily_quality_composite_fractionation/daily_quality_composite_fractionation_mysql_service.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/local/daily_storage_tank_analytical/daily_storage_tank_analytical_mysql_service.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/local/quality_report/quality_report_production_mysql_service.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/local/quality_report/quality_report_qc_mysql_service.dart';
 import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_api_service.dart';
 import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_api_service.dart';
 import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_api_service.dart';
@@ -30,39 +70,6 @@ import 'package:logsheet_app/features/quality_control/data/repositories/daily_qu
 import 'package:logsheet_app/features/quality_control/data/repositories/daily_storage_tank_analytical/daily_storage_tank_analytical_repository.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/quality_report/quality_report_production_repository.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/quality_report/quality_report_qc_repository.dart';
-import 'package:logsheet_app/features/master_data/data/repository/master/value_repository.dart';
-import 'package:logsheet_app/features/daily_production/data/datasources/daily_production/daily_production_fractionation_mysql_service.dart';
-import 'package:logsheet_app/features/daily_production/data/datasources/daily_production/daily_production_refinery_mysql_service.dart';
-import 'package:logsheet_app/features/production/data/datasources/dry_fractionation/dry_fractionation_mysql_service.dart';
-import 'package:logsheet_app/features/production/data/datasources/logsheet/deodorizing_filtration_mysql_service.dart';
-import 'package:logsheet_app/features/production/data/datasources/logsheet/pretreatment_bleaching_filtration_mysql_service.dart';
-import 'package:logsheet_app/features/maintenance/data/datasources/change_product_checklist/change_product_checklist_mysql_service.dart';
-import 'package:logsheet_app/features/maintenance/data/datasources/maintenance_lamps_and_glass_mysql_service.dart';
-import 'package:logsheet_app/features/maintenance/data/datasources/start_up_produksi_checklist/start_up_produksi_checklist_mysql_service.dart';
-import 'package:logsheet_app/features/master_data/data/datasources/master/business_unit_mysql_service.dart';
-import 'package:logsheet_app/features/master_data/data/datasources/master/data_form_no_mysql_service.dart';
-import 'package:logsheet_app/features/master_data/data/datasources/master/plant_mysql_service.dart';
-import 'package:logsheet_app/features/master_data/data/datasources/master/product_mysql_service.dart';
-import 'package:logsheet_app/features/quality_control/data/datasources/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_mysql_service.dart';
-import 'package:logsheet_app/features/quality_control/data/datasources/local/daily_quality_composite_fractionation/daily_quality_composite_fractionation_mysql_service.dart';
-import 'package:logsheet_app/features/quality_control/data/datasources/local/daily_storage_tank_analytical/daily_storage_tank_analytical_mysql_service.dart';
-import 'package:logsheet_app/features/quality_control/data/datasources/local/quality_report/quality_report_production_mysql_service.dart';
-import 'package:logsheet_app/features/quality_control/data/datasources/local/quality_report/quality_report_qc_mysql_service.dart';
-import 'package:logsheet_app/features/master_data/data/datasources/master/user_mysql_service.dart';
-import 'package:logsheet_app/features/master_data/data/datasources/master/value_mysql_service.dart';
-import 'package:logsheet_app/features/auth/presentation/pages/login_page.dart';
-import 'package:logsheet_app/features/daily_production/presentation/provider/daily_production/daily_production_fractionation_provider.dart';
-import 'package:logsheet_app/features/daily_production/presentation/provider/daily_production/daily_production_refinery_provider.dart';
-import 'package:logsheet_app/features/production/presentation/provider/dry_fractionation/dry_fractionation_provider.dart';
-import 'package:logsheet_app/features/production/presentation/provider/logsheet/deodorizing_filtration_provider.dart';
-import 'package:logsheet_app/features/production/presentation/provider/logsheet/pretreatment_bleaching_filtration_provider.dart';
-import 'package:logsheet_app/features/maintenance/presentation/provider/change_product_checklist/maintenance_change_product_checklist_provider.dart';
-import 'package:logsheet_app/features/maintenance/presentation/provider/maintenance_lamps_and_glass_provider.dart';
-import 'package:logsheet_app/features/maintenance/presentation/provider/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/business_unit_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/product_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_provider.dart';
@@ -73,16 +80,12 @@ import 'package:logsheet_app/features/quality_control/presentation/provider/dail
 import 'package:logsheet_app/features/quality_control/presentation/provider/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/quality_report/quality_report_production_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/quality_report/quality_report_qc_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
-import 'package:logsheet_app/features/form_transfer/data/datasources/remote/form_transfer_api_service.dart';
-import 'package:logsheet_app/features/form_transfer/data/repository/form_transfer_repository.dart';
-import 'package:logsheet_app/features/form_transfer/presentation/provider/form_transfer_provider.dart';
 import 'package:month_year_picker/month_year_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'core/database/app_database.dart';
-import 'core/database/database_instance.dart'; // <-- ini penting
 import 'core/database/dao/business_unit_dao.dart';
+import 'core/database/database_instance.dart'; // <-- ini penting
 import 'features/master_data/presentation/provider/master/user_provider.dart';
 
 void main() async {
@@ -122,6 +125,8 @@ void main() async {
 
   final formTransferApiService = FormTransferApiService(dioClient.dio);
 
+  final dryFractionationApiService = DryFractionationApiService(dioClient.dio);
+
   runApp(
     MultiProvider(
       providers: [
@@ -139,6 +144,11 @@ void main() async {
         Provider<ProductMySQLService>(
           create: (context) => ProductMySQLService(),
         ),
+
+        Provider<CrystallizerMySQLService>(
+          create: (context) => CrystallizerMySQLService(),
+        ),
+
         // Provide Quality Report QC MySQL Service
         Provider<QualityReportQCMySQLService>(
           create: (context) => QualityReportQCMySQLService(),
@@ -156,9 +166,9 @@ void main() async {
           create: (context) => DailyProductionFractionationMySQLService(),
         ),
         // Provide Dry Production MySQL Service
-        Provider<DryFractionationMySQLService>(
-          create: (context) => DryFractionationMySQLService(),
-        ),
+        // Provider<DryFractionationMySQLService>(
+        //   create: (context) => DryFractionationMySQLService(),
+        // ),
 
         // Provider Maintenance Lamps And Glass MySQL Service
         Provider<MaintenanceLampsAndGlassMySQLService>(
@@ -228,6 +238,14 @@ void main() async {
               (context) =>
                   ProductRepository(context.read<ProductMySQLService>()),
         ),
+
+        Provider<CrystallizerRepository>(
+          create:
+              (context) => CrystallizerRepository(
+                context.read<CrystallizerMySQLService>(),
+              ),
+        ),
+
         // Provide Quality Report QC Repository
         Provider<QualityReportQCRepository>(
           create:
@@ -283,12 +301,12 @@ void main() async {
                 context.read<DeodorizingFiltrationMySQLService>(),
               ),
         ),
-        Provider<DryFractionationRepository>(
-          create:
-              (context) => DryFractionationRepository(
-                context.read<DryFractionationMySQLService>(),
-              ),
-        ),
+        // Provider<DryFractionationRepository>(
+        //   create:
+        //       (context) => DryFractionationRepository(
+        //         context.read<DryFractionationMySQLService>(),
+        //       ),
+        // ),
         Provider<ChangeProductChecklistRepository>(
           create:
               (context) => ChangeProductChecklistRepository(
@@ -357,6 +375,12 @@ void main() async {
           create:
               (context) => ProductProvider(context.read<ProductRepository>()),
         ),
+
+        ChangeNotifierProvider(
+          create:
+              (context) =>
+                  CrystallizerProvider(context.read<CrystallizerRepository>()),
+        ),
         // Provide Quality Report QC Provider
         ChangeNotifierProvider(
           create:
@@ -409,12 +433,12 @@ void main() async {
                 context.read<DeodorizingFiltrationRepository>(),
               ),
         ),
-        ChangeNotifierProvider(
-          create:
-              (context) => DryFractionationProvider(
-                context.read<DryFractionationRepository>(),
-              ),
-        ),
+        // ChangeNotifierProvider(
+        //   create:
+        //       (context) => DryFractionationProvider(
+        //         context.read<DryFractionationRepository>(),
+        //       ),
+        // ),
         ChangeNotifierProvider(
           create:
               (context) => ChangeProductChecklistProvider(
@@ -504,6 +528,14 @@ void main() async {
                 repository: FormTransferRepository(
                   apiService: formTransferApiService,
                 ),
+              ),
+        ),
+
+        ChangeNotifierProvider(
+          create:
+              (context) => DryFractionationProvider(
+                dryFractionationApiService,
+                storageService,
               ),
         ),
 

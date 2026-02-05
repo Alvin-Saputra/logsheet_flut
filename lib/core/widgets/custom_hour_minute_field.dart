@@ -11,7 +11,7 @@ class CustomHourMinuteField extends StatelessWidget {
     required this.selectedTime,
     required this.onTap,
     this.hint = "Pilih Jam Input",
-    this.isDisabled = false,
+    this.isDisabled = false, int? selectedHour,
   });
 
   @override

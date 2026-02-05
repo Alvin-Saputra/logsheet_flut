@@ -18,6 +18,10 @@ class CustomDateField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (controller.text.isEmpty) {
+      final now = DateTime.now();
+      controller.text = "${now.day}-${now.month}-${now.year}";
+    }
     return GestureDetector(
       onTap:
           isDisabled
@@ -39,7 +43,6 @@ class CustomDateField extends StatelessWidget {
               },
       child: AbsorbPointer(
         child: TextField(
-          
           controller: controller,
           decoration: InputDecoration(
             floatingLabelBehavior: FloatingLabelBehavior.auto,

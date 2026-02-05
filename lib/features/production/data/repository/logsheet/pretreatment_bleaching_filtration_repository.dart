@@ -83,9 +83,10 @@ class PretreatmentBleachingFiltrationRepository {
     DateTime? dateFilter,
     String plantCode,
     String? shift,
+    String? workCenter
   ) async {
     final List<Map<String, dynamic>> filteredTicketList = await _mySQLService
-        .getTickets(dateFilter, plantCode, shift: shift);
+        .getTickets(dateFilter, plantCode, shift: shift, workCenter: workCenter);
 
     List<PretreatmentBleachingFiltrationEntity> filteredTicketListFromMap =
         filteredTicketList

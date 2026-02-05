@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class CustomSectionCardData extends StatelessWidget {
   final String label;
-  final String value;
+  final String? value;
 
   CustomSectionCardData(this.label, this.value);
 
@@ -20,7 +20,7 @@ class CustomSectionCardData extends StatelessWidget {
             ),
           ),
           const Spacer(), // <-- ini kuncinya
-          Text(value, style: const TextStyle(color: Colors.black54)),
+          Text(value??'', style: const TextStyle(color: Colors.black54)),
         ],
       ),
     );

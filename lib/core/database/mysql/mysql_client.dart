@@ -8,9 +8,16 @@ MySQLConnection? _connection;
 
 Future<({MySQLConnection? connection, String? error})>
 getMySQLConnection() async {
-  if (_connection != null && _connection!.connected) {
-    log('Reusing existing MySQL connection');
-    return (connection: _connection, error: null);
+  if (_connection != null) {
+    try {
+      // Validasi fisik: Kirim query ringan untuk cek apakah server merespon
+      await _connection!.execute("SELECT 1");
+      log('Reusing verified MySQL connection');
+      return (connection: _connection, error: null);
+    } catch (e) {
+      log('Existing connection is stale, creating new one...');
+      _connection = null; // Koneksi lama mati, hapus agar buat baru
+    }
   }
   final isAWS = "T"; // "T" if use aws RDS
   final MySQLConnection? conn;
@@ -69,14 +76,23 @@ getMySQLConnection() async {
   }
 }
 
-Future<void> closeMySQLConnection(MySQLConnection? connection) async {
-  if (_connection != null && _connection!.connected) {
+Future<void> closeMySQLConnection([MySQLConnection? connection]) async {
+  // 1. Cek apakah variabel _connection ada isinya
+  if (_connection != null) {
     try {
-      await _connection!.close();
-      log('MySQL connection closed.');
+      // 2. Hanya panggil .close() jika statusnya benar-benar masih terhubung
+      if (_connection!.connected) {
+        await _connection!.close();
+        log('MySQL connection closed successfully.');
+      } else {
+        log('MySQL connection was already closed or not established.');
+      }
     } catch (e) {
-      log('Error closing MySQL Connection: $e');
+      // 3. Jika gagal menutup, log saja, jangan biarkan aplikasi crash
+      log('Info: Connection already in inactive state, safe to ignore.');
     } finally {
+      // 4. YANG PALING PENTING: Pastikan variabel global diatur ke null
+      // agar proses berikutnya bisa membuat koneksi baru dengan bersih
       _connection = null;
     }
   }

@@ -127,7 +127,7 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
                               entryBy: item.entryBy ?? '',
                               tank: item.material,
                               role: role,
-                              quantity: item.quantity.toString(),
+                              quantity: item.quantity,
                             );
                           },
                         );
@@ -199,7 +199,7 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
   Widget _cardItem({
     required String id,
     required String date,
-    required String? quantity,
+    required double? quantity,
     required String? tank,
     required String? entryBy,
     required String? role,
@@ -235,7 +235,7 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
       },
       child: Card(
         child: Padding(
-          padding: EdgeInsetsGeometry.all(16.0),
+          padding: EdgeInsets.all(16.0),
           child: Column(
             children: [
               Row(
@@ -306,7 +306,7 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'Quantity: $quantity',
+                    'Quantity: ${quantity ?? '-'}',
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                 ],

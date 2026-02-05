@@ -22,6 +22,7 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
   final TextEditingController phosphoricYieldController;
   final TextEditingController phosphoricBatchController;
   final TextEditingController phosporicTotalController;
+  final TextEditingController bleachingBatchYieldPercentController;
 
   final bool ref500Phosphoric;
   final bool ref150Phosphoric;
@@ -38,6 +39,7 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
     required this.bleachingBagController,
     required this.bleachingTypeController,
     required this.bleachingBatchController,
+    required this.bleachingBatchYieldPercentController,
     required this.ref500Bleaching,
     required this.ref150Bleaching,
     required this.phosphoricWeightController,
@@ -73,12 +75,12 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
             const Text('1 Bag = 1000 Kg'),
 
             const SizedBox(height: 12),
-            CustomDropdown.fromStringItems(
-              hint: 'Shift',
-              value: selectedShiftBleaching,
-              stringItems: shiftOptions,
-              onChanged: onBleachingShiftChanged,
-            ),
+            // CustomDropdown.fromStringItems(
+            //   hint: 'Shift',
+            //   value: selectedShiftBleaching,
+            //   stringItems: shiftOptions,
+            //   onChanged: onBleachingShiftChanged,
+            // ),
             const SizedBox(height: 12),
 
             CustomTextField(
@@ -101,6 +103,15 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
               label: 'Lot Batch Number',
               icon: Icons.numbers,
             ),
+             const SizedBox(height: 12),
+
+            CustomTextField(
+              controller: bleachingBatchYieldPercentController,
+              label: 'Yield (%)',
+              icon: Icons.numbers,
+              isNumeric: true,
+            ),
+            
             const SizedBox(height: 12),
 
             Row(
@@ -120,12 +131,12 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
             Text("Value: $paValue"),
             const SizedBox(height: 12),
 
-            CustomDropdown.fromStringItems(
-              hint: 'Shift',
-              value: selectedShiftBleaching,
-              stringItems: shiftOptions,
-              onChanged: onPhosphoricShiftChanged,
-            ),
+            // CustomDropdown.fromStringItems(
+            //   hint: 'Shift',
+            //   value: selectedShiftBleaching,
+            //   stringItems: shiftOptions,
+            //   onChanged: onPhosphoricShiftChanged,
+            // ),
             const SizedBox(height: 12),
             const SizedBox(width: 12),
             CustomTextField(

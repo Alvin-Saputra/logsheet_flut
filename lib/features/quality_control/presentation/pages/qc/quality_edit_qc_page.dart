@@ -1,17 +1,23 @@
 // quality_report_edit.dart
 import 'dart:developer';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/core/utils/check_if_null_string.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
+import 'package:logsheet_app/core/utils/to_string.dart';
+import 'package:logsheet_app/core/widgets/custom_date_field.dart';
+import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/product_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/qc/daily_production_card.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/qc/select_production_data_dialog.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/quality_report/quality_report_production_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/quality_report/quality_report_qc_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
@@ -37,6 +43,7 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
 
   // Data dropdown & kontrol
   late String? selectedOilType;
+  late String? selectedOilTypeName;
   late String? selectedWorkCenter;
   late String? selectedTankSource;
   late String? selectedBpToTankGroup;
@@ -99,6 +106,27 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
   final Color primaryRed = const Color(0xFFAB2F2B);
   final Color backgroundGrey = const Color(0xFFEFF3F9);
 
+  List<String> dummyShiftOptions = ['1', '2', '3', '4', '5'];
+  String? selectedShift;
+  final TextEditingController dailyProductionRefineryDateEntryController =
+      TextEditingController();
+
+  String? selectedWorkCenterDailyProductionRefinery;
+  String? selectedDailyProductionRefineryDataId;
+  String? _lockedProductionId; // Untuk menyimpan ID yang ditemukan otomatis
+  bool _isInterlockLocked = false;
+  bool? isChangingProductionData = false;
+
+  String? selectedbeTotalBag;
+  String? selectedpaTotal;
+  double? selecteduuTotalCpo;
+  double? selectedbeYieldPercent;
+  double? selectedpaYieldPercent;
+  double? selecteduuYieldPercent;
+  DateTime? selectedTransactionDate;
+
+  bool? hasSelectedNewProductionData = false;
+
   @override
   void initState() {
     super.initState();
@@ -106,10 +134,12 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
     qualityReportRefDao = QualityReportRefineryDao(db);
 
     // Initialize dropdown values from the report
+    selectedDailyProductionRefineryDataId = widget.report.dailyProductionId;
     selectedOilType = widget.report.oilTypeId;
     selectedWorkCenter = widget.report.workCenter;
     selectedTankSource = widget.report.rmTankSource;
     selectedBpToTankGroup = checkIfNull(widget.report.bpToTank);
+    // selectedBpToTankGroup = checkIfNull(widget.report.bpToTank);
     selectedHour = widget.report.time?.hour;
     selectedToTankGroup = widget.report.fgTankTo;
 
@@ -152,16 +182,16 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
 
     remarkController.text = widget.report.remarks ?? '';
 
+    selectedTransactionDate = widget.report.transactionDate;
+    context.read<QualityReportQCProvider>().clearFetchedProductionRefineryData();
     // Fetch dropdown data similar to the input page
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await context.read<ValueProvider>().fetchAllInitialData();
 
       if (!mounted) return;
       await context.read<ProductProvider>().fetchProducts();
+      _performInterlockChecking();
     });
-
-
-
   }
 
   @override
@@ -210,7 +240,7 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
 
   // Navigasi Stepper
   void _nextStep() {
-    if (currentStep < 5) setState(() => currentStep++);
+    if (currentStep < 6) setState(() => currentStep++);
   }
 
   void _prevStep() {
@@ -256,6 +286,7 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
         postingDate: widget.report.postingDate,
         workCenter: selectedWorkCenter,
         oilTypeId: selectedOilType,
+        oilType: widget.report.oilType,
         time: time,
         shift: getShiftBasedOnDate(time),
         rmFlowRate: parseDouble(rmFlowrateController),
@@ -311,6 +342,15 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
         dateIssued: widget.report.dateIssued,
         revisionNo: widget.report.revisionNo,
         revisionDate: widget.report.revisionDate,
+
+        dailyProductionId: selectedDailyProductionRefineryDataId,
+
+        beTotalBag: selectedbeTotalBag ?? widget.report.beTotalBag,
+        paTotal: selectedpaTotal ?? widget.report.paTotal,
+        uuTotalCpo: selecteduuTotalCpo ?? widget.report.uuTotalCpo,
+        beYieldPercent: selectedbeYieldPercent ?? widget.report.beYieldPercent,
+        paYieldPercent: selectedpaYieldPercent ?? widget.report.paYieldPercent,
+        uuYieldPercent: selecteduuYieldPercent ?? widget.report.uuYieldPercent,
       );
 
       updatedItem.checkedBy = null;
@@ -326,7 +366,6 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
       }
 
       bool? success;
-      
 
       success = await context.read<QualityReportQCProvider>().updateReport(
         updatedItem,
@@ -336,10 +375,12 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
       );
 
       if (success) {
+        await Future.delayed(const Duration(milliseconds: 1000));
         log("Flag: ${updatedItem.flag}");
         print("INI ADALAH FLAG: ${updatedItem.flag}");
         QualityReportProductionEntity prodEntity =
             updatedItem.toProductionEntity();
+        prodEntity.idFk = updatedItem.id;
         if (!mounted) return;
         final currentUser = context.read<UserProvider>().currentUser;
         if (!mounted) return;
@@ -396,6 +437,7 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
     } catch (e) {
       _showSnackBar('Gagal memperbarui laporan: $e');
     } finally {
+      await closeMySQLConnection();
       setState(() => isSaving = false);
     }
   }
@@ -539,6 +581,8 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
         return 'Waste';
       case 5:
         return 'Remark';
+      // case 6:
+      //   return 'Daily Chemical Usage and Theoretical Yield';
       default:
         return 'Parameters'; // fallback default
     }
@@ -556,13 +600,13 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
               hintText: 'Masukkan nilai Flowrate',
               isNumeric: true,
             ),
-            _buildTextField(
-              controller: rmTempController,
-              label: 'Temp (°C)',
-              icon: Icons.thermostat,
-              hintText: 'Masukkan nilai Temperatur (°C)',
-              isNumeric: true,
-            ),
+            // _buildTextField(
+            //   controller: rmTempController,
+            //   label: 'Temp (°C)',
+            //   icon: Icons.thermostat,
+            //   hintText: 'Masukkan nilai Temperatur (°C)',
+            //   isNumeric: true,
+            // ),
             _buildTextField(
               controller: rmFFAController,
               label: 'FFA',
@@ -700,13 +744,16 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
               isNumeric: true,
               hintText: 'Masukkan nilai Moisture',
             ),
-            _buildTextField(
-              controller: fgImpuritiesController,
-              label: 'Impurities',
-              icon: Icons.science,
-              isNumeric: true,
-              hintText: 'Masukkan nilai Impurities',
-            ),
+
+            if (selectedWorkCenter == 'REF-02') ...[
+              _buildTextField(
+                controller: fgImpuritiesController,
+                label: 'Impurities',
+                icon: Icons.science,
+                isNumeric: true,
+                hintText: 'Masukkan nilai Impurities',
+              ),
+            ],
 
             _buildTextField(
               controller: fgColorRController,
@@ -904,6 +951,8 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
           ],
         );
 
+     
+
       default:
         return const SizedBox.shrink();
     }
@@ -919,6 +968,8 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
   }
 
   Stack _buildBody(BuildContext context) {
+    final plantProvider = context.read<PlantProvider>();
+    final plantCode = plantProvider.currentPlant?.code ?? "";
     return Stack(
       children: [
         SingleChildScrollView(
@@ -944,6 +995,7 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
                     onChanged: (value) {
                       setState(() {
                         selectedWorkCenter = value;
+                        _performInterlockChecking();
                       });
                     },
                     decoration: InputDecoration(
@@ -985,6 +1037,10 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
                     onChanged: (value) {
                       setState(() {
                         selectedOilType = value;
+                        selectedOilTypeName =
+                            provider.productRefineryList
+                                .firstWhere((oil) => oil.id == value)
+                                .rawMaterial;
                       });
                     },
                     decoration: InputDecoration(
@@ -1071,7 +1127,510 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
+
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(
+                    color: Colors.grey, // warna outline
+                    width: 0.8, // ketebalan outline (thin)
+                  ),
+                ),
+                margin: EdgeInsets.zero,
+                elevation: 0, // biar flat
+                color: const Color(0xFFF0ECE9),
+                child: Consumer<QualityReportQCProvider>(
+                  builder: (
+                    BuildContext context,
+                    QualityReportQCProvider provider,
+                    Widget? child,
+                  ) {
+                    return (provider
+                            .isLoadingCheckExistingDailyProductionRefineryData)
+                        ? Row(
+                          children: [
+                            Text("Checking Data Interlock..."),
+                            CircularProgressIndicator(),
+                          ],
+                        )
+                        : ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: ExpansionTile(
+                            backgroundColor: Colors.white,
+                            collapsedBackgroundColor: const Color(0xFFF0ECE9),
+                            title: Text(
+                              _isInterlockLocked && _lockedProductionId != null
+                                  ? 'Production Data: $_lockedProductionId'
+                                  : 'Production Data: No interlock data',
+                            ),
+
+                            leading: const Icon(Icons.factory),
+                            trailing:
+                                _isInterlockLocked
+                                    ? IconButton(
+                                      icon: const Icon(
+                                        Icons.edit,
+                                        color: Colors.blue,
+                                      ),
+                                      tooltip: "Edit Interlock Data",
+                                      onPressed: () {
+                                        setState(() {
+                                          // Buka kunciannya
+                                          _isInterlockLocked = false;
+                                          hasSelectedNewProductionData = false;
+                                          // Opsional: Jika ingin mengosongkan pilihan saat klik edit, uncomment baris bawah:
+                                          // selectedProductionData = null;
+                                        });
+                                      },
+                                    )
+                                    : null,
+                            children: [
+                              IgnorePointer(
+                                ignoring: _isInterlockLocked,
+                                child: Opacity(
+                                  opacity: _isInterlockLocked ? 0.6 : 1.0,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      children: [
+                                        Consumer<ValueProvider>(
+                                          builder: (context, provider, child) {
+                                            if (provider.isWorkCenterLoading) {
+                                              // Return a disabled dropdown with a loading indicator or message
+                                              return DropdownButtonFormField<
+                                                String
+                                              >(
+                                                value: null,
+                                                items: [],
+                                                onChanged:
+                                                    null, // Disable the dropdown
+                                                decoration: InputDecoration(
+                                                  filled: true,
+                                                  fillColor: const Color(
+                                                    0xFFF0ECE9,
+                                                  ),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                    borderSide: BorderSide.none,
+                                                  ),
+                                                  hintText:
+                                                      'Loading Work Center...',
+                                                  prefixIcon: const Padding(
+                                                    padding: EdgeInsets.all(
+                                                      12.0,
+                                                    ),
+                                                    child: SizedBox(
+                                                      height: 20,
+                                                      width: 20,
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                            strokeWidth: 2,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                            if (provider
+                                                .workCenterLists
+                                                .isEmpty) {
+                                              return TextFormField(
+                                                readOnly: true,
+                                                decoration: InputDecoration(
+                                                  filled: true,
+                                                  fillColor: const Color(
+                                                    0xFFF0ECE9,
+                                                  ),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                    borderSide: BorderSide.none,
+                                                  ),
+                                                  hintText:
+                                                      'Work Center tidak ditemukan.',
+                                                  prefixIcon: const Padding(
+                                                    padding: EdgeInsets.all(
+                                                      12.0,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons
+                                                          .warning_amber_rounded,
+                                                    ),
+                                                  ),
+                                                  suffixIcon: IconButton(
+                                                    icon: const Icon(
+                                                      Icons.refresh,
+                                                    ),
+                                                    onPressed: () {
+                                                      context
+                                                          .read<ValueProvider>()
+                                                          .fetchWorkCenterLists();
+                                                    },
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                            return DropdownButtonFormField<
+                                              String
+                                            >(
+                                              value:
+                                                  selectedWorkCenterDailyProductionRefinery,
+                                              items:
+                                                  provider.workCenterLists.map((
+                                                    machine,
+                                                  ) {
+                                                    return DropdownMenuItem<
+                                                      String
+                                                    >(
+                                                      value: machine.code,
+                                                      child: Text(
+                                                        "${machine.code} | ${machine.name}",
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }).toList(),
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  selectedWorkCenter = value;
+                                                });
+                                              },
+                                              decoration: InputDecoration(
+                                                filled: true,
+                                                fillColor: const Color(
+                                                  0xFFF0ECE9,
+                                                ),
+                                                border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  borderSide: BorderSide.none,
+                                                ),
+                                                hintText: 'Pilih Work Center',
+                                                prefixIcon: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    12.0,
+                                                  ),
+                                                  child: SvgPicture.asset(
+                                                    'assets/icons/oil-refinery-tanks.svg',
+                                                    height: 24,
+                                                    width: 24,
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        SizedBox(height: 12),
+                                        CustomDateField(
+                                          controller:
+                                              dailyProductionRefineryDateEntryController,
+                                          label: 'Transaction Date',
+                                          icon: Icons.event,
+                                        ),
+                                        SizedBox(height: 12),
+                                        DropdownButtonFormField<String>(
+                                          value: selectedShift,
+                                          items:
+                                              dummyShiftOptions.map((item) {
+                                                return DropdownMenuItem<String>(
+                                                  value: item,
+                                                  child: Text(
+                                                    "${item}",
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                );
+                                              }).toList(),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              selectedShift = value;
+                                            });
+                                          },
+                                          decoration: InputDecoration(
+                                            filled: true,
+                                            fillColor: const Color(0xFFF0ECE9),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide.none,
+                                            ),
+                                            labelText: 'Pilih Shift',
+                                            floatingLabelBehavior:
+                                                FloatingLabelBehavior.auto,
+                                            prefixIcon: Padding(
+                                              padding: const EdgeInsets.all(
+                                                12.0,
+                                              ),
+                                              child: SvgPicture.asset(
+                                                'assets/icons/oil-refinery-tanks.svg',
+                                                height: 24,
+                                                width: 24,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(height: 12),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.max,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Expanded(
+                                              child: Consumer<
+                                                QualityReportQCProvider
+                                              >(
+                                                builder: (
+                                                  BuildContext context,
+                                                  QualityReportQCProvider
+                                                  provider,
+                                                  Widget? child,
+                                                ) {
+                                                  return (provider
+                                                          .isLoadingFetchDailyProductionRefinery)
+                                                      ? Center(
+                                                        child:
+                                                            CircularProgressIndicator(),
+                                                      )
+                                                      : ElevatedButton(
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              const Color(
+                                                                0xFFAB2F2B,
+                                                              ),
+                                                          foregroundColor:
+                                                              Colors.white,
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                vertical: 12,
+                                                                horizontal: 24,
+                                                              ),
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  12,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                        onPressed: () {
+                                                          print(
+                                                            "BUTTON DIPENCET",
+                                                          );
+                                                          provider.getDailyProductionRefineryByFilter(
+                                                            changeStringDateFormat(
+                                                              dailyProductionRefineryDateEntryController
+                                                                  .text,
+                                                              'dd-MM-yyyy',
+                                                              'yyyy-MM-dd',
+                                                              returnDateTime:
+                                                                  true,
+                                                            ),
+                                                            plantCode,
+                                                            parseInt(
+                                                              selectedShift,
+                                                            ),
+                                                            selectedWorkCenterDailyProductionRefinery,
+                                                          );
+                                                          log(
+                                                            "nilai work center daily production refinery: $selectedWorkCenterDailyProductionRefinery",
+                                                          );
+                                                        },
+                                                        child: const Text(
+                                                          'Cari Data Daily Production Ref',
+                                                        ),
+                                                      );
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 16.0,),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Consumer<
+                                                QualityReportQCProvider
+                                              >(
+                                                builder: (
+                                                  BuildContext context,
+                                                  QualityReportQCProvider
+                                                  provider,
+                                                  Widget? child,
+                                                ) {
+                                                  return (provider
+                                                          .isLoadingUpdateDailyProductionRefineryData)
+                                                      ? Center(
+                                                        child:
+                                                            CircularProgressIndicator(),
+                                                      )
+                                                      : ElevatedButton(
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              const Color(
+                                                                0xFFAB2F2B,
+                                                              ),
+                                                          foregroundColor:
+                                                              Colors.white,
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                vertical: 12,
+                                                                horizontal: 24,
+                                                              ),
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  12,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                        onPressed:(!hasSelectedNewProductionData!)?null:() async {
+                                                          // print(
+                                                          //   "BUTTON DIPENCET",
+                                                          // );
+                                                          bool
+                                                          isSuccess = await provider.updateInterlockDailyProductionRefineryData(
+                                                            plant: plantCode,
+                                                            workCenter:
+                                                                selectedWorkCenter ??
+                                                                '',
+                                                            date:
+                                                                formatDatetoString(
+                                                                  selectedTransactionDate,
+                                                                  "yyyy-MM-dd",
+                                                                ) ??
+                                                                '',
+                                                            // oldId:
+                                                            //     _lockedProductionId ??
+                                                            //     '',
+                                                            newId:
+                                                                selectedDailyProductionRefineryDataId ??
+                                                                '',
+                                                          );
+                                                          if (isSuccess) {
+                                                            showSnackBar(
+                                                              "Berhasil Memperbaharui Interlock Data Daily Production Refinery",
+                                                              context,
+                                                            );
+
+                                                            setState(() {
+                                                              _isInterlockLocked =
+                                                                  true;
+                                                              _lockedProductionId =
+                                                                  selectedDailyProductionRefineryDataId;
+                                                            });
+                                                          } else {
+                                                            showSnackBar(
+                                                              "Gagal Memperbaharui Interlock Data Daily Production Refinery",
+                                                              context,
+                                                            );
+                                                          }
+                                                        },
+                                                        child: const Text(
+                                                          'Simpan Perubahan Data Production',
+                                                        ),
+                                                        
+                                                      );
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 16),
+                                        Consumer<QualityReportQCProvider>(
+                                          builder: (
+                                            BuildContext context,
+                                            QualityReportQCProvider provider,
+                                            Widget? child,
+                                          ) {
+                                            if (provider
+                                                .isLoadingFetchDailyProductionRefinery) {
+                                              return const Padding(
+                                                padding: EdgeInsets.all(16),
+                                                child: Center(
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                ),
+                                              );
+                                            }
+
+                                            if (provider
+                                                .dailyProductionRefineryData
+                                                .isEmpty) {
+                                              return const Padding(
+                                                padding: EdgeInsets.all(16),
+                                                child: Center(
+                                                  child: Text('No data'),
+                                                ),
+                                              );
+                                            }
+
+                                            return ListView.builder(
+                                              shrinkWrap: true,
+                                              physics:
+                                                  const NeverScrollableScrollPhysics(),
+                                              itemCount:
+                                                  provider
+                                                      .dailyProductionRefineryData
+                                                      .length,
+                                              itemBuilder: (context, index) {
+                                                final item =
+                                                    provider
+                                                        .dailyProductionRefineryData[index];
+
+                                                return dailyProductionCard(
+                                                  data: item,
+                                                  isSelected:
+                                                      selectedDailyProductionRefineryDataId ==
+                                                      item.id,
+                                                  onTap: () async {
+                                                    // Wait for the user to pick an action
+                                                    final bool? isConfirmed =
+                                                        await selectProductionDataDialog(
+                                                          context,
+                                                        );
+
+                                                    // If they chose "Ya" (true), update the state
+                                                    if (isConfirmed == true) {
+                                                      setState(() {
+                                                        selectedDailyProductionRefineryDataId =
+                                                            item.id;
+                                                        hasSelectedNewProductionData = true;
+                                                      });
+                                                    }
+                                                  },
+                                                );
+                                              },
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // ListTile(
+                              //   title: const Text('Output'),
+                              //   subtitle: const Text('1200 Kg'),
+                              // ),
+                              // ListTile(
+                              //   title: const Text('Remark'),
+                              //   subtitle: const Text('Normal operation'),
+                              // ),
+                            ],
+                          ),
+                        );
+                  },
+                ),
+              ),
+
+              SizedBox(height: 24.0),
 
               // Step Indicator
               Row(
@@ -1221,5 +1780,37 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
     } else {
       return 3;
     }
+  }
+
+  Future<void> _performInterlockChecking() async {
+    final plantProvider = context.read<PlantProvider>();
+    final plantCode = plantProvider.currentPlant?.code ?? "";
+    final qcProvider = context.read<QualityReportQCProvider>();
+
+    String? currentDate = formatDatetoString(
+      selectedTransactionDate,
+      "yyyy-MM-dd",
+    );
+
+    if (selectedWorkCenter == null) return;
+
+    if (selectedTransactionDate == null) return;
+
+    await qcProvider.checkExistingInterlockDailyProductionRefineryData(
+      plant: plantCode,
+      workCenter: selectedWorkCenter ?? '',
+      date: currentDate ?? '',
+    );
+
+    setState(() {
+      if (qcProvider.dailyProductionRefineryId != null) {
+        _lockedProductionId = qcProvider.dailyProductionRefineryId;
+        _isInterlockLocked = true;
+        selectedDailyProductionRefineryDataId = _lockedProductionId;
+      } else if (qcProvider.dailyProductionRefineryId == null) {
+        _lockedProductionId = null;
+        _isInterlockLocked = false;
+      }
+    });
   }
 }

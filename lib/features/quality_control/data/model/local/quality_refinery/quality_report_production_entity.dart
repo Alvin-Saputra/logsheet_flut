@@ -80,6 +80,14 @@ class QualityReportProductionEntity {
   int? revisionNo;
   DateTime? revisionDate;
 
+  final String? qcRemarks;
+  final String? qcFgTankTo;
+  final String? qcRmTankSource;
+  final double? qcRmTemp;
+  final String? qcfgTankToOthersRemarks;
+  final String? qcOilTypeId;
+  final String? qcOilTypeName;
+
   QualityReportProductionEntity({
     required this.oilTypeId,
     this.oilType,
@@ -151,6 +159,14 @@ class QualityReportProductionEntity {
     required this.dateIssued,
     required this.revisionNo,
     required this.revisionDate,
+
+    this.qcRemarks,
+    this.qcFgTankTo,
+    this.qcRmTankSource,
+    this.qcRmTemp,
+    this.qcOilTypeId,
+    this.qcOilTypeName,
+    this.qcfgTankToOthersRemarks,
   });
 
   factory QualityReportProductionEntity.fromMap(Map<String, dynamic> map) {
@@ -251,6 +267,13 @@ class QualityReportProductionEntity {
       dateIssued: parseDateTime(map['date_issued']),
       revisionNo: parseInt(map['revision_no']),
       revisionDate: parseDateTime(map['revision_date']),
+      qcRemarks: map['qc_remarks'] as String?,
+      qcFgTankTo: map['qc_fg_tank_to'] as String?,
+      qcRmTankSource: map['qc_rm_tank_source'] as String?,
+      qcRmTemp: parseDouble(map['qc_rm_temp']),
+      qcOilTypeId: map['qc_oil_type_id'] as String?,
+      qcOilTypeName: map['qc_oil_type_name'] as String?,
+      qcfgTankToOthersRemarks: map['qc_fg_tank_to_others_remarks'] as String?,
     );
   }
 

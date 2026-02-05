@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:logsheet_app/features/daily_production/data/model/daily_production/daily_production_refinery_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/features/transactions/report_notification_data_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/datasources/local/quality_report/quality_report_qc_mysql_service.dart';
@@ -86,6 +87,28 @@ class QualityReportQCRepository {
     );
   }
 
+  Future<bool> sendApproveRejectTicketPerDate(
+    final String username,
+    final String status,
+    final String userRole,
+    final int shift,
+    final String transactionDate,
+    final String plant,
+    final String workCenter,
+    final String? remark,
+  ) async {
+    return await _mySQLService.sendApproveRejectTicketPerDate(
+      username,
+      status,
+      userRole,
+      shift,
+      transactionDate,
+      plant,
+      workCenter,
+      remark ?? '',
+    );
+  }
+
   Future<List<int>> getReportedHours(
     DateTime dateFilter,
     String plantCode,
@@ -118,5 +141,78 @@ class QualityReportQCRepository {
             .toList();
 
     return filteredTicketListFromMap;
+  }
+
+  Future<List<DailyProductionRefineryEntity>>
+  getDailyProductionRefineryByFilter({
+    DateTime? transactionDate,
+    required String plantCode,
+    int? shift,
+    String? workCenter,
+  }) async {
+    final List<Map<String, dynamic>> filteredTicketList = await _mySQLService
+        .getDailyProductionRefineryByFilter(
+          plantCode: plantCode,
+          transactionDate: transactionDate,
+          shift: shift,
+          workCenter: workCenter,
+        );
+
+    List<DailyProductionRefineryEntity> filteredTicketListFromMap =
+        filteredTicketList
+            .map((map) => DailyProductionRefineryEntity.fromMap(map))
+            .toList();
+
+    return filteredTicketListFromMap;
+  }
+
+  Future<String?> checkExistingInterlockDailyProductionRefineryData({
+    required String plant,
+    required String workCenter,
+    required String date,
+  }) async {
+    final dailyProductionRefineryId = await _mySQLService
+        .checkExistingInterlockDailyProductionRefineryData(
+          plant: plant,
+          workCenter: workCenter,
+          date: date,
+        );
+    log(
+      'Found interlock daily production refinery id (Repository): $dailyProductionRefineryId',
+    );
+    return dailyProductionRefineryId ?? '';
+  }
+
+  Future<bool> updateInterlockDailyProductionRefineryData({
+    required String plant,
+    required String workCenter,
+    required String date, // Format: YYYY-MM-DD
+    // required String oldId,
+    required String newId,
+  }) async {
+    final isSuccess = await _mySQLService
+        .updateInterlockDailyProductionRefineryData(
+          plant: plant,
+          workCenter: workCenter,
+          date: date,
+          // oldId: oldId,
+          newId: newId,
+        );
+
+    return isSuccess;
+  }
+
+  Future<bool> checkAnyDataExists({
+    required String plant,
+    required String workCenter,
+    required String date, // Format: YYYY-MM-DD
+  }) async {
+    final isExist = await _mySQLService.checkAnyDataExists(
+      plant: plant,
+      workCenter: workCenter,
+      date: date,
+    );
+
+    return isExist;
   }
 }

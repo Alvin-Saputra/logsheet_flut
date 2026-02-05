@@ -98,6 +98,7 @@ class DailyProductionRefineryMySQLService {
             a.oil_type_rm_awal_flowmeter,
             a.oil_type_rm_akhir_jam,
             a.oil_type_rm_akhir_flowmeter,
+            a.oil_type_rm_oip,
             a.oil_type_rm_total,
             a.oil_type_fg AS oil_type_fg_id,
             b.finish_good AS oil_type_fg,
@@ -151,7 +152,8 @@ class DailyProductionRefineryMySQLService {
             a.form_no,
             a.date_issued,
             a.revision_no,
-            a.revision_date
+            a.revision_date,
+            a.is_completed
           FROM 
                 t_daily_production_refinery AS a
           JOIN m_product AS b 
@@ -180,6 +182,7 @@ class DailyProductionRefineryMySQLService {
           a.oil_type_rm_awal_flowmeter,
           a.oil_type_rm_akhir_jam,
           a.oil_type_rm_akhir_flowmeter,
+          a.oil_type_rm_oip,
           a.oil_type_rm_total,
           a.oil_type_fg AS oil_type_fg_id,
           b.finish_good AS oil_type_fg,
@@ -233,7 +236,8 @@ class DailyProductionRefineryMySQLService {
           a.form_no,
           a.date_issued,
           a.revision_no,
-          a.revision_date
+          a.revision_date,
+          a.is_completed
         FROM 
           t_daily_production_refinery AS a
         JOIN m_product AS b 
@@ -262,6 +266,7 @@ class DailyProductionRefineryMySQLService {
                 a.oil_type_rm_awal_flowmeter,
                 a.oil_type_rm_akhir_jam,
                 a.oil_type_rm_akhir_flowmeter,
+                a.oil_type_rm_oip,
                 a.oil_type_rm_total,
                 a.oil_type_fg AS oil_type_fg_id,
                 b.finish_good AS oil_type_fg,
@@ -315,7 +320,8 @@ class DailyProductionRefineryMySQLService {
                 a.form_no,
                 a.date_issued,
                 a.revision_no,
-                a.revision_date
+                a.revision_date,
+                a.is_completed
               FROM 
                 t_daily_production_refinery AS a
               JOIN m_product AS b 
@@ -473,7 +479,8 @@ class DailyProductionRefineryMySQLService {
 
       final result = await connection!.execute(sql, sqlExecuteParams);
       log('ticket updated: ${result.affectedRows} row(s) affected.');
-      return result.affectedRows > BigInt.from(0);
+      // return result.affectedRows > BigInt.from(0);
+      return true;
     } catch (e) {
       log('Error updating report: $e');
       return false;

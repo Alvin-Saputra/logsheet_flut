@@ -290,7 +290,7 @@ class _QualityApprovalDetailQCScreenState
                   _buildDetailRow('Oil Type', report.oilType ?? '-'),
                   const Divider(),
                   _buildDetailRow('Flow Rate', formatDouble(report.rmFlowRate)),
-                  _buildDetailRow('RM Temp', formatDouble(report.rmTemp)),
+                  // _buildDetailRow('RM Temp', formatDouble(report.rmTemp)),
                   _buildDetailRow('RM FFA', formatDouble(report.rmFFA)),
                   _buildDetailRow('RM IV', formatDouble(report.rmIV)),
                   _buildDetailRow('RM PV', formatDouble(report.rmPV)),
@@ -330,6 +330,43 @@ class _QualityApprovalDetailQCScreenState
                   _buildDetailRow('BP To Tank', report.bpToTank ?? '-'),
                   _buildDetailRow('OC', formatDouble(report.wSBEQC)),
                   _buildDetailRow('Waste M&I', formatDouble(report.wasteMNI)),
+                  const Divider(),
+                  _buildDetailRow('ID', report.dailyProductionId ?? '-'),
+                  _buildDetailRow(
+                    'Be Ref Total Bag',
+                    report.beTotalBag?.toString() ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'PA Total',
+                    report.paTotal?.toString() ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'UU Total RM',
+                    report.uuTotalCpo?.toString() ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'UU Total RM',
+                    report.uuTotalCpo?.toString() ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'BE Yield',
+                    report.beYieldPercent != null
+                        ? "${report.beYieldPercent?.toStringAsFixed(2)}%"
+                        : "-",
+                  ),
+
+                  _buildDetailRow(
+                    'PA Yield',
+                    report.paYieldPercent != null
+                        ? "${report.paYieldPercent?.toStringAsFixed(2)}%"
+                        : "-",
+                  ),
+                  _buildDetailRow(
+                    'UU Yield',
+                    report.uuYieldPercent != null
+                        ? "${report.uuYieldPercent?.toStringAsFixed(2)}%"
+                        : "-",
+                  ),
                   const Divider(),
                   _buildDetailRow('Remarks', report.remarks ?? '-'),
                   _buildDetailRow('Entry By', report.entryBy ?? '-'),

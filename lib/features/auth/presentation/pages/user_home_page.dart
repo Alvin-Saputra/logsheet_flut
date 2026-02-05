@@ -15,6 +15,9 @@ import 'package:logsheet_app/features/daily_production/presentation/pages/daily_
 import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_approval_list_page.dart';
 import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_list_page.dart';
 import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_report_list_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_approval_list_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_list_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_report_list_page.dart';
 import 'package:logsheet_app/features/production/presentation/pages/logsheet/deodorizing_filtration/deodorizing_filtration_approval_list_page.dart';
 import 'package:logsheet_app/features/production/presentation/pages/logsheet/deodorizing_filtration/deodorizing_filtration_list_page.dart';
 import 'package:logsheet_app/features/production/presentation/pages/logsheet/deodorizing_filtration/deodorizing_filtration_report_list_page.dart';
@@ -492,7 +495,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.23"), Text("Build 2026-01-02")],
+              children: [Text("Version 1.0.24"), Text("Build 2026-01-21")],
             ),
           ],
         ),
@@ -1487,11 +1490,7 @@ class _UserHomePageState extends State<UserHomePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:
-                            (_) => DryFractionationReportListPage(
-                              userName: user.username,
-                              role: user.role,
-                            ),
+                        builder: (_) => DryFractionationReportListPage(),
                       ),
                     );
                   },

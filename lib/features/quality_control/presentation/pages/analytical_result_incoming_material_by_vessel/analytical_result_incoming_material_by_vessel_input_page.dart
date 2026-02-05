@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
+import 'package:logsheet_app/core/widgets/custom_section_card.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_detail_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_header_entity.dart';
@@ -70,8 +71,15 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
   @override
   initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await context.read<ValueProvider>().fetchOilTypes();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final valueProvider = context.read<ValueProvider>();
+      await valueProvider.fetchOilTypes();
+
+      if (mounted && valueProvider.oilTypeLists.isNotEmpty) {
+        setState(() {
+          selectedMaterial = valueProvider.oilTypeLists.first.name;
+        });
+      }
     });
   }
 
@@ -91,12 +99,7 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                   "Analytical_Result_Of_Incoming_Material_By_Vessel",
             )
             .first;
-    return AppBar(
-      title: Text(
-        "Analytical Result Incoming Material By Vessel Input (${formData!.code})",
-      ),
-      actions: [],
-    );
+    return AppBar(title: Text("Input (${formData!.code})"), actions: []);
   }
 
   Widget _buildBody(BuildContext context) {
@@ -107,214 +110,224 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Consumer<ValueProvider>(
-                builder: (context, provider, child) {
-                  if (provider.isOilTypeLoading) {
-                    // Return a disabled dropdown with a loading indicator or message
-                    return DropdownButtonFormField<String>(
-                      value: null,
-                      items: [],
-                      onChanged: null, // Disable the dropdown
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: const Color(0xFFF0ECE9),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        hintText: 'Loading Materials...',
-                        prefixIcon: const Padding(
-                          padding: EdgeInsets.all(12.0),
-                          child: SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                  if (provider.oilTypeLists.isEmpty) {
-                    return TextFormField(
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: const Color(0xFFF0ECE9),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        hintText: 'Materials Tidak Ditemukan.',
-                        prefixIcon: const Padding(
-                          padding: EdgeInsets.all(12.0),
-                          child: Icon(Icons.warning_amber_rounded),
-                        ),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.refresh),
-                          onPressed: () {
-                            context.read<ValueProvider>().fetchOilTypes();
-                          },
-                        ),
-                      ),
-                    );
-                  }
-                  return DropdownButtonFormField<String>(
-                    value: selectedMaterial,
-                    items:
-                        provider.oilTypeLists.map((item) {
-                          return DropdownMenuItem<String>(
-                            value: item.name,
-                            child: Text(
-                              "${item.name}",
-                              style: TextStyle(fontSize: 14),
+              CustomSectionCard('General Data', [
+                Column(
+                  children: [
+                    SizedBox(height: 4.0),
+                    Consumer<ValueProvider>(
+                      builder: (context, provider, child) {
+                        if (provider.isOilTypeLoading) {
+                          // Return a disabled dropdown with a loading indicator or message
+                          return DropdownButtonFormField<String>(
+                            value: null,
+                            items: [],
+                            onChanged: null, // Disable the dropdown
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0xFFF0ECE9),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              hintText: 'Loading Materials...',
+                              prefixIcon: const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
                             ),
                           );
-                        }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedMaterial = value;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFFF0ECE9),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      hintText: 'Pilih Materials',
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: SvgPicture.asset(
-                          'assets/icons/oil-refinery-tanks.svg',
-                          height: 24,
-                          width: 24,
-                        ),
-                      ),
+                        }
+                        if (provider.oilTypeLists.isEmpty) {
+                          return TextFormField(
+                            readOnly: true,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0xFFF0ECE9),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              hintText: 'Materials Tidak Ditemukan.',
+                              prefixIcon: const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: Icon(Icons.warning_amber_rounded),
+                              ),
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.refresh),
+                                onPressed: () {
+                                  context.read<ValueProvider>().fetchOilTypes();
+                                },
+                              ),
+                            ),
+                          );
+                        }
+                        return DropdownButtonFormField<String>(
+                          value: selectedMaterial,
+                          items:
+                              provider.oilTypeLists.map((item) {
+                                return DropdownMenuItem<String>(
+                                  value: item.name,
+                                  child: Text(
+                                    "${item.name}",
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                );
+                              }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedMaterial = value;
+                            });
+                          },
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFFF0ECE9),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            hintText: 'Pilih Materials',
+                            labelText: 'Materials',
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: SvgPicture.asset(
+                                'assets/icons/oil-refinery-tanks.svg',
+                                height: 24,
+                                width: 24,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-              const SizedBox(height: 8),
-              CustomDateField(
-                controller: dateEntryController,
-                label: 'Arrival',
-                icon: Icons.event,
-              ),
-              const SizedBox(height: 8),
-              CustomTextField(
-                controller: quantityController,
-                label: 'Quantity',
-                icon: Icons.storage_rounded,
-                isNumeric: true,
-                isRequired: true,
-              ),
-              CustomTextField(
-                controller: supplierController,
-                label: 'Supplier',
-                icon: Icons.person_rounded,
-                isNumeric: false,
-                isRequired: true,
-              ),
-              CustomTextField(
-                controller: shipNameController,
-                label: "Ship's Name",
-                icon: Icons.person_rounded,
-                isNumeric: false,
-                isRequired: true,
-              ),
-              CustomTextField(
-                controller: contractDoController,
-                label: "Contract/D.O Nomor",
-                icon: Icons.person_rounded,
-                isNumeric: false,
-              ),
+                    const SizedBox(height: 8),
+                    CustomDateField(
+                      controller: dateEntryController,
+                      label: 'Arrival',
+                      icon: Icons.event,
+                    ),
+                    const SizedBox(height: 8),
+                    CustomTextField(
+                      controller: quantityController,
+                      label: 'Quantity',
+                      icon: Icons.storage_rounded,
+                      isNumeric: true,
+                      isRequired: true,
+                    ),
+                    CustomTextField(
+                      controller: supplierController,
+                      label: 'Supplier',
+                      icon: Icons.person_rounded,
+                      isNumeric: false,
+                      isRequired: true,
+                    ),
+                    CustomTextField(
+                      controller: shipNameController,
+                      label: "Ship's Name",
+                      icon: Icons.person_rounded,
+                      isNumeric: false,
+                      isRequired: true,
+                    ),
+                    CustomTextField(
+                      controller: contractDoController,
+                      label: "Contract/D.O Nomor",
+                      icon: Icons.person_rounded,
+                      isNumeric: false,
+                    ),
 
-              CustomTextField(
-                controller: ffaController,
-                label: "FFA (%)",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
+                    CustomTextField(
+                      controller: ffaController,
+                      label: "FFA (%)",
+                      icon: Icons.person_rounded,
+                      isNumeric: true,
+                    ),
 
-              CustomTextField(
-                controller: miController,
-                label: "M&I (%)",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
+                    CustomTextField(
+                      controller: miController,
+                      label: "M&I (%)",
+                      icon: Icons.person_rounded,
+                      isNumeric: true,
+                    ),
 
-              CustomTextField(
-                controller: dobiController,
-                label: "Dobi (%)",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
+                    CustomTextField(
+                      controller: dobiController,
+                      label: "Dobi (%)",
+                      icon: Icons.person_rounded,
+                      isNumeric: true,
+                    ),
 
-              CustomTextField(
-                controller: othersController,
-                label: "Others",
-                icon: Icons.person_rounded,
-                isNumeric: false,
-              ),
+                    CustomTextField(
+                      controller: othersController,
+                      label: "Others",
+                      icon: Icons.person_rounded,
+                      isNumeric: false,
+                    ),
+                  ],
+                ),
+              ]),
+              CustomSectionCard('Hasil Analisa Komposit Palka', [
+                Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+                    
+                  ],
+                ),
 
-              _detailGeneratorSection(),
-              if (detailControllers.isNotEmpty) _detailFormList(),
+                CustomTextField(
+                  controller: hasilAnalisaFfaController,
+                  label: "FFA",
+                  icon: Icons.person_rounded,
+                  isNumeric: true,
+                ),
 
-              const SizedBox(height: 8.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    "Hasil Analisa Komposite Palka",
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
+                CustomTextField(
+                  controller: hasilAnalisaIvController,
+                  label: "IV",
+                  icon: Icons.person_rounded,
+                  isNumeric: true,
+                ),
 
-              CustomTextField(
-                controller: hasilAnalisaFfaController,
-                label: "FFA",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
+                CustomTextField(
+                  controller: hasilAnalisaMoistureController,
+                  label: "Moisture",
+                  icon: Icons.person_rounded,
+                  isNumeric: true,
+                ),
 
-              CustomTextField(
-                controller: hasilAnalisaIvController,
-                label: "IV",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
+                CustomTextField(
+                  controller: hasilAnalisaDobiController,
+                  label: "Dobi",
+                  icon: Icons.person_rounded,
+                  isNumeric: true,
+                ),
 
-              CustomTextField(
-                controller: hasilAnalisaMoistureController,
-                label: "Moisture",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
+                CustomTextField(
+                  controller: hasilAnalisaPvController,
+                  label: "PV",
+                  icon: Icons.person_rounded,
+                  isNumeric: true,
+                ),
 
-              CustomTextField(
-                controller: hasilAnalisaDobiController,
-                label: "Dobi",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
+                CustomTextField(
+                  controller: hasilAnalisaAnvController,
+                  label: "AnV",
+                  icon: Icons.person_rounded,
+                  isNumeric: true,
+                ),
+              ]),
 
-              CustomTextField(
-                controller: hasilAnalisaPvController,
-                label: "PV",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
+              CustomSectionCard('Detail Data', [
+                _detailGeneratorSection(),
+                if (detailControllers.isNotEmpty) _detailFormList(),
+              ]),
 
-              CustomTextField(
-                controller: hasilAnalisaAnvController,
-                label: "AnV",
-                icon: Icons.person_rounded,
-                isNumeric: true,
-              ),
+              CustomSectionCard('Remarks', [
+                CustomRemarkField(controller: remarkController),
+              ]),
 
-              CustomRemarkField(controller: remarkController),
               Consumer<AnalyticalResultIncomingMaterialByVesselProvider>(
                 builder: (
                   BuildContext context,
@@ -326,10 +339,10 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                       : CustomSaveButton(
                         onPressed: () async {
                           // Form validation
-                          if (!_formKey.currentState!.validate()) {
-                            showSnackBar("Mohon lengkapi semua field", context);
-                            return;
-                          }
+                          // if (!_formKey.currentState!.validate()) {
+                          //   showSnackBar("Mohon lengkapi semua field", context);
+                          //   return;
+                          // }
 
                           if (selectedMaterial == null) {
                             showSnackBar("Oil Type wajib dipilih", context);
@@ -341,14 +354,12 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                             return;
                           }
 
-                      
+                          // if (numberOfRows == 0 || numberOfRows == null) {
+                          //   showSnackBar("Wajib Generate Details", context);
+                          //   return;
+                          // }
 
-                          if (numberOfRows == 0 || numberOfRows == null) {
-                            showSnackBar("Wajib Generate Details", context);
-                            return;
-                          }
-
-                          if (!_validateDetailRows(context)) return;
+                          // if (!_validateDetailRows(context)) return;
 
                           final bool isSuccess = await _insertData();
 
@@ -496,15 +507,15 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                         ),
                       ),
                       const SizedBox(height: 12),
-                  
+
                       // --- FORM PALKA S ---
                       _buildSection("Palka S", [
-                        CustomTextField(
-                          controller: row['palka_s_no']!,
-                          label: "Palka S No",
-                          icon: Icons.numbers,
-                          isRequired: true,
-                        ),
+                        // CustomTextField(
+                        //   controller: row['palka_s_no']!,
+                        //   label: "Palka S No",
+                        //   icon: Icons.numbers,
+                        //   isRequired: true,
+                        // ),
                         CustomTextField(
                           controller: row['palka_s_ffa']!,
                           label: "Palka S FFA",
@@ -532,18 +543,18 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                           isRequired: true,
                         ),
                       ]),
-                  
+
                       const SizedBox(height: 16),
                       const Divider(),
-                  
+
                       // --- FORM PALKA C ---
                       _buildSection("Palka C", [
-                        CustomTextField(
-                          controller: row['palka_c_no']!,
-                          label: "Palka C No",
-                          icon: Icons.numbers,
-                          isRequired: true,
-                        ),
+                        // CustomTextField(
+                        //   controller: row['palka_c_no']!,
+                        //   label: "Palka C No",
+                        //   icon: Icons.numbers,
+                        //   isRequired: true,
+                        // ),
                         CustomTextField(
                           controller: row['palka_c_ffa']!,
                           label: "Palka C FFA",
@@ -571,18 +582,18 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                           isRequired: true,
                         ),
                       ]),
-                  
+
                       const SizedBox(height: 16),
                       const Divider(),
-                  
+
                       // --- FORM PALKA P (Tambahkan jika diperlukan) ---
                       _buildSection("Palka P", [
-                        CustomTextField(
-                          controller: row['palka_p_no']!,
-                          label: "Palka P No",
-                          icon: Icons.numbers,
-                          isRequired: true,
-                        ),
+                        // CustomTextField(
+                        //   controller: row['palka_p_no']!,
+                        //   label: "Palka P No",
+                        //   icon: Icons.numbers,
+                        //   isRequired: true,
+                        // ),
                         CustomTextField(
                           controller: row['palka_p_ffa']!,
                           label: "Palka P FFA",
@@ -635,28 +646,31 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
 
     try {
       final detail =
-          detailControllers.map((row) {
+          detailControllers.asMap().entries.map((entry) {
+            final index = entry.key;
+            final row = entry.value;
             return AnalyticalResultIncomingMaterialByVesselDetailEntity(
               id: "",
               idHdr: "",
 
-              palkaSNo: row['palka_s_no']!.text,
-              palkaSFfa: parseDouble(row['palka_s_ffa']!.text) ?? 0,
-              palkaSIv: parseDouble(row['palka_s_iv']!.text) ?? 0,
-              palkaSDobi: parseDouble(row['palka_s_dobi']!.text) ?? 0,
-              palkaSMni: parseDouble(row['palka_s_mni']!.text) ?? 0,
+              palkaSNo: index+1,
+              palkaSFfa: parseDouble(row['palka_s_ffa']!.text),
+              palkaSIv: parseDouble(row['palka_s_iv']!.text),
+              palkaSDobi: parseDouble(row['palka_s_dobi']!.text),
+              palkaSMni: parseDouble(row['palka_s_mni']!.text),
 
-              palkaCNo: row['palka_c_no']!.text,
-              palkaCFfa: parseDouble(row['palka_c_ffa']!.text) ?? 0,
-              palkaCIv: parseDouble(row['palka_c_iv']!.text) ?? 0,
-              palkaCDobi: parseDouble(row['palka_c_dobi']!.text) ?? 0,
-              palkaCMni: parseDouble(row['palka_c_mni']!.text) ?? 0,
+              palkaCNo: index+1,
 
-              palkaPNo: row['palka_p_no']!.text,
-              palkaPFfa: parseDouble(row['palka_p_ffa']!.text) ?? 0,
-              palkaPIv: parseDouble(row['palka_p_iv']!.text) ?? 0,
-              palkaPDobi: parseDouble(row['palka_p_dobi']!.text) ?? 0,
-              palkaPMni: parseDouble(row['palka_p_mni']!.text) ?? 0,
+              palkaCFfa: parseDouble(row['palka_c_ffa']!.text),
+              palkaCIv: parseDouble(row['palka_c_iv']!.text),
+              palkaCDobi: parseDouble(row['palka_c_dobi']!.text),
+              palkaCMni: parseDouble(row['palka_c_mni']!.text),
+
+              palkaPNo: index+1,
+              palkaPFfa: parseDouble(row['palka_p_ffa']!.text),
+              palkaPIv: parseDouble(row['palka_p_iv']!.text),
+              palkaPDobi: parseDouble(row['palka_p_dobi']!.text),
+              palkaPMni: parseDouble(row['palka_p_mni']!.text),
             );
           }).toList();
 
@@ -672,20 +686,20 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
           'yyyy-MM-dd HH:mm:ss',
           returnDateTime: true,
         ),
-        quantity: parseDouble(quantityController.text)??0,
+        quantity: parseDouble(quantityController.text),
         supplier: supplierController.text,
         shipName: shipNameController.text,
         contractDoNomor: contractDoController.text,
-        ffa: parseDouble(ffaController.text)??0,
-        mni: parseDouble(miController.text)??0,
-        dobi: parseDouble(dobiController.text)??0,
+        ffa: parseDouble(ffaController.text),
+        mni: parseDouble(miController.text),
+        dobi: parseDouble(dobiController.text),
         others: othersController.text,
-        hasilAnalisaFfa: parseDouble(hasilAnalisaFfaController.text)??0,
-        hasilAnalisaIv: parseDouble(hasilAnalisaIvController.text)??0,
-        hasilAnalisaMoisture: parseDouble(hasilAnalisaMoistureController.text)??0,
-        hasilAnalisaDobi: parseDouble(hasilAnalisaDobiController.text)??0,
-        hasilAnalisaPv: parseDouble(hasilAnalisaPvController.text)??0,
-        hasilAnalisaAnv: parseDouble(hasilAnalisaAnvController.text)??0,
+        hasilAnalisaFfa: parseDouble(hasilAnalisaFfaController.text),
+        hasilAnalisaIv: parseDouble(hasilAnalisaIvController.text),
+        hasilAnalisaMoisture: parseDouble(hasilAnalisaMoistureController.text),
+        hasilAnalisaDobi: parseDouble(hasilAnalisaDobiController.text),
+        hasilAnalisaPv: parseDouble(hasilAnalisaPvController.text),
+        hasilAnalisaAnv: parseDouble(hasilAnalisaAnvController.text),
         remarks: remarkController.text,
 
         flag: 'T',
@@ -732,7 +746,7 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
     // Sesuaikan string ini dengan key yang Anda buat di function generateDetailRows
     final List<String> mandatoryKeys = [
       'palka_s_ffa',
-      'palka_s_mni', 
+      'palka_s_mni',
       'palka_c_ffa',
       'palka_c_mni',
       'palka_p_ffa',
@@ -765,7 +779,7 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
           "Detail ke-${i + 1} belum lengkap. FFA dan MNI wajib diisi.",
           context,
         );
-        
+
         return false; // Validasi gagal
       }
     }

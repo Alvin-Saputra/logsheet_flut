@@ -18,6 +18,7 @@ class DailyProductionRefineryEntity {
   final double? oilTypeRmAwalFlowmeter;
   final TimeOfDay? oilTypeRmAkhirJam;
   final double? oilTypeRmAkhirFlowmeter;
+  final double? oilTypeRmOip;
   final double? oilTypeRmTotal;
 
   // Finished Goods (FG)
@@ -60,13 +61,23 @@ class DailyProductionRefineryEntity {
   final String? flag;
 
   // Utility Usage (UU)
+  // final String? uuItem;
+  // final String? uuBudgetRefTank;
+  // final String? uuBudgetQty;
+  // final int? uuTotalCpo;
+  // final int? uuTotalSteam;
+  // final String? uuSteamCpo;
+  // final double? uuYieldPercent;
+
+
   final String? uuItem;
   final String? uuBudgetRefTank;
-  final String? uuBudgetQty;
-  final int? uuTotalCpo;
-  final int? uuTotalSteam;
-  final String? uuSteamCpo;
+  final double? uuBudgetQty;
+  final double? uuTotalCpo;
+  final double? uuTotalSteam;
+  final double? uuSteamCpo;
   final double? uuYieldPercent;
+
 
   // Approval & Tracking
   String? entryBy;
@@ -88,6 +99,8 @@ class DailyProductionRefineryEntity {
   final int? revisionNo;
   final DateTime? revisionDate;
 
+  bool? isCompleted;
+
   DailyProductionRefineryEntity({
     required this.id,
     required this.company,
@@ -104,6 +117,7 @@ class DailyProductionRefineryEntity {
     required this.oilTypeRmAkhirJam,
     required this.oilTypeRmAkhirFlowmeter,
     required this.oilTypeRmTotal,
+    required this.oilTypeRmOip,
     required this.oilTypeFgId,
     this.oilTypeFg,
     required this.oilTypeFgAwalJam,
@@ -156,6 +170,7 @@ class DailyProductionRefineryEntity {
     required this.dateIssued,
     required this.revisionNo,
     required this.revisionDate,
+    required this.isCompleted,
   });
 
   factory DailyProductionRefineryEntity.fromMap(Map<String, dynamic> map) {
@@ -194,6 +209,14 @@ class DailyProductionRefineryEntity {
       return null;
     }
 
+    bool? parseBool(dynamic value) {
+      if (value == null) return null;
+      if (value is bool) return value;
+      if (value is int) return value == 1;
+      if (value is String) return value == '1' || value.toLowerCase() == 'true';
+      return null;
+    }
+
     return DailyProductionRefineryEntity(
       id: map['id'] as String,
       company: map['company'] as String?,
@@ -209,6 +232,7 @@ class DailyProductionRefineryEntity {
       oilTypeRmAwalFlowmeter: parseDouble(map['oil_type_rm_awal_flowmeter']),
       oilTypeRmAkhirJam: parseTimeOfDay(map['oil_type_rm_akhir_jam']),
       oilTypeRmAkhirFlowmeter: parseDouble(map['oil_type_rm_akhir_flowmeter']),
+      oilTypeRmOip: parseDouble(map['oil_type_rm_oip']),
       oilTypeRmTotal: parseDouble(map['oil_type_rm_total']),
       oilTypeFgId: map['oil_type_fg_id'] as String?,
       oilTypeFg: map['oil_type_fg'] as String?,
@@ -241,10 +265,14 @@ class DailyProductionRefineryEntity {
       flag: map['flag'] as String?,
       uuItem: map['uu_item'] as String?,
       uuBudgetRefTank: map['uu_budget_ref_tank'] as String?,
-      uuBudgetQty: map['uu_budget_qty'] as String?,
-      uuTotalCpo: parseInt(map['uu_total_cpo']),
-      uuTotalSteam: parseInt(map['uu_total_steam']),
-      uuSteamCpo: map['uu_steam_cpo'] as String?,
+      // uuBudgetQty: map['uu_budget_qty'] as String?,
+      // uuTotalCpo: parseInt(map['uu_total_cpo']),
+      // uuTotalSteam: parseInt(map['uu_total_steam']),
+      // uuSteamCpo: map['uu_steam_cpo'] as String?,
+      uuBudgetQty: parseDouble(map['uu_budget_qty']),
+      uuTotalCpo: parseDouble(map['uu_total_cpo']),
+      uuTotalSteam: parseDouble(map['uu_total_steam']),
+      uuSteamCpo: parseDouble(map['uu_steam_cpo']),
       uuYieldPercent: parseDouble(map['uu_yield_percent']),
       entryBy: map['entry_by'] as String?,
       entryDate: parseDateTime(map['entry_date']),
@@ -262,6 +290,7 @@ class DailyProductionRefineryEntity {
       revisionNo: parseInt(map['revision_no']),
       revisionDate: parseDateTime(map['revision_date']),
       checkedStatusRemarks: map['checked_status_remarks'] as String?,
+      isCompleted: parseBool(map['is_completed']),
     );
   }
 
@@ -290,6 +319,7 @@ class DailyProductionRefineryEntity {
       'oil_type_rm_awal_flowmeter': oilTypeRmAwalFlowmeter,
       'oil_type_rm_akhir_jam': formatTimeOfDay(oilTypeRmAkhirJam),
       'oil_type_rm_akhir_flowmeter': oilTypeRmAkhirFlowmeter,
+      'oil_type_rm_oip': oilTypeRmOip,
       'oil_type_rm_total': oilTypeRmTotal,
       'oil_type_fg': oilTypeFgId,
       'oil_type_fg_awal_jam': formatTimeOfDay(oilTypeFgAwalJam),
@@ -340,6 +370,7 @@ class DailyProductionRefineryEntity {
       'date_issued': dateIssued?.toIso8601String(),
       'revision_no': revisionNo,
       'revision_date': revisionDate?.toIso8601String(),
+      'is_completed': isCompleted == null ? null : (isCompleted! ? 1 : 0),
     };
   }
 
@@ -358,6 +389,7 @@ class DailyProductionRefineryEntity {
     double? oilTypeRmAwalFlowmeter,
     TimeOfDay? oilTypeRmAkhirJam,
     double? oilTypeRmAkhirFlowmeter,
+    double? oilTypeRmOip,
     double? oilTypeRmTotal,
     String? oilTypeFgId,
     String? oilTypeFg,
@@ -390,10 +422,14 @@ class DailyProductionRefineryEntity {
     String? flag,
     String? uuItem,
     String? uuBudgetRefTank,
-    String? uuBudgetQty,
-    int? uuTotalCpo,
-    int? uuTotalSteam,
-    String? uuSteamCpo,
+    // String? uuBudgetQty,
+    // int? uuTotalCpo,
+    // int? uuTotalSteam,
+    // String? uuSteamCpo,
+    double? uuBudgetQty,
+    double? uuTotalCpo,
+    double? uuTotalSteam,
+    double? uuSteamCpo,
     double? uuYieldPercent,
     String? entryBy,
     DateTime? entryDate,
@@ -411,6 +447,7 @@ class DailyProductionRefineryEntity {
     DateTime? dateIssued,
     int? revisionNo,
     DateTime? revisionDate,
+    bool? isCompleted,
   }) {
     return DailyProductionRefineryEntity(
       id: id ?? this.id,
@@ -429,6 +466,7 @@ class DailyProductionRefineryEntity {
       oilTypeRmAkhirJam: oilTypeRmAkhirJam ?? this.oilTypeRmAkhirJam,
       oilTypeRmAkhirFlowmeter:
           oilTypeRmAkhirFlowmeter ?? this.oilTypeRmAkhirFlowmeter,
+      oilTypeRmOip: oilTypeRmOip ?? this.oilTypeRmOip,
       oilTypeRmTotal: oilTypeRmTotal ?? this.oilTypeRmTotal,
       oilTypeFgId: oilTypeFgId ?? this.oilTypeFgId,
       oilTypeFg: oilTypeFg ?? this.oilTypeFg,
@@ -484,6 +522,7 @@ class DailyProductionRefineryEntity {
       revisionNo: revisionNo ?? this.revisionNo,
       revisionDate: revisionDate ?? this.revisionDate,
       checkedStatusRemarks: checkedStatusRemarks ?? this.checkedStatusRemarks,
+      isCompleted: isCompleted ?? this.isCompleted,
     );
   }
 }

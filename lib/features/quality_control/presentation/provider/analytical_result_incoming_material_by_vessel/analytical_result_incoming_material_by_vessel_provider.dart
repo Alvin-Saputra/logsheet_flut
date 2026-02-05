@@ -149,47 +149,65 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
         "menu_id": menudId,
         "company": headerInput.company,
         "plant": headerInput.plant,
-        "arrival": DateFormat(
-          'yyyy-MM-dd HH:mm:ss',
-        ).format(headerInput.arrival!),
+
+        // FIX DATE: Cek null dulu baru format
+        "arrival":
+            headerInput.arrival != null
+                ? DateFormat('yyyy-MM-dd HH:mm:ss').format(headerInput.arrival!)
+                : null,
+
         "material": headerInput.material,
-        "quantity": headerInput.quantity.toString(),
+
+        // --- BAGIAN PENTING (NUMERIC) ---
+        // Gunakan ?.toString(). Jika null, hasil di JSON tetap null (bukan "null")
+        "quantity": headerInput.quantity?.toString(),
+
+        // --- BAGIAN PENTING (STRING) ---
+        // Field String nullable tidak perlu di .toString() lagi
         "supplier": headerInput.supplier,
         "ship_name": headerInput.shipName,
         "contract_do_nomor": headerInput.contractDoNomor,
-        "hasil_analisa_ffa": headerInput.hasilAnalisaFfa.toString(),
-        "hasil_analisa_iv": headerInput.hasilAnalisaIv.toString(),
-        "hasil_analisa_moisture": headerInput.hasilAnalisaMoisture.toString(),
-        "hasil_analisa_dobi": headerInput.hasilAnalisaDobi.toString(),
-        "hasil_analisa_pv": headerInput.hasilAnalisaPv.toString(),
-        "hasil_analisa_anv": headerInput.hasilAnalisaAnv.toString(),
-        "ffa": headerInput.ffa.toString(),
-        "mni": headerInput.mni.toString(),
-        "dobi": headerInput.dobi.toString(),
-        "others": headerInput.others,
+
+        // --- HASIL ANALISA (NUMERIC) ---
+        "hasil_analisa_ffa": headerInput.hasilAnalisaFfa?.toString(),
+        "hasil_analisa_iv": headerInput.hasilAnalisaIv?.toString(),
+        "hasil_analisa_moisture": headerInput.hasilAnalisaMoisture?.toString(),
+        "hasil_analisa_dobi": headerInput.hasilAnalisaDobi?.toString(),
+        "hasil_analisa_pv": headerInput.hasilAnalisaPv?.toString(),
+        "hasil_analisa_anv": headerInput.hasilAnalisaAnv?.toString(),
+
+        "ffa": headerInput.ffa?.toString(),
+        "mni": headerInput.mni?.toString(),
+        "dobi": headerInput.dobi?.toString(),
+        "others": null,
         "remarks": headerInput.remarks,
+
+        // --- DETAIL ---
         "detail":
-            headerInput.details
-                .map(
-                  (detail) => {
-                    "palka_s_no": detail.palkaSNo.toString(),
-                    "palka_s_ffa": detail.palkaSFfa.toString(),
-                    "palka_s_iv": detail.palkaSIv.toString(),
-                    "palka_s_dobi": detail.palkaSDobi.toString(),
-                    "palka_s_mni": detail.palkaSMni.toString(),
-                    "palka_c_no": detail.palkaCNo.toString(),
-                    "palka_c_ffa": detail.palkaCFfa.toString(),
-                    "palka_c_iv": detail.palkaCIv.toString(),
-                    "palka_c_dobi": detail.palkaCDobi.toString(),
-                    "palka_c_mni": detail.palkaCMni.toString(),
-                    "palka_p_no": detail.palkaPNo.toString(),
-                    "palka_p_ffa": detail.palkaPFfa.toString(),
-                    "palka_p_iv": detail.palkaPIv.toString(),
-                    "palka_p_dobi": detail.palkaPDobi.toString(),
-                    "palka_p_mni": detail.palkaPMni.toString(),
-                  },
-                )
-                .toList(),
+            headerInput.details.map((detail) {
+              return {
+                // Pastikan detail juga menggunakan ?.toString()
+                "palka_s_no":
+                    detail.palkaSNo
+                        ?.toString(), // Jika tipe di entity String?, hapus .toString()
+                "palka_s_ffa": detail.palkaSFfa?.toString(),
+                "palka_s_iv": detail.palkaSIv?.toString(),
+                "palka_s_dobi": detail.palkaSDobi?.toString(),
+                "palka_s_mni": detail.palkaSMni?.toString(),
+
+                "palka_c_no": detail.palkaCNo?.toString(),
+                "palka_c_ffa": detail.palkaCFfa?.toString(),
+                "palka_c_iv": detail.palkaCIv?.toString(),
+                "palka_c_dobi": detail.palkaCDobi?.toString(),
+                "palka_c_mni": detail.palkaCMni?.toString(),
+
+                "palka_p_no": detail.palkaPNo?.toString(),
+                "palka_p_ffa": detail.palkaPFfa?.toString(),
+                "palka_p_iv": detail.palkaPIv?.toString(),
+                "palka_p_dobi": detail.palkaPDobi?.toString(),
+                "palka_p_mni": detail.palkaPMni?.toString(),
+              };
+            }).toList(),
       };
 
       String token = await _storageService.readSessionToken() ?? '';
@@ -250,18 +268,18 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
       final body = {
         "id": headerInput.id,
         "material": headerInput.material,
-        "quantity": headerInput.quantity.toString(),
+        "quantity": headerInput.quantity?.toString(),
         "supplier": headerInput.supplier,
         "ship_name": headerInput.shipName,
-        "hasil_analisa_ffa": headerInput.hasilAnalisaFfa.toString(),
-        "hasil_analisa_iv": headerInput.hasilAnalisaIv.toString(),
-        "hasil_analisa_moisture": headerInput.hasilAnalisaMoisture.toString(),
-        "hasil_analisa_dobi": headerInput.hasilAnalisaDobi.toString(),
-        "hasil_analisa_pv": headerInput.hasilAnalisaPv.toString(),
-        "hasil_analisa_anv": headerInput.hasilAnalisaAnv.toString(),
-        "ffa": headerInput.ffa.toString(),
-        "mni": headerInput.mni.toString(),
-        "dobi": headerInput.dobi.toString(),
+        "hasil_analisa_ffa": headerInput.hasilAnalisaFfa?.toString(),
+        "hasil_analisa_iv": headerInput.hasilAnalisaIv?.toString(),
+        "hasil_analisa_moisture": headerInput.hasilAnalisaMoisture?.toString(),
+        "hasil_analisa_dobi": headerInput.hasilAnalisaDobi?.toString(),
+        "hasil_analisa_pv": headerInput.hasilAnalisaPv?.toString(),
+        "hasil_analisa_anv": headerInput.hasilAnalisaAnv?.toString(),
+        "ffa": headerInput.ffa?.toString(),
+        "mni": headerInput.mni?.toString(),
+        "dobi": headerInput.dobi?.toString(),
         "others": headerInput.others,
         "remarks": headerInput.remarks,
         "detail":
@@ -269,21 +287,21 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
                 .map(
                   (detail) => {
                     "id": detail.id,
-                    "palka_s_no": detail.palkaSNo.toString(),
-                    "palka_s_ffa": detail.palkaSFfa.toString(),
-                    "palka_s_iv": detail.palkaSIv.toString(),
-                    "palka_s_dobi": detail.palkaSDobi.toString(),
-                    "palka_s_mni": detail.palkaSMni.toString(),
-                    "palka_c_no": detail.palkaCNo.toString(),
-                    "palka_c_ffa": detail.palkaCFfa.toString(),
-                    "palka_c_iv": detail.palkaCIv.toString(),
-                    "palka_c_dobi": detail.palkaCDobi.toString(),
-                    "palka_c_mni": detail.palkaCMni.toString(),
-                    "palka_p_no": detail.palkaPNo.toString(),
-                    "palka_p_ffa": detail.palkaPFfa.toString(),
-                    "palka_p_iv": detail.palkaPIv.toString(),
-                    "palka_p_dobi": detail.palkaPDobi.toString(),
-                    "palka_p_mni": detail.palkaPMni.toString(),
+                    "palka_s_no": detail.palkaSNo?.toString(),
+                    "palka_s_ffa": detail.palkaSFfa?.toString(),
+                    "palka_s_iv": detail.palkaSIv?.toString(),
+                    "palka_s_dobi": detail.palkaSDobi?.toString(),
+                    "palka_s_mni": detail.palkaSMni?.toString(),
+                    "palka_c_no": detail.palkaCNo?.toString(),
+                    "palka_c_ffa": detail.palkaCFfa?.toString(),
+                    "palka_c_iv": detail.palkaCIv?.toString(),
+                    "palka_c_dobi": detail.palkaCDobi?.toString(),
+                    "palka_c_mni": detail.palkaCMni?.toString(),
+                    "palka_p_no": detail.palkaPNo?.toString(),
+                    "palka_p_ffa": detail.palkaPFfa?.toString(),
+                    "palka_p_iv": detail.palkaPIv?.toString(),
+                    "palka_p_dobi": detail.palkaPDobi?.toString(),
+                    "palka_p_mni": detail.palkaPMni?.toString(),
                   },
                 )
                 .toList(),

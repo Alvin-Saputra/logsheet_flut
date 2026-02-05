@@ -115,28 +115,93 @@ class _DeodorizingFiltrationInputPageState
     super.dispose();
   }
 
+  // void _showHourPicker(BuildContext context) {
+  //   int initialHour = selectedHour ?? TimeOfDay.now().hour;
+  //   selectedHour = initialHour;
+
+  //   showModalBottomSheet(
+  //     context: context,
+  //     backgroundColor: Colors.white,
+  //     shape: const RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  //     ),
+  //     builder: (BuildContext context) {
+  //       return SafeArea(
+  //         child: SizedBox(
+  //           height: 300,
+  //           child: Column(
+  //             children: [
+  //               const Padding(
+  //                 padding: EdgeInsets.symmetric(vertical: 12),
+  //                 child: Text(
+  //                   'Pilih Jam Input',
+  //                   style: TextStyle(
+  //                     fontWeight: FontWeight.bold,
+  //                     color: Color(0xFF655F5B),
+  //                   ),
+  //                 ),
+  //               ),
+  //               Expanded(
+  //                 child: CupertinoPicker(
+  //                   itemExtent: 40,
+  //                   scrollController: FixedExtentScrollController(
+  //                     initialItem: initialHour,
+  //                   ),
+  //                   onSelectedItemChanged: (int value) => selectedHour = value,
+  //                   children: List.generate(
+  //                     24,
+  //                     (index) => Center(
+  //                       child: Text(
+  //                         '${index.toString().padLeft(2, '0')}:00',
+  //                         style: const TextStyle(color: Color(0xFF655F5B)),
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ),
+  //               TextButton(
+  //                 onPressed: () {
+  //                   setState(() {});
+  //                   Navigator.pop(context);
+  //                 },
+  //                 child: const Text(
+  //                   'Pilih',
+  //                   style: TextStyle(color: Color(0xFFAB2F2B)),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
   void _showHourPicker(BuildContext context) {
     int initialHour = selectedHour ?? TimeOfDay.now().hour;
+    // Set default selectedHour before picker shows
     selectedHour = initialHour;
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder: (BuildContext context) {
-        return SafeArea(
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20), // Rounded on all sides
+          ),
           child: SizedBox(
-            height: 300,
+            height: 300, // Fixed height required for CupertinoPicker
             child: Column(
+              mainAxisSize: MainAxisSize.min, // Ensures dialog fits content
               children: [
                 const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 16),
                   child: Text(
                     'Pilih Jam Input',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
+                      fontSize: 16,
                       color: Color(0xFF655F5B),
                     ),
                   ),
@@ -147,26 +212,38 @@ class _DeodorizingFiltrationInputPageState
                     scrollController: FixedExtentScrollController(
                       initialItem: initialHour,
                     ),
-                    onSelectedItemChanged: (int value) => selectedHour = value,
+                    onSelectedItemChanged: (int value) {
+                      selectedHour = value;
+                    },
                     children: List.generate(
                       24,
                       (index) => Center(
                         child: Text(
                           '${index.toString().padLeft(2, '0')}:00',
-                          style: const TextStyle(color: Color(0xFF655F5B)),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF655F5B),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {});
-                    Navigator.pop(context);
-                  },
-                  child: const Text(
-                    'Pilih',
-                    style: TextStyle(color: Color(0xFFAB2F2B)),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: TextButton(
+                    onPressed: () {
+                      setState(() {});
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      'Pilih',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFAB2F2B),
+                      ),
+                    ),
                   ),
                 ),
               ],

@@ -91,7 +91,7 @@ class _AnalyticalResultIncomingMaterialByTruckListDetailPageState
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           _buildInfoCard(
-                            'Date',
+                            'Transaction Date',
                             _formatDateString(_data.transactionDate.toString()),
                           ),
                         ],
@@ -125,126 +125,122 @@ class _AnalyticalResultIncomingMaterialByTruckListDetailPageState
 
                     SizedBox(height: 12.0),
                     _buildSection('Details', [
-                      Center(
-                        child: SmoothPageIndicator(
-                          controller:
-                              detailPageControllers, // Gunakan satu controller untuk semua
-                          count: _data.details.length,
-                          effect: const WormEffect(
-                            dotHeight: 8,
-                            dotWidth: 8,
-                            activeDotColor:
-                                Colors.blue, // Sesuaikan warna tema Anda
-                            dotColor: Colors.grey,
+                      // 1. Check if details exist before building the pager
+                      if (_data.details.isNotEmpty) ...[
+                        Center(
+                          child: SmoothPageIndicator(
+                            controller: detailPageControllers,
+                            count: _data.details.length,
+                            effect: const WormEffect(
+                              dotHeight: 8,
+                              dotWidth: 8,
+                              activeDotColor: Colors.blue,
+                              dotColor: Colors.grey,
+                            ),
+                            onDotClicked: (index) {
+                              detailPageControllers.animateToPage(
+                                index,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
                           ),
-                          onDotClicked: (index) {
-                            detailPageControllers.animateToPage(
-                              index,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
                         ),
-                      ),
-
-                      SizedBox(height: 12.0),
-
-                      SizedBox(
-                        child: ExpandablePageView.builder(
-                          controller: detailPageControllers,
-                          itemCount: _data.details.length,
-                          itemBuilder: (context, pageIndex) {
-                            return Column(
-                              children: [
-                                Text(
-                                  "Detail Data Ke - ${pageIndex + 1}",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                        const SizedBox(height: 12.0),
+                        SizedBox(
+                          child: ExpandablePageView.builder(
+                            controller: detailPageControllers,
+                            itemCount: _data.details.length,
+                            itemBuilder: (context, pageIndex) {
+                              return Column(
+                                children: [
+                                  Text(
+                                    "Detail Data Ke - ${pageIndex + 1}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
                                   ),
-                                ),
-
-                                // --- Section PALKA S ---
-                                _buildSection("Details", [
-                                  _buildDataRow(
-                                    'No',
-                                    _data.details[pageIndex].no.toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Sampling Date',
-                                    formatDatetoString(
-                                          _data
-                                              .details[pageIndex]
-                                              .samplingDate!,
-                                          'dd-MM-yyyy',
-                                        ) ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Police No',
-                                    _data.details[pageIndex].policeNo ?? '',
-                                  ),
-                                  _buildDataRow(
-                                    'FFA',
-                                    _data.details[pageIndex].pFfa.toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Moisture',
-                                    _data.details[pageIndex].pMoisture
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'IV',
-                                    _data.details[pageIndex].pIv.toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'DOBI',
-                                    _data.details[pageIndex].pDobi.toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'PV',
-                                    _data.details[pageIndex].pPv.toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Color R',
-                                    _data.details[pageIndex].pColorR
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Color Y',
-                                    _data.details[pageIndex].pColorY
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Analis',
-                                    _data.details[pageIndex].analis
-                                            .toString() ??
-                                        '',
-                                  ),
-                                  _buildDataRow(
-                                    'Remarks',
-                                    _data.details[pageIndex].remarks
-                                            .toString() ??
-                                        '',
-                                  ),
-                                ]),
-                              ],
-                            );
-                          },
+                                  // --- Section PALKA S ---
+                                  _buildSection("Details", [
+                                    _buildDataRow(
+                                      'No',
+                                      _data.details[pageIndex].no.toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'Sampling Date',
+                                      formatDatetoString(
+                                            _data
+                                                .details[pageIndex]
+                                                .samplingDate!,
+                                            'dd-MM-yyyy',
+                                          ) ??
+                                          '',
+                                    ),
+                                    _buildDataRow(
+                                      'Police No',
+                                      _data.details[pageIndex].policeNo ?? '',
+                                    ),
+                                    _buildDataRow(
+                                      'FFA',
+                                      _data.details[pageIndex].pFfa.toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'Moisture',
+                                      _data.details[pageIndex].pMoisture
+                                          .toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'IV',
+                                      _data.details[pageIndex].pIv.toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'DOBI',
+                                      _data.details[pageIndex].pDobi.toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'PV',
+                                      _data.details[pageIndex].pPv.toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'Color R',
+                                      _data.details[pageIndex].pColorR
+                                          .toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'Color Y',
+                                      _data.details[pageIndex].pColorY
+                                          .toString(),
+                                    ),
+                                    _buildDataRow(
+                                      'Analis',
+                                      _data.details[pageIndex].analis ?? '',
+                                    ),
+                                    _buildDataRow(
+                                      'Remarks',
+                                      _data.details[pageIndex].remarks ?? '',
+                                    ),
+                                  ]),
+                                ],
+                              );
+                            },
+                          ),
                         ),
-                      ),
+                      ] else ...[
+                        // 2. Fallback if no data exists
+                        const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Center(
+                            child: Text(
+                              "Tidak ada detail data",
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                      ],
                     ]),
 
-                    if (
-                      (AppRoles.leadQC.contains(
+                    if ((AppRoles.leadQC.contains(
                           userProvider.currentUser?.role,
                         )) ||
                         (AppRoles.qualityControlManagerApproval.contains(

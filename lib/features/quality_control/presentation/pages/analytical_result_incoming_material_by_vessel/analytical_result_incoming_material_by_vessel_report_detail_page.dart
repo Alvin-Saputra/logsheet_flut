@@ -3,12 +3,9 @@ import 'dart:developer';
 import 'package:expandable_page_view/expandable_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:logsheet_app/core/utils/app_roles.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_header_entity.dart';
-import 'package:logsheet_app/core/widgets/custom_remark_field.dart';
-import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_edit_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
 import 'package:provider/provider.dart';
@@ -95,33 +92,31 @@ class _AnalyticalResultIncomingMaterialByVesselReportDetailPageState
                       ),
                     ),
 
-                    _buildSection('General Information', [
+                   _buildSection('General Information', [
                       _buildDataRow('ID', widget.data.id ?? ''),
                     ]),
 
                     _buildSection('Analytical Information', [
-                      _buildDataRow('Material', widget.data.material ?? ''),
-                      _buildDataRow(
-                        'Arrival',
-                        widget.data.arrival.toString() ?? '',
-                      ),
+                      _buildDataRow('Material', widget.data.material ?? '-'),
+                      _buildDataRow('Arrival', formatDatetoString(widget.data.arrival, "yyyy-MM-dd") ?? '-'),
                       _buildDataRow(
                         'Quantity',
-                        widget.data.quantity.toString() ?? '',
+                        widget.data.quantity?.toString() ?? '-',
                       ),
-                      _buildDataRow('Supplier', widget.data.supplier ?? ''),
-                      _buildDataRow("Ship's Name", widget.data.shipName ?? ''),
+                      _buildDataRow('Supplier', widget.data.supplier ?? '-'),
+                      _buildDataRow("Ship's Name", widget.data.shipName ?? '-'),
                       _buildDataRow(
                         'Contract/DO No',
-                        widget.data.contractDoNomor ?? '',
+                        widget.data.contractDoNomor ?? '-',
                       ),
-                      _buildDataRow('FFA', widget.data.ffa.toString() ?? ''),
-                      _buildDataRow('M&I', widget.data.mni.toString() ?? ''),
-                      _buildDataRow('Dobi', widget.data.dobi.toString() ?? ''),
-                      _buildDataRow('Others', widget.data.others ?? ''),
+                      _buildDataRow('FFA', widget.data.ffa?.toString() ?? '-'),
+                      _buildDataRow('M&I', widget.data.mni?.toString() ?? '-'),
+                      _buildDataRow('Dobi', widget.data.dobi?.toString() ?? '-'),
+                      _buildDataRow('Others', widget.data.others?.toString() ?? '-'),
                     ]),
 
                     SizedBox(height: 12.0),
+                    if (widget.data.details.isNotEmpty) ...[
                     _buildSection('Details', [
                       Center(
                         child: SmoothPageIndicator(
@@ -167,32 +162,32 @@ class _AnalyticalResultIncomingMaterialByVesselReportDetailPageState
                                   _buildDataRow(
                                     'Palka S No',
                                     widget.data.details[pageIndex].palkaSNo
-                                            .toString() ??
-                                        '',
+                                            ?.toString() ??
+                                        '-',
                                   ),
                                   _buildDataRow(
                                     'Palka S FFA',
                                     widget.data.details[pageIndex].palkaSFfa
-                                            .toString() ??
-                                        '',
+                                            ?.toString() ??
+                                        '-',
                                   ),
                                   _buildDataRow(
                                     'Palka S IV',
                                     widget.data.details[pageIndex].palkaSIv
-                                            .toString() ??
-                                        '',
+                                            ?.toString() ??
+                                        '-',
                                   ),
                                   _buildDataRow(
                                     'Palka S M&I',
                                     widget.data.details[pageIndex].palkaSMni
-                                            .toString() ??
-                                        '',
+                                            ?.toString() ??
+                                        '-',
                                   ),
                                   _buildDataRow(
                                     'Palka S Dobi',
                                     widget.data.details[pageIndex].palkaSDobi
-                                            .toString() ??
-                                        '',
+                                            ?.toString() ??
+                                        '-',
                                   ),
                                 ]),
 
@@ -204,32 +199,32 @@ class _AnalyticalResultIncomingMaterialByVesselReportDetailPageState
                                   _buildDataRow(
                                     'Palka C No',
                                     widget.data.details[pageIndex].palkaCNo
-                                            .toString() ??
-                                        '',
+                                            ?.toString() ??
+                                        '-',
                                   ),
                                   _buildDataRow(
                                     'Palka C FFA',
                                     widget.data.details[pageIndex].palkaCFfa
-                                            .toString() ??
-                                        '',
+                                            ?.toString() ??
+                                        '-',
                                   ),
                                   _buildDataRow(
                                     'Palka C IV',
                                     widget.data.details[pageIndex].palkaCIv
-                                            .toString() ??
-                                        '',
+                                            ?.toString() ??
+                                        '-',
                                   ),
                                   _buildDataRow(
                                     'Palka C M&I',
                                     widget.data.details[pageIndex].palkaCMni
-                                            .toString() ??
-                                        '',
+                                            ?.toString() ??
+                                        '-',
                                   ),
                                   _buildDataRow(
                                     'Palka C Dobi',
                                     widget.data.details[pageIndex].palkaCDobi
-                                            .toString() ??
-                                        '',
+                                            ?.toString() ??
+                                        '-',
                                   ),
                                 ]),
 
@@ -241,32 +236,32 @@ class _AnalyticalResultIncomingMaterialByVesselReportDetailPageState
                                   _buildDataRow(
                                     'Palka P No',
                                     widget.data.details[pageIndex].palkaPNo
-                                            .toString() ??
-                                        '',
+                                            ?.toString() ??
+                                        '-',
                                   ),
                                   _buildDataRow(
                                     'Palka P FFA',
                                     widget.data.details[pageIndex].palkaPFfa
-                                            .toString() ??
-                                        '',
+                                            ?.toString() ??
+                                        '-',
                                   ),
                                   _buildDataRow(
                                     'Palka P IV',
                                     widget.data.details[pageIndex].palkaPIv
-                                            .toString() ??
-                                        '',
+                                            ?.toString() ??
+                                        '-',
                                   ),
                                   _buildDataRow(
                                     'Palka P M&I',
                                     widget.data.details[pageIndex].palkaPMni
-                                            .toString() ??
-                                        '',
+                                            ?.toString() ??
+                                        '-',
                                   ),
                                   _buildDataRow(
                                     'Palka P Dobi',
                                     widget.data.details[pageIndex].palkaPDobi
-                                            .toString() ??
-                                        '',
+                                            ?.toString() ??
+                                        '-',
                                   ),
                                 ]),
                               ],
@@ -274,7 +269,19 @@ class _AnalyticalResultIncomingMaterialByVesselReportDetailPageState
                           },
                         ),
                       ),
-                    ]),
+                    ]),]
+                      else ...[
+                      // 2. Fallback if no data exists
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Center(
+                          child: Text(
+                            "Tidak ada detail data",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                    ],
 
                     _buildSection('Palka Component Analysis Result', [
                       _buildDataRow(

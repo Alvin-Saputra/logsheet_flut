@@ -693,6 +693,7 @@ class PretreatmentBleachingFiltrationMySQLService {
     DateTime? dateFilter,
     String plantCode, {
     String? shift = "All",
+    String? workCenter,
   }) async {
     MySQLConnection? connection;
     try {
@@ -768,6 +769,7 @@ class PretreatmentBleachingFiltrationMySQLService {
       final Map<String, dynamic> params = {
         "dateFilter": DateFormat('yyyy-MM-dd').format(dateFilter),
         "plantCode": plantCode,
+        "workCenter": workCenter
       };
 
       log("Params: $params");
@@ -775,6 +777,11 @@ class PretreatmentBleachingFiltrationMySQLService {
       if (shift != null && shift != "All") {
         query += " AND shift = :shift";
         params['shift'] = shift;
+      }
+
+      if (workCenter != null && workCenter.isNotEmpty) {
+        query += " AND refinery_machine = :workCenter";
+        params['workCenter'] = workCenter;
       }
       log("Query: $query");
       log("Params: $params");
