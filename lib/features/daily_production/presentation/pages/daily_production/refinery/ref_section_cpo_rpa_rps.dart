@@ -3,6 +3,7 @@ import 'package:logsheet_app/features/master_data/data/model/master/tank_entity.
 import 'package:logsheet_app/core/widgets/custom_hour_minute_field.dart';
 import 'package:logsheet_app/core/widgets/custom_section_title.dart';
 import 'package:logsheet_app/core/widgets/custom_text_field.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/product_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -19,6 +20,10 @@ class SectionCpoRpaRps extends StatefulWidget {
   String? selectedTank;
   final String? selectedWorkCenter;
   final Function(String?) onTankChanged;
+  final Function(bool?) onUseTankFromLastShiftChangedRm;
+  final Function(String?) onOilRmChanged;
+  String? selectedOil;
+  bool showCheckboxUseTankFromLastShiftChangedRm;
 
   SectionCpoRpaRps({
     super.key,
@@ -34,6 +39,10 @@ class SectionCpoRpaRps extends StatefulWidget {
     required this.onTimeTapAkhir,
     required this.selectedWorkCenter,
     required this.oipController,
+    required this.selectedOil,
+    required this.onOilRmChanged,
+    required this.onUseTankFromLastShiftChangedRm,
+    this.showCheckboxUseTankFromLastShiftChangedRm = false,
   });
 
   @override
@@ -44,6 +53,7 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
   String flowrateUnit = "T/H";
   double flowRateAwal = 0.0;
   double flowRateAkhir = 0.0;
+  bool isChecked = false;
   void _calculateTotalFlowRate() {
     String awalText = widget.flowRateAwalController.text;
     String akhirText = widget.flowRateAkhirController.text;
@@ -111,7 +121,59 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const CustomSectionTitle(title: 'Raw Material'),
+            (widget.showCheckboxUseTankFromLastShiftChangedRm)
+                ? Row(
+                  children: [
+                    Checkbox(
+                      value: isChecked,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          isChecked = value ?? false; // ← ini yang WAJIB
+                        });
+
+                        widget.onUseTankFromLastShiftChangedRm(value);
+                      },
+                    ),
+                    Text('Use Tank From Last Shift'),
+                  ],
+                )
+                : Container(),
             const SizedBox(height: 12),
+            Consumer<ProductProvider>(
+              builder: (
+                BuildContext context,
+                ProductProvider provider,
+                Widget? child,
+              ) {
+                return DropdownButtonFormField<String>(
+                  value: widget.selectedOil,
+                  isExpanded: true,
+                  items:
+                      provider.productRefineryList.map((oil) {
+                        return DropdownMenuItem<String>(
+                          value: oil.id,
+                          child: Text(oil.rawMaterial ?? 'N/A'),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      widget.onOilRmChanged(value); // simpan code-nya saja
+                    }
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Pilih Oil Type',
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    prefixIcon: const Icon(Icons.category),
+                  ),
+                );
+              },
+            ),
+
             const Text("From Tank", style: _sectionTextStyle),
             const SizedBox(height: 10),
             Consumer<ValueProvider>(

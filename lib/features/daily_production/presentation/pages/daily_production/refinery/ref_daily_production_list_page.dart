@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/features/daily_production/data/model/daily_production/daily_production_refinery_entity.dart';
+import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/refinery/ref_daily_production_edit_page.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/refinery/ref_daily_production_detail_page.dart';
 import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/refinery/ref_daily_production_input_page.dart';
@@ -56,6 +57,7 @@ class _DailyProductionRefineryListPageState
                         (context) => DailyProductionRefineryInputPage(
                           dataForm: widget.dataForm,
                           userName: provider.currentUser?.username ?? "",
+                          isFromAddNewShift: false,
                         ),
                   ),
                 );
@@ -87,229 +89,154 @@ class _DailyProductionRefineryListPageState
         userProvider,
         child,
       ) {
-        List<DailyProductionRefineryEntity> filteredList =
+        // 1. Filter raw list
+        List<DailyProductionRefineryEntity> rawList =
             dailyProdFracProvider.reportsList
                 .where(
                   (e) => e.preparedStatus == null && e.checkedStatus == null,
                 )
                 .toList();
+
+        Map<String, List<DailyProductionRefineryEntity>> ticketMap = {};
+
+        for (var item in rawList) {
+          // Kita jadikan 'id' sebagai key utama
+          if (!ticketMap.containsKey(item.id)) {
+            ticketMap[item.id] = [];
+          }
+          ticketMap[item.id]!.add(item);
+        }
+
+        var allTickets = ticketMap.values.toList();
+
         if (dailyProdFracProvider.isLoading) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
-
-        if (dailyProdFracProvider.errorMessage != null) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Error: ${dailyProdFracProvider.errorMessage!}',
-                    style: const TextStyle(color: Colors.red, fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                  OutlinedButton(
-                    onPressed: () async {
-                      final plantCode = plantprovider.currentPlant?.code ?? "";
-
-                      await dailyProdFracProvider.fetchAllTickets(
-                        null,
-                        null,
-                        userProvider.currentUser?.username ?? "",
-                        userProvider.currentUser?.role ?? "",
-                        plantCode,
-                      );
-                    },
-                    child: const Text("Refresh"),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-        if (filteredList.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'No data',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                  OutlinedButton(
-                    onPressed: () async {
-                      final plantCode = plantprovider.currentPlant?.code ?? "";
-
-                      await dailyProdFracProvider.fetchAllTickets(
-                        null,
-                        null,
-                        userProvider.currentUser?.username ?? "",
-                        userProvider.currentUser?.role ?? "",
-                        plantCode,
-                      );
-                    },
-                    child: const Text("Refresh"),
-                  ),
-                ],
-              ),
-            ),
-          );
+        if (allTickets.isEmpty) {
+          return const Center(
+            child: Text("No Data"),
+          ); // Ganti dengan widget empty state Anda
         }
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: ListView.builder(
             padding: const EdgeInsets.only(bottom: 88),
-            itemCount: filteredList.length,
+            itemCount: allTickets.length,
             itemBuilder: (context, index) {
-              final report = filteredList[index];
+              // Ini adalah SATU TIKET (List of Rows dengan ID yang sama)
+              List<DailyProductionRefineryEntity> thisTicketRows =
+                  allTickets[index];
+
+              Map<String, List<DailyProductionRefineryEntity>> shiftMap = {};
+
+              for (var item in thisTicketRows) {
+                String shiftKey = item.shift ?? "Unknown";
+                if (!shiftMap.containsKey(shiftKey)) {
+                  shiftMap[shiftKey] = [];
+                }
+                shiftMap[shiftKey]!.add(item);
+              }
+
+              var sortedShiftKeys = shiftMap.keys.toList()..sort();
+
+              final headerData = thisTicketRows.first;
+              String titleDate = DateFormat(
+                'dd MMM yyyy',
+              ).format(headerData.transactionDate!);
+              String titleWC = headerData.workCenter ?? "-";
+
               return Card(
-                child: InkWell(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder:
-                            (context) => DailyProductionRefineryDetailPage(
-                              item: report,
-                              dataForm: widget.dataForm,
-                            ),
-                      ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 18.0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                report.id,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blueGrey,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: _getStatusColor(report),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                _getStatusText(report),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-
-
-                              Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: report.isCompleted == false ? Colors.green : Colors.red,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                _getIsCompletedStatus(report),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Divider(height: 16),
-
-                        // Transaction Date and Time
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.calendar_today,
-                              size: 16,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              DateFormat(
-                                'yyyy-MM-dd',
-                              ).format(report.transactionDate!),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            SizedBox(width: 16),
-                            const Icon(
-                              Icons.schedule,
-                              size: 18,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              _displayTime(report.oilTypeRmAwalJam),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            SizedBox(width: 16),
-                            const Icon(
-                              Icons.timelapse,
-                              size: 18,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              "Shift ${report.shift}",
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        // Entered By
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.person,
-                              size: 16,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Entried by: ${report.entryBy}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                elevation: 2,
+                margin: const EdgeInsets.only(bottom: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ExpansionTile(
+                  leading: const Icon(
+                    Icons.description,
+                    color: Colors.blueGrey,
                   ),
+
+                  title: Text(
+                    "${headerData.id}",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text("$titleDate • WC: $titleWC"),
+                  childrenPadding: const EdgeInsets.all(8),
+
+                  children: [
+                    ...sortedShiftKeys.map((shiftKey) {
+                      List<DailyProductionRefineryEntity> itemsInThisShift =
+                          shiftMap[shiftKey]!;
+
+                      var representativeItem = itemsInThisShift.first;
+
+                      return ListTile(
+                        leading: const Icon(Icons.domain_verification_sharp),
+                        trailing: const Icon(
+                          Icons.keyboard_double_arrow_right_outlined,
+                        ),
+                        title: Text('Shift $shiftKey'),
+                        subtitle: Text(
+                          (representativeItem.isCompleted == true)
+                              ? "Close"
+                              : "Open",
+                          style: TextStyle(
+                            color:
+                                (representativeItem.isCompleted == true)
+                                    ? Colors.red
+                                    : Colors.green,
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) =>
+                                      DailyProductionRefineryDetailPage(
+                                        dataForm: widget.dataForm,
+                                        listItem: itemsInThisShift,
+                                      ),
+                            ),
+                          );
+                        },
+                      );
+                    }),
+
+                    const Divider(),
+
+                    // ===== ADD NEW SHIFT DATA BUTTON =====
+                    ListTile(
+                      leading: const Icon(
+                        Icons.add_circle_outline,
+                        color: Colors.redAccent,
+                      ),
+                      title: const Text(
+                        "Add New Shift Data",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.red,
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => DailyProductionRefineryInputPage(
+                                  dataForm: widget.dataForm,
+                                  entity: shiftMap[sortedShiftKeys.last]!.first,
+                                  userName:
+                                      userProvider.currentUser?.username ?? '',
+                                  isFromAddNewShift: true,
+                                ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               );
             },
@@ -318,6 +245,8 @@ class _DailyProductionRefineryListPageState
       },
     );
   }
+
+  // Helper widget untuk membuat kartu detail (per Shift)
 
   AppBar _buildAppBar() {
     return AppBar(

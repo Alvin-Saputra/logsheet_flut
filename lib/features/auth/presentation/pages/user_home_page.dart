@@ -1560,6 +1560,7 @@ class _UserHomePageState extends State<UserHomePage> {
                             (_) => DailyProductionRefineryReportListPage(
                               userName: user.username,
                               role: userRole,
+                              dataForm: formDailyProductionRefinery!
                             ),
                       ),
                     );

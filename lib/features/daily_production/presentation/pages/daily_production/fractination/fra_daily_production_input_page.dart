@@ -74,36 +74,8 @@ class _DailyProductionFractionPageState
 
   List<TankEntity>? tankLists;
   List<MasterValueEntity>? oilLists;
-  // final List<String> oilTypeFg = ['OLEIN', 'SUPER OLEIN', 'SOFT STEARIN'];
-  // final List<String> oilTypeRm = ['RBDPO', 'ROL', 'RPS'];
-  // final List<String> oilTypeBp = ['STEARIN', 'PMF', 'HARD STEARIN'];
+
   final List<String> dummyShiftOptions = ['1', '2', '3', '4', '5'];
-
-  final TextEditingController flowmeter1AwalController =
-      TextEditingController();
-  final TextEditingController flowmeter1AkhirController =
-      TextEditingController();
-  final TextEditingController flowmeter1TotalController =
-      TextEditingController();
-
-  final TextEditingController flowmeter2AwalController =
-      TextEditingController();
-  final TextEditingController flowmeter2AkhirController =
-      TextEditingController();
-  final TextEditingController flowmeter2TotalController =
-      TextEditingController();
-
-  final TextEditingController flowmeter3AwalController =
-      TextEditingController();
-  final TextEditingController flowmeter3AkhirController =
-      TextEditingController();
-  final TextEditingController flowmeter3TotalController =
-      TextEditingController();
-
-  final TextEditingController flowMeterController = TextEditingController();
-  final TextEditingController noController = TextEditingController();
-  final TextEditingController cr1Controller = TextEditingController();
-  final TextEditingController cr2Controller = TextEditingController();
 
   String? selectedShiftBleaching;
 
@@ -119,19 +91,7 @@ class _DailyProductionFractionPageState
 
   @override
   void dispose() {
-    flowmeter1AwalController.dispose();
-    flowmeter1AkhirController.dispose();
-    flowmeter1TotalController.dispose();
-    flowmeter2AwalController.dispose();
-    flowmeter2AkhirController.dispose();
-    flowmeter2TotalController.dispose();
-    flowmeter3AwalController.dispose();
-    flowmeter3AkhirController.dispose();
-    flowmeter3TotalController.dispose();
-    noController.dispose();
-    cr1Controller.dispose();
-    cr2Controller.dispose();
-    flowMeterController.dispose();
+    
     uuFlowmeterBefore.dispose();
     uuFlowmeterAfter.dispose();
     uuFlowmeterTotal.dispose();
@@ -140,15 +100,7 @@ class _DailyProductionFractionPageState
     uuAirController.dispose();
 
     super.dispose();
-
-    flowmeter1AwalController.removeListener(_calculateTotalFlowmeter);
-    flowmeter1AkhirController.removeListener(_calculateTotalFlowmeter);
-
-    flowmeter2AwalController.removeListener(_calculateTotalFlowmeter);
-    flowmeter2AkhirController.removeListener(_calculateTotalFlowmeter);
-
-    flowmeter3AwalController.removeListener(_calculateTotalFlowmeter);
-    flowmeter3AkhirController.removeListener(_calculateTotalFlowmeter);
+   
   }
 
   void _addNewRow() {
@@ -165,98 +117,12 @@ class _DailyProductionFractionPageState
     });
   }
 
-  void _calculateTotalFlowmeter() {
-    final String awal1Text = flowmeter1AwalController.text;
-    final String akhir1Text = flowmeter1AkhirController.text;
-
-    final String awal2Text = flowmeter2AwalController.text;
-    final String akhir2Text = flowmeter2AkhirController.text;
-
-    final String awal3Text = flowmeter3AwalController.text;
-    final String akhir3Text = flowmeter3AkhirController.text;
-
-    final String awal4Text = uuFlowmeterBefore.text;
-    final String akhir4Text = uuFlowmeterAfter.text;
-
-    if (awal1Text != '' && akhir1Text != '') {
-      // Coba parse nilai ke integer
-      final int awal = int.parse(awal1Text);
-      final int akhir = int.parse(akhir1Text);
-
-      log("AWAL $awal AKHIR $akhir");
-
-      // Hitung total: Akhir - Awal
-      final int total = akhir - awal;
-      flowmeter1TotalController.text = total.toString();
-    } else {
-      // Kosongkan total jika ada input yang tidak valid
-      flowmeter1TotalController.text = '';
-    }
-
-    if (awal2Text != '' && akhir2Text != '') {
-      // Coba parse nilai ke integer
-      final int awal = int.parse(awal2Text);
-      final int akhir = int.parse(akhir2Text);
-
-      log("AWAL $awal AKHIR $akhir");
-
-      // Hitung total: Akhir - Awal
-      final int total = akhir - awal;
-      flowmeter2TotalController.text = total.toString();
-    } else {
-      // Kosongkan total jika ada input yang tidak valid
-      flowmeter2TotalController.text = '';
-    }
-
-    if (awal3Text != '' && akhir3Text != '') {
-      // Coba parse nilai ke integer
-      final int awal = int.parse(awal3Text);
-      final int akhir = int.parse(akhir3Text);
-
-      log("AWAL $awal AKHIR $akhir");
-
-      // Hitung total: Akhir - Awal
-      final int total = akhir - awal;
-      flowmeter3TotalController.text = total.toString();
-    } else {
-      // Kosongkan total jika ada input yang tidak valid
-      flowmeter3TotalController.text = '';
-    }
-
-    if (awal4Text != '' && akhir4Text != '') {
-      // Coba parse nilai ke integer
-      final int awal = int.parse(awal4Text);
-      final int akhir = int.parse(akhir4Text);
-
-      log("AWAL $awal AKHIR $akhir");
-
-      // Hitung total: Akhir - Awal
-      final int total = akhir - awal;
-      uuFlowmeterTotal.text = total.toString();
-    } else {
-      // Kosongkan total jika ada input yang tidak valid
-      uuFlowmeterTotal.text = '';
-    }
-  }
 
   void _showHourPickerAndUpdateState(
     Function(TimeOfDay) onTimeSelected,
     TimeOfDay? selectedTime,
   ) {
-    // showModalBottomSheet(
-    //   context: context,
-    //   backgroundColor: Colors.white,
-    //   shape: const RoundedRectangleBorder(
-    //     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    //   ),
-    //   builder:
-    //       (context) => CustomHourMinutePicker(
-    //         selectedTime: selectedTime,
-    //         onTimeSelected: (time) {
-    //           onTimeSelected(time);
-    //         },
-    //       ),
-    // );
+   
 
     showDialog(
       context: context,
@@ -324,17 +190,7 @@ class _DailyProductionFractionPageState
       });
     }
 
-    flowmeter1AwalController.addListener(_calculateTotalFlowmeter);
-    flowmeter1AkhirController.addListener(_calculateTotalFlowmeter);
-
-    flowmeter2AwalController.addListener(_calculateTotalFlowmeter);
-    flowmeter2AkhirController.addListener(_calculateTotalFlowmeter);
-
-    flowmeter3AwalController.addListener(_calculateTotalFlowmeter);
-    flowmeter3AkhirController.addListener(_calculateTotalFlowmeter);
-
-    uuFlowmeterBefore.addListener(_calculateTotalFlowmeter);
-    uuFlowmeterAfter.addListener(_calculateTotalFlowmeter);
+  
   }
 
   Future<void> showSaveConfirmationDialog(
@@ -940,38 +796,9 @@ class _DailyProductionFractionPageState
         now.year,
         now.month,
         now.day,
-        // now.hour,
-        // now.minute,
-        // now.second,
+     
       );
     }
-
-    // DateTime getPostingDate() {
-    //   final DateTime now = selectedTransactionDate;
-
-    //   final int hour = now.hour;
-
-    //   if (hour <= 7) {
-    //     final DateTime previousDay = now.subtract(const Duration(days: 1));
-    //     return DateTime(
-    //       previousDay.year,
-    //       previousDay.month,
-    //       previousDay.day,
-    //       previousDay.hour,
-    //       previousDay.minute,
-    //       previousDay.second,
-    //     );
-    //   } else {
-    //     return DateTime(
-    //       now.year,
-    //       now.month,
-    //       now.day,
-    //       now.hour,
-    //       now.minute,
-    //       now.second,
-    //     );
-    //   }
-    // }
 
     DateTime getPostingDate() {
       // 1. Ambil tanggal dari pilihan user (jamnya 00:00:00)
@@ -1022,29 +849,7 @@ class _DailyProductionFractionPageState
         .read<DailyProductionFractionationProvider>()
         .fetchLatestId(plantCode);
 
-    // Future<String> buildTicketNumber() async {
-    //   log("TICKET NUMBER FROM PROVIDER: $latestTicketIdFromProvider");
-    //   if (latestTicketIdFromProvider == null) {
-    //     // return error snackbar saying plant code is not registered.
-    //     log("id is null");
-    //     return "";
-    //   }
-    //   log("lastDigit: ${latestTicketIdFromProvider.substring(9)}");
-    //   int digit = (int.parse((latestTicketIdFromProvider.substring(9))) + 1);
-    //   final update = await context
-    //       .read<DailyProductionFractionationProvider>()
-    //       .updateAutoNumber(plantCode, digit);
-    //   String lastDigit = digit.toString().padLeft(6, '0');
-    //   if (lastDigit == "") {
-    //     lastDigit = "1";
-    //   }
-    //   log("Last Digit: $lastDigit, is update successful: $update");
-    //   String ticketPrefixQc = latestTicketIdFromProvider.substring(0, 9);
-    //   log(ticketPrefixQc + lastDigit);
-
-    //   return ticketPrefixQc + lastDigit;
-    // }
-
+   
     Future<List<String>> buildTicketNumbers(int batchSize) async {
       log("TICKET NUMBER FROM PROVIDER: $latestTicketIdFromProvider");
 
@@ -1100,43 +905,14 @@ class _DailyProductionFractionPageState
       ).showSnackBar(SnackBar(content: Text(message)));
     }
 
-    String? convertStringTimeToDateTime(int? hour) {
-      try {
-        log("$hour");
-        if (hour == null) {
-          return null;
-        }
-
-        if (hour < 0 || hour > 23) {
-          throw FormatException(
-            "Hour must be between 0 and 23, but was $hour.",
-          );
-        }
-        final formattedHour = "${hour.toString().padLeft(2, '0')}:00";
-
-        return formattedHour;
-      } on FormatException catch (e) {
-        log("Error processing time string '$hour': $e");
-        rethrow;
-      }
-    }
-
-    final postingDate = getPostingDate();
-
     if (!context.mounted) return;
 
     final dataForm = widget.dataForm;
-
-    // log("${convertStringTimeToDateTime(selectedTime1Awal)}");
-    // log("${convertStringTimeToDateTime(selectedHour2Awal)}");
-    // log("${convertStringTimeToDateTime(selectedHour3Awal)}");
-    log('SELECTED TIME 1 AWAL: $selectedTime1Awal');
 
     try {
       List<String> newTicketIds = await buildTicketNumbers(inputItems.length);
 
       if (newTicketIds.isEmpty || newTicketIds.length != inputItems.length) {
-        // Handle error, misal show snackbar "Gagal generate Ticket ID"
         return;
       }
       final entities =
@@ -1149,7 +925,7 @@ class _DailyProductionFractionPageState
               company: companyName,
               plant: currentPlant.code,
               transactionDate: getTransactionDate(),
-              postingDate: postingDate,
+              postingDate: getPostingDate(),
               workCenter: selectedWorkCenter,
               shift: selectedShift,
               no: index + 1,
@@ -1236,25 +1012,25 @@ class _DailyProductionFractionPageState
     }
   }
 
-  int getShiftBasedOnTimeAndDate(DateTime time) {
-    int hour = time.hour;
-    int day = time.weekday;
-    log("Day: $day, Hour: $hour");
+  // int getShiftBasedOnTimeAndDate(DateTime time) {
+  //   int hour = time.hour;
+  //   int day = time.weekday;
+  //   log("Day: $day, Hour: $hour");
 
-    if (day >= DateTime.friday) {
-      if (hour >= 8 && hour < 20) {
-        return 4;
-      } else {
-        return 5;
-      }
-    } else {
-      if (hour >= 8 && hour <= 15) {
-        return 1;
-      } else if (hour >= 16 && hour <= 23) {
-        return 2;
-      } else {
-        return 3;
-      }
-    }
-  }
+  //   if (day >= DateTime.friday) {
+  //     if (hour >= 8 && hour < 20) {
+  //       return 4;
+  //     } else {
+  //       return 5;
+  //     }
+  //   } else {
+  //     if (hour >= 8 && hour <= 15) {
+  //       return 1;
+  //     } else if (hour >= 16 && hour <= 23) {
+  //       return 2;
+  //     } else {
+  //       return 3;
+  //     }
+  //   }
+  // }
 }

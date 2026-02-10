@@ -1073,10 +1073,7 @@ class _DailyProductionFractionPageState
 
     final dataForm = widget.dataForm;
 
-    // log("${convertStringTimeToDateTime(selectedTime1Awal)}");
-    // log("${convertStringTimeToDateTime(selectedHour2Awal)}");
-    // log("${convertStringTimeToDateTime(selectedHour3Awal)}");
-    log('SELECTED TIME 1 AWAL: $selectedTime1Awal');
+
     List<FractionationInputItem> newItems =
         inputItems.where((e) => e.id == null).toList();
 
