@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/core/widgets/custom_dropdown.dart';
 import 'package:logsheet_app/core/widgets/custom_section_title.dart';
 import 'package:logsheet_app/core/widgets/custom_text_field.dart';
 
@@ -88,6 +87,7 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
               label: 'Jumlah (Bag)',
               icon: Icons.local_mall,
               isNumeric: true,
+              isRequired: true,
             ),
             const SizedBox(height: 12),
 
@@ -95,6 +95,7 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
               controller: bleachingTypeController,
               label: 'Jenis',
               icon: Icons.category,
+              isRequired: true,
             ),
             const SizedBox(height: 12),
 
@@ -102,6 +103,8 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
               controller: bleachingBatchController,
               label: 'Lot Batch Number',
               icon: Icons.numbers,
+              isRequired: true,
+              
             ),
              const SizedBox(height: 12),
 
@@ -110,6 +113,7 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
               label: 'Yield (%)',
               icon: Icons.numbers,
               isNumeric: true,
+              isRequired: true,
             ),
             
             const SizedBox(height: 12),
@@ -144,11 +148,13 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
               label: 'Total',
               icon: Icons.functions_rounded,
               isNumeric: true,
+              isRequired: true,
             ),
             CustomTextField(
               controller: phosphoricBatchController,
               label: 'Lot Batch Number',
               icon: Icons.numbers,
+              isRequired: true,
             ),
             const SizedBox(width: 12),
             CustomTextField(
@@ -156,6 +162,7 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
               label: 'Yield (%)',
               icon: Icons.percent,
               isNumeric: true,
+              isRequired: true,
             ),
 
             const SizedBox(height: 12),

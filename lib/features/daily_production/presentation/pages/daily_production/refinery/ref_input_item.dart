@@ -12,7 +12,7 @@ class RefineryInputItem {
   TimeOfDay? timeAwalRm;
   TimeOfDay? timeAkhirRm;
   bool? showRM;
-  bool? isUseLastTankRm = false;
+  // bool? isUseLastTankRm = false;
 
   // ---- Finish good section ----
   final TextEditingController flowAwalFg = TextEditingController();

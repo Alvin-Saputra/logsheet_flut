@@ -20,10 +20,13 @@ class SectionCpoRpaRps extends StatefulWidget {
   String? selectedTank;
   final String? selectedWorkCenter;
   final Function(String?) onTankChanged;
-  final Function(bool?) onUseTankFromLastShiftChangedRm;
   final Function(String?) onOilRmChanged;
   String? selectedOil;
+  final Function(bool?) onUseTankFromLastShiftChangedRm;
   bool showCheckboxUseTankFromLastShiftChangedRm;
+
+  final Function(bool?) onUseTankFromLastRowRm;
+  bool showCheckboxUseTankFromLastRowRm;
 
   SectionCpoRpaRps({
     super.key,
@@ -43,6 +46,8 @@ class SectionCpoRpaRps extends StatefulWidget {
     required this.onOilRmChanged,
     required this.onUseTankFromLastShiftChangedRm,
     this.showCheckboxUseTankFromLastShiftChangedRm = false,
+    required this.onUseTankFromLastRowRm,
+    this.showCheckboxUseTankFromLastRowRm = false,
   });
 
   @override
@@ -53,7 +58,8 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
   String flowrateUnit = "T/H";
   double flowRateAwal = 0.0;
   double flowRateAkhir = 0.0;
-  bool isChecked = false;
+  bool isCheckedLastShiftTank = false;
+  bool isCheckedLastRow = false;
   void _calculateTotalFlowRate() {
     String awalText = widget.flowRateAwalController.text;
     String akhirText = widget.flowRateAkhirController.text;
@@ -125,16 +131,34 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
                 ? Row(
                   children: [
                     Checkbox(
-                      value: isChecked,
+                      value: isCheckedLastShiftTank,
                       onChanged: (bool? value) {
                         setState(() {
-                          isChecked = value ?? false; // ← ini yang WAJIB
+                          isCheckedLastShiftTank =
+                              value ?? false; // ← ini yang WAJIB
                         });
 
                         widget.onUseTankFromLastShiftChangedRm(value);
                       },
                     ),
                     Text('Use Tank From Last Shift'),
+                  ],
+                )
+                : Container(),
+            (widget.showCheckboxUseTankFromLastRowRm)
+                ? Row(
+                  children: [
+                    Checkbox(
+                      value: isCheckedLastRow,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          isCheckedLastRow = value ?? false; // ← tetap WAJIB
+                        });
+
+                        widget.onUseTankFromLastRowRm(value);
+                      },
+                    ),
+                    const Text("Use Tank From Last Row"),
                   ],
                 )
                 : Container(),
@@ -159,6 +183,10 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
                     if (value != null) {
                       widget.onOilRmChanged(value); // simpan code-nya saja
                     }
+                  },
+                  validator: (value) {
+                    if (value == null) return 'Oil Type wajib dipilih';
+                    return null;
                   },
                   decoration: InputDecoration(
                     hintText: 'Pilih Oil Type',
@@ -238,6 +266,10 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
                         );
                       }).toList(),
                   onChanged: widget.onTankChanged,
+                  validator: (value) {
+                    if (value == null) return 'Tank wajib dipilih';
+                    return null;
+                  },
                   decoration: InputDecoration(hintText: 'Pilih Tank'),
                 );
               },
@@ -255,6 +287,7 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
               label: 'Flow Rate ($flowrateUnit)',
               icon: Icons.speed,
               isNumeric: true,
+              isRequired: true,
             ),
             if (widget.selectedWorkCenter == 'REF-01') ...[
               Text("Flow Rate: $flowRateAwal T/H"),
@@ -276,6 +309,7 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
               label: 'Flow Rate ($flowrateUnit)',
               icon: Icons.speed,
               isNumeric: true,
+              isRequired: true,
             ),
             if (widget.selectedWorkCenter == 'REF-01') ...[
               Text("Flow Rate: $flowRateAkhir T/H"),
@@ -286,6 +320,7 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
               label: 'OIP',
               icon: Icons.speed,
               isNumeric: true,
+              isRequired: true,
             ),
             const SizedBox(height: 12),
             Row(

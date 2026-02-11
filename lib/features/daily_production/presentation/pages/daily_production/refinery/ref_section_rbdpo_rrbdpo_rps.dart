@@ -129,6 +129,10 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
                       widget.onOilFgChanged(value); // simpan code-nya saja
                     }
                   },
+                  validator: (value) {
+                    if (value == null) return 'Oil Type wajib dipilih';
+                    return null;
+                  },
                   decoration: InputDecoration(
                     hintText: 'Pilih Oil Type',
                     filled: true,
@@ -153,6 +157,7 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
                   label: 'Flow Rate ($flowrateUnit)',
                   icon: Icons.speed,
                   isNumeric: true,
+                  isRequired: true,
                 ),
                 if (widget.selectedWorkCenter == 'REF-01') ...[
                   Text("Flow Rate: $flowRateAwal T/H"),
@@ -170,6 +175,7 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
                   label: 'Flow Rate ($flowrateUnit)',
                   icon: Icons.speed,
                   isNumeric: true,
+                  isRequired: true,
                 ),
                 if (widget.selectedWorkCenter == 'REF-01') ...[
                   Text("Flow Rate: $flowRateAkhir T/H"),
@@ -257,6 +263,10 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
                             );
                           }).toList(),
                       onChanged: widget.onTankChanged,
+                      validator: (value) {
+                        if (value == null) return 'Tank wajib dipilih';
+                        return null;
+                      },
                       decoration: InputDecoration(hintText: 'Pilih Tank'),
                     );
                   },

@@ -560,33 +560,86 @@ class _DailyProductionPageState
                               Wrap(
                                 spacing: 8.0,
                                 children: [
+                                  // === CHIP RAW MATERIAL ===
                                   FilterChip(
                                     label: const Text("Raw Material"),
                                     selected: inputItems[i].showRM!,
-                                    onSelected:
-                                        (val) => setState(
-                                          () => inputItems[i].showRM = val,
-                                        ),
+                                    onSelected: (val) {
+                                      setState(() {
+                                        inputItems[i].showRM = val;
+
+                                        // JIKA DI-UNCHECK (val == false), BERSIHKAN DATA
+                                        if (!val) {
+                                          // 1. Reset variable dropdown/picker
+                                          inputItems[i].timeAwalRm = null;
+                                          inputItems[i].timeAkhirRm = null;
+                                          inputItems[i].selectedTankRm = null;
+                                          inputItems[i].selectedOilRm = null;
+                                          // inputItems[i].isUseLastTankRm =
+                                          //     false; // Reset checkbox tank
+
+                                          // 2. Bersihkan Text Controllers
+                                          inputItems[i].flowAwalRm.clear();
+                                          inputItems[i].flowAkhirRm.clear();
+                                          inputItems[i].flowTotalRm.clear();
+                                          inputItems[i].oipRm.clear();
+                                        }
+                                      });
+                                    },
                                     checkmarkColor: Colors.black,
                                     selectedColor: Colors.red.withOpacity(0.2),
                                   ),
+
+                                  // === CHIP FINISH GOODS ===
                                   FilterChip(
                                     label: const Text("Finish Goods"),
                                     selected: inputItems[i].showFG!,
-                                    onSelected:
-                                        (val) => setState(
-                                          () => inputItems[i].showFG = val,
-                                        ),
+                                    onSelected: (val) {
+                                      setState(() {
+                                        inputItems[i].showFG = val;
+
+                                        // JIKA DI-UNCHECK, BERSIHKAN DATA FG
+                                        if (!val) {
+                                          // 1. Reset variable dropdown/picker
+                                          inputItems[i].timeAwalFg = null;
+                                          inputItems[i].timeAkhirFg = null;
+                                          inputItems[i].selectedTankFg = null;
+                                          inputItems[i].selectedOilFg = null;
+
+                                          // 2. Bersihkan Text Controllers
+                                          inputItems[i].flowAwalFg.clear();
+                                          inputItems[i].flowAkhirFg.clear();
+                                          inputItems[i].flowTotalFg.clear();
+                                        }
+                                      });
+                                    },
                                     checkmarkColor: Colors.black,
                                     selectedColor: Colors.red.withOpacity(0.2),
                                   ),
+
+                                  // === CHIP BY PRODUCT ===
                                   FilterChip(
                                     label: const Text("By Product"),
                                     selected: inputItems[i].showBP!,
-                                    onSelected:
-                                        (val) => setState(
-                                          () => inputItems[i].showBP = val,
-                                        ),
+                                    onSelected: (val) {
+                                      setState(() {
+                                        inputItems[i].showBP = val;
+
+                                        // JIKA DI-UNCHECK, BERSIHKAN DATA BP
+                                        if (!val) {
+                                          // 1. Reset variable dropdown/picker
+                                          inputItems[i].timeAwalBp = null;
+                                          inputItems[i].timeAkhirBp = null;
+                                          inputItems[i].selectedTankBp = null;
+                                          inputItems[i].selectedOilBp = null;
+
+                                          // 2. Bersihkan Text Controllers
+                                          inputItems[i].flowAwalBp.clear();
+                                          inputItems[i].flowAkhirBp.clear();
+                                          inputItems[i].flowTotalBp.clear();
+                                        }
+                                      });
+                                    },
                                     checkmarkColor: Colors.black,
                                     selectedColor: Colors.red.withOpacity(0.2),
                                   ),
@@ -626,7 +679,7 @@ class _DailyProductionPageState
                             setState(() {
                               inputItems[i].selectedTankRm = val;
 
-                              inputItems[i].isUseLastTankRm = false;
+                              // inputItems[i].isUseLastTankRm = false;
                             });
                           },
                           // RM Controllers
@@ -642,7 +695,7 @@ class _DailyProductionPageState
                           onUseTankFromLastShiftChangedRm: (bool? value) {
                             setState(() {
                               // Update status checkbox
-                              inputItems[i].isUseLastTankRm = value;
+                              // inputItems[i].isUseLastTankRm = value;
 
                               if (value == true && widget.entity != null) {
                                 inputItems[i].selectedTankRm =
@@ -656,7 +709,24 @@ class _DailyProductionPageState
                             });
                           },
                           showCheckboxUseTankFromLastShiftChangedRm:
-                              (widget.isFromAddNewShift),
+                              (widget.isFromAddNewShift && inputItems[i] == inputItems.first),
+
+                          showCheckboxUseTankFromLastRowRm:
+                              (inputItems[i] != inputItems.first),
+
+                          onUseTankFromLastRowRm: (bool? value) {
+                            if (value == true &&
+                                inputItems[i - 1].selectedTankRm != null) {
+                              setState(() {
+                                inputItems[i].selectedTankRm =
+                                    inputItems[i - 1].selectedTankRm;
+                              });
+                            } else {
+                              setState(() {
+                                inputItems[i].selectedTankRm = null;
+                              });
+                            }
+                          },
                         ),
                       const SizedBox(height: 16),
 
