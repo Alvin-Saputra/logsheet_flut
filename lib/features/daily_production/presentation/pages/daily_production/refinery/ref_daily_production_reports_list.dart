@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/display.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/daily_production/data/model/daily_production/daily_production_refinery_entity.dart';
 import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/refinery/ref_daily_production_input_page.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
@@ -47,7 +48,7 @@ class _DailyProductionRefineryReportListsPageState
     WidgetsBinding.instance.addPostFrameCallback(
       (timeStamp) async => await context
           .read<DailyProductionRefineryProvider>()
-          .fetchFilteredTickets(_selectedDate, plantCode, _tempSelectedShift),
+          .fetchFilteredTickets(_selectedDate, plantCode),
     );
   }
 
@@ -159,13 +160,7 @@ class _DailyProductionRefineryReportListsPageState
               ) {
                 // --- LOGIC PEMROSESAN DATA ---
                 List<DailyProductionRefineryEntity> rawList =
-                    dailyProdRefProvider.filteredTickets
-                        .where(
-                          (e) =>
-                              e.preparedStatus == null &&
-                              e.checkedStatus == null,
-                        )
-                        .toList();
+                    dailyProdRefProvider.filteredTickets;
 
                 Map<String, List<DailyProductionRefineryEntity>> ticketMap = {};
 
@@ -350,44 +345,44 @@ class _DailyProductionRefineryReportListsPageState
             onTap: () => _pickDate(context),
           ),
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: DropdownButtonFormField<String?>(
-            isExpanded: true,
-            value: _tempSelectedShift,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: const Color(0xFFF0ECE9),
-              hintText: "Pilih Shift",
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              prefixIcon: const Icon(Icons.access_time),
-            ),
-            items: [
-              const DropdownMenuItem<String?>(
-                value: "All",
-                child: Text('Semua'),
-              ),
-              ...shifts.map(
-                (shift) => DropdownMenuItem<String?>(
-                  value: shift,
-                  child: Text(" $shift"),
-                ),
-              ),
-            ],
-            onChanged: (value) {
-              setState(() {
-                _tempSelectedShift = value;
-              });
-            },
-          ),
-        ),
+        // const SizedBox(width: 10),
+        // Expanded(
+        //   child: DropdownButtonFormField<String?>(
+        //     isExpanded: true,
+        //     value: _tempSelectedShift,
+        //     decoration: InputDecoration(
+        //       filled: true,
+        //       fillColor: const Color(0xFFF0ECE9),
+        //       hintText: "Pilih Shift",
+        //       contentPadding: const EdgeInsets.symmetric(
+        //         horizontal: 16,
+        //         vertical: 14,
+        //       ),
+        //       border: OutlineInputBorder(
+        //         borderRadius: BorderRadius.circular(12),
+        //         borderSide: BorderSide.none,
+        //       ),
+        //       prefixIcon: const Icon(Icons.access_time),
+        //     ),
+        //     items: [
+        //       const DropdownMenuItem<String?>(
+        //         value: "All",
+        //         child: Text('Semua'),
+        //       ),
+        //       ...shifts.map(
+        //         (shift) => DropdownMenuItem<String?>(
+        //           value: shift,
+        //           child: Text(" $shift"),
+        //         ),
+        //       ),
+        //     ],
+        //     onChanged: (value) {
+        //       setState(() {
+        //         _tempSelectedShift = value;
+        //       });
+        //     },
+        //   ),
+        // ),
         const SizedBox(width: 10),
         ElevatedButton.icon(
           onPressed: () async {
@@ -397,9 +392,8 @@ class _DailyProductionRefineryReportListsPageState
             await context
                 .read<DailyProductionRefineryProvider>()
                 .fetchFilteredTickets(
-                  _selectedDate,
+                  formatStringtoDate(_dateController.text, "yyyy-MM-dd"),
                   plantCode,
-                  _tempSelectedShift,
                 );
           },
           icon: const Icon(Icons.search),

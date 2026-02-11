@@ -5,7 +5,6 @@ import 'package:logsheet_app/features/master_data/data/model/master/value_entity
 import 'package:logsheet_app/core/widgets/custom_hour_minute_field.dart';
 import 'package:logsheet_app/core/widgets/custom_section_title.dart';
 import 'package:logsheet_app/core/widgets/custom_text_field.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/crystallizer_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/product_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
 import 'package:provider/provider.dart';
@@ -86,6 +85,11 @@ class FraSectionOleinSoleinSstearin extends StatelessWidget {
                     if (value != null) {
                       onOilFgChanged(value); // simpan code-nya saja
                     }
+                    validator:
+                    (value) {
+                      if (value == null) return 'Oil Type wajib dipilih';
+                      return null;
+                    };
                   },
                   decoration: InputDecoration(
                     hintText: 'Pilih Oil Type',
@@ -164,6 +168,10 @@ class FraSectionOleinSoleinSstearin extends StatelessWidget {
                             );
                           }).toList(),
                       onChanged: onTankChanged,
+                      validator: (value) {
+                        if (value == null) return 'Tank wajib dipilih';
+                        return null;
+                      },
                       decoration: InputDecoration(hintText: 'Pilih Tank'),
                     );
                   },
@@ -236,6 +244,10 @@ class FraSectionOleinSoleinSstearin extends StatelessWidget {
                               })
                               .toList(),
                       onChanged: onCrystallizerChanged,
+                      validator: (value) {
+                        if (value == null) return 'Crystallizer wajib dipilih';
+                        return null;
+                      },
                       decoration: InputDecoration(hintText: 'Pilih CR'),
                     );
                   },
@@ -253,6 +265,7 @@ class FraSectionOleinSoleinSstearin extends StatelessWidget {
                   label: 'Flowmeter',
                   icon: Icons.speed,
                   isNumeric: true,
+                  isRequired: true,
                 ),
                 const SizedBox(height: 12),
                 const Text("Akhir", style: _sectionTextStyle),
@@ -267,6 +280,7 @@ class FraSectionOleinSoleinSstearin extends StatelessWidget {
                   label: 'Flowmeter',
                   icon: Icons.speed,
                   isNumeric: true,
+                  isRequired: true,
                 ),
                 const SizedBox(height: 12),
                 const Text("Total", style: _sectionTextStyle),

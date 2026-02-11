@@ -128,9 +128,15 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
                               ),
                             );
                           }).toList(),
-                      onChanged: (value) { if (value != null) {
-                      onOilBpChanged(value);
-                    }},
+                      onChanged: (value) {
+                        if (value != null) {
+                          onOilBpChanged(value);
+                        }
+                      },
+                      validator: (value) {
+                        if (value == null) return 'Oil Type wajib dipilih';
+                        return null;
+                      },
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: const Color(0xFFF0ECE9),
@@ -214,6 +220,10 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
                             );
                           }).toList(),
                       onChanged: onTankChanged,
+                      validator: (value) {
+                        if (value == null) return 'Tank wajib dipilih';
+                        return null;
+                      },
                       decoration: InputDecoration(hintText: 'Pilih Tank'),
                     );
                   },
@@ -231,6 +241,7 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
                   label: 'Flowmeter',
                   icon: Icons.speed,
                   isNumeric: true,
+                  isRequired: true,
                 ),
                 const SizedBox(height: 12),
                 const Text("Akhir", style: _sectionTextStyle),
@@ -245,6 +256,7 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
                   label: 'Flowmeter',
                   icon: Icons.speed,
                   isNumeric: true,
+                  isRequired: true,
                 ),
                 const SizedBox(height: 12),
                 const Text("Total", style: _sectionTextStyle),

@@ -11,6 +11,7 @@ class FractionationInputItem {
   String? selectedCrystallizerRm;
   TimeOfDay? timeAwalRm;
   TimeOfDay? timeAkhirRm;
+  bool? showRM;
 
   // --- SECTION 2: FG (OLEIN/SOLEIN) ---
   final TextEditingController flowAwalFg = TextEditingController();
@@ -21,6 +22,7 @@ class FractionationInputItem {
   String? selectedOilFg; // Jika setiap baris bisa beda product
   TimeOfDay? timeAwalFg;
   TimeOfDay? timeAkhirFg;
+  bool? showFG;
 
   // --- SECTION 3: BP (STEARIN/PMF) ---
   final TextEditingController flowAwalBp = TextEditingController();
@@ -30,11 +32,17 @@ class FractionationInputItem {
   String? selectedOilBp; // Jika setiap baris bisa beda by-product
   TimeOfDay? timeAwalBp;
   TimeOfDay? timeAkhirBp;
+  bool? showBP;
 
-  String? id; 
+  String? id;
   int? existingNo;
+  int? ticketId;
 
-  FractionationInputItem() {
+  FractionationInputItem({
+    this.showRM = true,
+    this.showFG = true,
+    this.showBP = true,
+  }) {
     // Pasang Listener otomatis untuk hitung Flowmeter Total
     _setupListener(flowAwalRm, flowAkhirRm, flowTotalRm);
     _setupListener(flowAwalFg, flowAkhirFg, flowTotalFg);

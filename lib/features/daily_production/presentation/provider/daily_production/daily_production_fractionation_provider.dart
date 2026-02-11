@@ -121,20 +121,22 @@ class DailyProductionFractionationProvider with ChangeNotifier {
 
   Future<bool> deleteTicketById(
     String username,
+    String id,
     String shift,
     String plant,
-    String transaction_date,
   ) async {
     _setLoadingDelete(true);
     _setErrorMessage(null);
     try {
       final response = await _repository.deleteTicket(
         username,
+        id,
         shift,
         plant,
-        transaction_date,
       );
-      log("Quality Refinery Provider deleteTicketById response: $response");
+      log(
+        "Quality Fractionation Provider deleteTicketById response: $response",
+      );
       _setLoadingDelete(false);
 
       // _reportsList.removeWhere((element) => element.id == id);
@@ -182,19 +184,6 @@ class DailyProductionFractionationProvider with ChangeNotifier {
           }
           break;
 
-        // case "MGR" || "MGR_PROD":
-        //   if (filter) {
-        //     _reportsList =
-        //         _reportsList
-        //             .where(
-        //               (report) =>
-        //                   report.preparedBy != null &&
-        //                   report.checkedStatus == null,
-        //             )
-        //             .toList();
-        //     notifyListeners();
-        //   }
-        //   break;
         default:
           break;
       }
@@ -229,7 +218,8 @@ class DailyProductionFractionationProvider with ChangeNotifier {
   }
 
   Future<bool> updateReport(
-    List<DailyProductionFractionationEntity> report,
+    List<DailyProductionFractionationEntity> entities,
+    List<int> deletedTicketIds,
     String username,
     String role,
     String plantCode,
@@ -238,7 +228,10 @@ class DailyProductionFractionationProvider with ChangeNotifier {
     _setErrorMessage(null);
     try {
       log('Updating report...');
-      final result = await _repository.updateReportTicket(report);
+      final result = await _repository.updateReportTicket(
+        entities,
+        deletedTicketIds,
+      );
       log(result.toString());
       fetchAllTickets(null, null, username, role, plantCode);
       await Future.delayed(const Duration(milliseconds: 300));
@@ -258,8 +251,7 @@ class DailyProductionFractionationProvider with ChangeNotifier {
     String shift,
     String? remark,
     String plantCode,
-    String transaction_date,
-    String work_center
+    String id,
   ) async {
     _setLoading(true);
     _setErrorMessage(null);
@@ -272,9 +264,7 @@ class DailyProductionFractionationProvider with ChangeNotifier {
         userRole,
         shift,
         remark,
-        plantCode,
-        transaction_date,
-        work_center
+        id,
       );
       log("status from provider: $result");
       fetchAllTickets(null, null, username, userRole, plantCode);
@@ -304,7 +294,6 @@ class DailyProductionFractionationProvider with ChangeNotifier {
   Future<void> fetchFilteredTickets(
     DateTime? dateFilter,
     String plantCode,
-    String? shift,
   ) async {
     _setLoadingFilterTicket(true);
     _setErrorMessage(null);
@@ -313,7 +302,6 @@ class DailyProductionFractionationProvider with ChangeNotifier {
       _filteredTickets = await _repository.getFilteredTickets(
         dateFilter,
         plantCode,
-        shift,
       );
       _setLoadingFilterTicket(false);
       notifyListeners();

@@ -297,7 +297,6 @@ class DailyProductionRefineryProvider with ChangeNotifier {
   Future<void> fetchFilteredTickets(
     DateTime? dateFilter,
     String plantCode,
-    String? shift,
   ) async {
     _setLoadingFilterTicket(true);
     _setErrorMessage(null);
@@ -306,7 +305,6 @@ class DailyProductionRefineryProvider with ChangeNotifier {
       _filteredTickets = await _repository.getFilteredTickets(
         dateFilter,
         plantCode,
-        shift,
       );
       notifyListeners();
     } catch (e) {

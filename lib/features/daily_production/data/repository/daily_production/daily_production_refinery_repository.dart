@@ -113,10 +113,9 @@ class DailyProductionRefineryRepository {
   Future<List<DailyProductionRefineryEntity>> getFilteredTickets(
     DateTime? dateFilter,
     String plantCode,
-    String? shift,
   ) async {
     final List<Map<String, dynamic>> filteredTicketList = await _mySQLService
-        .fetchFilteredTickets(dateFilter, plantCode, shift: shift);
+        .fetchFilteredTickets(dateFilter, plantCode);
 
     List<DailyProductionRefineryEntity> filteredTicketListFromMap =
         filteredTicketList

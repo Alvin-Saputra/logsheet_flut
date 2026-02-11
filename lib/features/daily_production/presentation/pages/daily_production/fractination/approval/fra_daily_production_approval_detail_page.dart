@@ -524,8 +524,7 @@ class _DailyProductionFractionationApprovalDetailPageState
         report.shift ?? '',
         _remarkController.text.isEmpty ? null : _remarkController.text,
         plantCode,
-        formatDatetoString(report.transactionDate, 'yyyy-MM-dd HH:mm:ss') ?? "",
-        report.workCenter ?? "",
+        report.id,
       );
 
       if (result && context.mounted) {

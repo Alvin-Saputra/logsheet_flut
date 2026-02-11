@@ -1611,7 +1611,7 @@ class _UserHomePageState extends State<UserHomePage> {
                         MaterialPageRoute(
                           builder:
                               (_) =>
-                                  DailyProductionFractionationApprovalListPage(),
+                                  DailyProductionFractinationApprovalListPage(),
                         ),
                       );
                     },
@@ -1627,7 +1627,8 @@ class _UserHomePageState extends State<UserHomePage> {
                         builder:
                             (_) => DailyProductionFractionationReportListPage(
                               userName: user.username,
-                              role: userRole,
+                            
+                              dataForm: formDailyProductionFractionation!
                             ),
                       ),
                     );

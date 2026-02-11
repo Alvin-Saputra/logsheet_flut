@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
+import 'package:logsheet_app/core/widgets/custom_section_card.dart';
 import 'package:logsheet_app/core/widgets/custom_section_card_data.dart';
 import 'package:logsheet_app/features/daily_production/data/model/daily_production/daily_production_refinery_entity.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
@@ -76,57 +77,6 @@ class _DailyProductionRefineryDetailPageState
               ),
               textAlign: TextAlign.center,
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  WidgetCustomSectionCardData(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 170,
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF655F5B),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(value, style: const TextStyle(color: Colors.black54)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget CustomSectionCard(String title, List<Widget> children) {
-    return Card(
-      color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: Color(0xFF655F5B),
-              ),
-            ),
-            const SizedBox(height: 12),
-            ...children,
           ],
         ),
       ),

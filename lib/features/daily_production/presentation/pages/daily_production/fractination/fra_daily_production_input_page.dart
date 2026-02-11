@@ -31,11 +31,14 @@ import 'package:provider/provider.dart';
 class DailyProductionFractinationInputPage extends StatefulWidget {
   final String userName;
   final DataFormNoEntity dataForm;
-
+  final bool isFromAddNewShift;
+  final DailyProductionFractionationEntity? entity;
   const DailyProductionFractinationInputPage({
     super.key,
     required this.userName,
     required this.dataForm,
+    required this.isFromAddNewShift,
+    this.entity,
   });
 
   @override
@@ -91,7 +94,6 @@ class _DailyProductionFractionPageState
 
   @override
   void dispose() {
-    
     uuFlowmeterBefore.dispose();
     uuFlowmeterAfter.dispose();
     uuFlowmeterTotal.dispose();
@@ -100,12 +102,18 @@ class _DailyProductionFractionPageState
     uuAirController.dispose();
 
     super.dispose();
-   
   }
 
   void _addNewRow() {
     setState(() {
-      inputItems.add(FractionationInputItem());
+      bool isDefaultRow = inputItems.isEmpty;
+      inputItems.add(
+        FractionationInputItem(
+          showRM: isDefaultRow, // True jika row 0, False jika row > 0
+          showFG: isDefaultRow,
+          showBP: isDefaultRow,
+        ),
+      );
     });
   }
 
@@ -117,37 +125,35 @@ class _DailyProductionFractionPageState
     });
   }
 
-
   void _showHourPickerAndUpdateState(
     Function(TimeOfDay) onTimeSelected,
     TimeOfDay? selectedTime,
   ) {
-   
-
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min, // Takes only necessary height
-          children: [
-            // Optional: You might want to wrap this in a specific height or width 
-            // container if the picker doesn't have a defined size.
-            CustomHourMinutePicker(
-              selectedTime: selectedTime,
-              onTimeSelected: (time) {
-                onTimeSelected(time);
-                // If you want the dialog to close immediately after selection, uncomment the line below:
-                // Navigator.of(context).pop();
-              },
+      builder:
+          (context) => Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-          ],
-        ),
-      ),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // Takes only necessary height
+              children: [
+                // Optional: You might want to wrap this in a specific height or width
+                // container if the picker doesn't have a defined size.
+                CustomHourMinutePicker(
+                  selectedTime: selectedTime,
+                  onTimeSelected: (time) {
+                    onTimeSelected(time);
+                    // If you want the dialog to close immediately after selection, uncomment the line below:
+                    // Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
+          ),
     );
   }
 
@@ -189,8 +195,6 @@ class _DailyProductionFractionPageState
         tankLists = valueProvider.tankSourceList;
       });
     }
-
-  
   }
 
   Future<void> showSaveConfirmationDialog(
@@ -427,206 +431,530 @@ class _DailyProductionFractionPageState
               ),
             ] else ...[
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Production Data Details',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.w600,
+
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     Text(
+              //       'Production Data Details',
+              //       style: TextStyle(
+              //         color: Colors.black,
+              //         fontSize: 20.0,
+              //         fontWeight: FontWeight.w600,
+              //       ),
+              //     ),
+              //   ],
+              // ),
+              // const SizedBox(height: 8),
+
+              // ...inputItems.asMap().entries.map((entry) {
+              //   int index = entry.key;
+              //   FractionationInputItem item = entry.value;
+
+              //   return Card(
+              //     elevation: 3,
+              //     margin: const EdgeInsets.only(
+              //       bottom: 24,
+              //     ), // Jarak antar Grup besar
+              //     shape: RoundedRectangleBorder(
+              //       borderRadius: BorderRadius.circular(16),
+              //     ),
+              //     child: Column(
+              //       crossAxisAlignment: CrossAxisAlignment.start,
+              //       children: [
+              //         // HEADER CARD (Judul + Tombol Hapus)
+              //         Container(
+              //           padding: const EdgeInsets.symmetric(
+              //             horizontal: 16,
+              //             vertical: 12,
+              //           ),
+              //           decoration: BoxDecoration(
+              //             color: Colors.blueGrey[50],
+              //             borderRadius: const BorderRadius.vertical(
+              //               top: Radius.circular(16),
+              //             ),
+              //           ),
+              //           child: Row(
+              //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //             children: [
+              //               Text(
+              //                 "Set Data #${index + 1}",
+              //                 style: const TextStyle(
+              //                   fontWeight: FontWeight.bold,
+              //                   fontSize: 16,
+              //                 ),
+              //               ),
+              //               // Tombol Hapus (Hanya muncul jika item > 1)
+              //               if (inputItems.length > 1)
+              //                 InkWell(
+              //                   onTap: () => _removeRow(index),
+              //                   child: const Icon(
+              //                     Icons.delete,
+              //                     color: Colors.red,
+              //                   ),
+              //                 ),
+              //             ],
+              //           ),
+              //         ),
+
+              //         Padding(
+              //           padding: const EdgeInsets.all(12.0),
+              //           child: Column(
+              //             children: [
+              //               // 1. SECTION RAW MATERIAL
+              //               const Text(
+              //                 "1. Raw Material (RBDPO/ROL/RPS)",
+              //                 style: TextStyle(
+              //                   fontWeight: FontWeight.bold,
+              //                   color: Colors.black,
+              //                 ),
+              //               ),
+              //               const SizedBox(height: 8),
+              //               FraSectionRbdpoRolRps(
+              //                 dummyTanks: tankLists ?? [],
+              //                 selectedTank: item.selectedTankRm,
+              //                 onTankChanged:
+              //                     (val) =>
+              //                         setState(() => item.selectedTankRm = val),
+              //                 selectedTimeAwal: item.timeAwalRm,
+              //                 selectedTimeAkhir: item.timeAkhirRm,
+              //                 onTimeTapAwal:
+              //                     () => _showHourPickerAndUpdateState(
+              //                       (t) => setState(() => item.timeAwalRm = t),
+              //                       item.timeAwalRm,
+              //                     ),
+              //                 onTimeTapAkhir:
+              //                     () => _showHourPickerAndUpdateState(
+              //                       (t) => setState(() => item.timeAkhirRm = t),
+              //                       item.timeAkhirRm,
+              //                     ),
+              //                 flowmeterAwalController: item.flowAwalRm,
+              //                 flowmeterAkhirController: item.flowAkhirRm,
+              //                 flowmeterTotalController: item.flowTotalRm,
+              //                 onCrystallizerChanged:
+              //                     (val) => setState(
+              //                       () => item.selectedCrystallizerRm = val,
+              //                     ),
+              //                 onOilRmChanged:
+              //                     (val) =>
+              //                         setState(() => item.selectedOilRm = val),
+              //                 selectedOil: item.selectedOilRm,
+              //               ),
+              //               SizedBox(height: 16.0),
+              //               const Divider(height: 32, thickness: 2),
+              //               SizedBox(height: 16.0),
+              //               // 2. SECTION FINISH GOODS
+              //               const Text(
+              //                 "2. Finish Goods (Olein/Solein)",
+              //                 style: TextStyle(
+              //                   fontWeight: FontWeight.bold,
+              //                   color: Colors.black,
+              //                 ),
+              //               ),
+              //               const SizedBox(height: 8),
+              //               FraSectionOleinSoleinSstearin(
+              //                 tankLists: tankLists ?? [],
+              //                 selectedTank: item.selectedTankFg,
+              //                 onTankChanged:
+              //                     (val) =>
+              //                         setState(() => item.selectedTankFg = val),
+              //                 selectedTimeAwal: item.timeAwalFg,
+              //                 selectedTimeAkhir: item.timeAkhirFg,
+              //                 onTimeTapAwal:
+              //                     () => _showHourPickerAndUpdateState(
+              //                       (t) => setState(() => item.timeAwalFg = t),
+              //                       item.timeAwalFg,
+              //                     ),
+              //                 onTimeTapAkhir:
+              //                     () => _showHourPickerAndUpdateState(
+              //                       (t) => setState(() => item.timeAkhirFg = t),
+              //                       item.timeAkhirFg,
+              //                     ),
+              //                 flowmeterAwalController: item.flowAwalFg,
+              //                 flowmeterAkhirController: item.flowAkhirFg,
+              //                 flowmeterTotalController: item.flowTotalFg,
+              //                 // Logic selectedOilFg:
+              //                 // Jika ingin otomatis mengikuti 'selectedOilFg' global:
+              //                 // selectedOil: selectedOilFg,
+              //                 // Jika user bisa ganti per baris, gunakan item.selectedOilFg
+              //                 selectedOil: item.selectedOilFg ?? selectedOilFg,
+              //                 onOilFgChanged:
+              //                     (val) =>
+              //                         setState(() => item.selectedOilFg = val),
+              //                 onCrystallizerChanged:
+              //                     (val) => setState(
+              //                       () => item.selectedCrystallizerFg = val,
+              //                     ),
+              //               ),
+
+              //               SizedBox(height: 16.0),
+              //               const Divider(height: 32, thickness: 2),
+              //               SizedBox(height: 16.0),
+              //               // 3. SECTION BY PRODUCT
+              //               const Text(
+              //                 "3. By Product (Stearin/PMF)",
+              //                 style: TextStyle(
+              //                   fontWeight: FontWeight.bold,
+              //                   color: Colors.black,
+              //                 ),
+              //               ),
+              //               const SizedBox(height: 8),
+              //               FraSectionStearinPmfHstrearin(
+              //                 tanksList: tankLists ?? [],
+              //                 selectedTank: item.selectedTankBp,
+              //                 onTankChanged:
+              //                     (val) =>
+              //                         setState(() => item.selectedTankBp = val),
+              //                 selectedTimeAwal: item.timeAwalBp,
+              //                 selectedTimeAkhir: item.timeAkhirBp,
+              //                 onTimeTapAwal:
+              //                     () => _showHourPickerAndUpdateState(
+              //                       (t) => setState(() => item.timeAwalBp = t),
+              //                       item.timeAwalBp,
+              //                     ),
+              //                 onTimeTapAkhir:
+              //                     () => _showHourPickerAndUpdateState(
+              //                       (t) => setState(() => item.timeAkhirBp = t),
+              //                       item.timeAkhirBp,
+              //                     ),
+              //                 flowmeterAwalController: item.flowAwalBp,
+              //                 flowmeterAkhirController: item.flowAkhirBp,
+              //                 flowmeterTotalController: item.flowTotalBp,
+              //                 selectedOil: item.selectedOilBp ?? selectedOilBp,
+              //                 onOilBpChanged:
+              //                     (val) =>
+              //                         setState(() => item.selectedOilBp = val),
+              //               ),
+              //             ],
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+              //   );
+              // }).toList(),
+
+              // Container(
+              //   width: double.infinity,
+              //   margin: const EdgeInsets.only(bottom: 24),
+              //   child: OutlinedButton.icon(
+              //     onPressed: _addNewRow,
+              //     style: OutlinedButton.styleFrom(
+              //       padding: const EdgeInsets.all(16),
+              //       side: const BorderSide(color: Colors.redAccent, width: 2),
+              //       shape: RoundedRectangleBorder(
+              //         borderRadius: BorderRadius.circular(12),
+              //       ),
+              //     ),
+              //     icon: const Icon(Icons.add_circle_outline, size: 28),
+              //     label: const Text(
+              //       "Tambah Set Data (RM + FG + BP)",
+              //       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              //     ),
+              //   ),
+              // ),
+              for (int i = 0; i < inputItems.length; i++) ...{
+                // === Section: CPO RPA RPS (Raw Material) ===
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: ExpansionTile(
+                    trailing: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _removeRow(i);
+                        });
+                      },
+                      icon: Icon(Icons.delete),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-
-              ...inputItems.asMap().entries.map((entry) {
-                int index = entry.key;
-                FractionationInputItem item = entry.value;
-
-                return Card(
-                  elevation: 3,
-                  margin: const EdgeInsets.only(
-                    bottom: 24,
-                  ), // Jarak antar Grup besar
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: Colors.grey, width: 0.5),
+                    ),
+                    // 2. Add Collapsed Shape (Border when closed)
+                    collapsedShape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: Colors.grey, width: 0.5),
+                    ),
+                    title: Text(
+                      "Row ${i + 1}",
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    initiallyExpanded: true,
+                    collapsedBackgroundColor: Color(0xFFF0ECE9),
+                    backgroundColor:
+                        Colors.white, // backgroundColor: Colors.blue,
                     children: [
-                      // HEADER CARD (Judul + Tombol Hapus)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.blueGrey[50],
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(16),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Set Data #${index + 1}",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            // Tombol Hapus (Hanya muncul jika item > 1)
-                            if (inputItems.length > 1)
-                              InkWell(
-                                onTap: () => _removeRow(index),
-                                child: const Icon(
-                                  Icons.delete,
-                                  color: Colors.red,
+                      if (i > 0)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Pilih section yang ingin diinput:",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
                                 ),
                               ),
-                          ],
-                        ),
-                      ),
+                              const SizedBox(height: 4),
+                              Wrap(
+                                spacing: 8.0,
+                                children: [
+                                  // === CHIP RAW MATERIAL ===
+                                  FilterChip(
+                                    label: const Text("Raw Material"),
+                                    selected: inputItems[i].showRM!,
+                                    onSelected: (val) {
+                                      setState(() {
+                                        inputItems[i].showRM = val;
 
-                      Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          children: [
-                            // 1. SECTION RAW MATERIAL
-                            const Text(
-                              "1. Raw Material (RBDPO/ROL/RPS)",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            FraSectionRbdpoRolRps(
-                              dummyTanks: tankLists ?? [],
-                              selectedTank: item.selectedTankRm,
-                              onTankChanged:
-                                  (val) =>
-                                      setState(() => item.selectedTankRm = val),
-                              selectedTimeAwal: item.timeAwalRm,
-                              selectedTimeAkhir: item.timeAkhirRm,
-                              onTimeTapAwal:
-                                  () => _showHourPickerAndUpdateState(
-                                    (t) => setState(() => item.timeAwalRm = t),
-                                    item.timeAwalRm,
-                                  ),
-                              onTimeTapAkhir:
-                                  () => _showHourPickerAndUpdateState(
-                                    (t) => setState(() => item.timeAkhirRm = t),
-                                    item.timeAkhirRm,
-                                  ),
-                              flowmeterAwalController: item.flowAwalRm,
-                              flowmeterAkhirController: item.flowAkhirRm,
-                              flowmeterTotalController: item.flowTotalRm,
-                              onCrystallizerChanged:
-                                  (val) => setState(
-                                    () => item.selectedCrystallizerRm = val,
-                                  ),
-                              onOilRmChanged:
-                                  (val) =>
-                                      setState(() => item.selectedOilRm = val),
-                              selectedOil: item.selectedOilRm,
-                            ),
-                            SizedBox(height: 16.0),
-                            const Divider(height: 32, thickness: 2),
-                            SizedBox(height: 16.0),
-                            // 2. SECTION FINISH GOODS
-                            const Text(
-                              "2. Finish Goods (Olein/Solein)",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            FraSectionOleinSoleinSstearin(
-                              tankLists: tankLists ?? [],
-                              selectedTank: item.selectedTankFg,
-                              onTankChanged:
-                                  (val) =>
-                                      setState(() => item.selectedTankFg = val),
-                              selectedTimeAwal: item.timeAwalFg,
-                              selectedTimeAkhir: item.timeAkhirFg,
-                              onTimeTapAwal:
-                                  () => _showHourPickerAndUpdateState(
-                                    (t) => setState(() => item.timeAwalFg = t),
-                                    item.timeAwalFg,
-                                  ),
-                              onTimeTapAkhir:
-                                  () => _showHourPickerAndUpdateState(
-                                    (t) => setState(() => item.timeAkhirFg = t),
-                                    item.timeAkhirFg,
-                                  ),
-                              flowmeterAwalController: item.flowAwalFg,
-                              flowmeterAkhirController: item.flowAkhirFg,
-                              flowmeterTotalController: item.flowTotalFg,
-                              // Logic selectedOilFg:
-                              // Jika ingin otomatis mengikuti 'selectedOilFg' global:
-                              // selectedOil: selectedOilFg,
-                              // Jika user bisa ganti per baris, gunakan item.selectedOilFg
-                              selectedOil: item.selectedOilFg ?? selectedOilFg,
-                              onOilFgChanged:
-                                  (val) =>
-                                      setState(() => item.selectedOilFg = val),
-                              onCrystallizerChanged:
-                                  (val) => setState(
-                                    () => item.selectedCrystallizerFg = val,
-                                  ),
-                            ),
+                                        // JIKA DI-UNCHECK (val == false), BERSIHKAN DATA
+                                        if (!val) {
+                                          // 1. Reset variable dropdown/picker
+                                          inputItems[i].timeAwalRm = null;
+                                          inputItems[i].timeAkhirRm = null;
+                                          inputItems[i].selectedTankRm = null;
+                                          inputItems[i].selectedOilRm = null;
+                                          // inputItems[i].isUseLastTankRm =
+                                          //     false; // Reset checkbox tank
 
-                            SizedBox(height: 16.0),
-                            const Divider(height: 32, thickness: 2),
-                            SizedBox(height: 16.0),
-                            // 3. SECTION BY PRODUCT
-                            const Text(
-                              "3. By Product (Stearin/PMF)",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
+                                          // 2. Bersihkan Text Controllers
+                                          inputItems[i].flowAwalRm.clear();
+                                          inputItems[i].flowAkhirRm.clear();
+                                          inputItems[i].flowTotalRm.clear();
+                                          // inputItems[i].oipRm.clear();
+                                        }
+                                      });
+                                    },
+                                    checkmarkColor: Colors.black,
+                                    selectedColor: Colors.red.withOpacity(0.2),
+                                  ),
+
+                                  // === CHIP FINISH GOODS ===
+                                  FilterChip(
+                                    label: const Text("Finish Goods"),
+                                    selected: inputItems[i].showFG!,
+                                    onSelected: (val) {
+                                      setState(() {
+                                        inputItems[i].showFG = val;
+
+                                        // JIKA DI-UNCHECK, BERSIHKAN DATA FG
+                                        if (!val) {
+                                          // 1. Reset variable dropdown/picker
+                                          inputItems[i].timeAwalFg = null;
+                                          inputItems[i].timeAkhirFg = null;
+                                          inputItems[i].selectedTankFg = null;
+                                          inputItems[i].selectedOilFg = null;
+
+                                          // 2. Bersihkan Text Controllers
+                                          inputItems[i].flowAwalFg.clear();
+                                          inputItems[i].flowAkhirFg.clear();
+                                          inputItems[i].flowTotalFg.clear();
+                                        }
+                                      });
+                                    },
+                                    checkmarkColor: Colors.black,
+                                    selectedColor: Colors.red.withOpacity(0.2),
+                                  ),
+
+                                  // === CHIP BY PRODUCT ===
+                                  FilterChip(
+                                    label: const Text("By Product"),
+                                    selected: inputItems[i].showBP!,
+                                    onSelected: (val) {
+                                      setState(() {
+                                        inputItems[i].showBP = val;
+
+                                        // JIKA DI-UNCHECK, BERSIHKAN DATA BP
+                                        if (!val) {
+                                          // 1. Reset variable dropdown/picker
+                                          inputItems[i].timeAwalBp = null;
+                                          inputItems[i].timeAkhirBp = null;
+                                          inputItems[i].selectedTankBp = null;
+                                          inputItems[i].selectedOilBp = null;
+
+                                          // 2. Bersihkan Text Controllers
+                                          inputItems[i].flowAwalBp.clear();
+                                          inputItems[i].flowAkhirBp.clear();
+                                          inputItems[i].flowTotalBp.clear();
+                                        }
+                                      });
+                                    },
+                                    checkmarkColor: Colors.black,
+                                    selectedColor: Colors.red.withOpacity(0.2),
+                                  ),
+                                ],
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            FraSectionStearinPmfHstrearin(
-                              tanksList: tankLists ?? [],
-                              selectedTank: item.selectedTankBp,
-                              onTankChanged:
-                                  (val) =>
-                                      setState(() => item.selectedTankBp = val),
-                              selectedTimeAwal: item.timeAwalBp,
-                              selectedTimeAkhir: item.timeAkhirBp,
-                              onTimeTapAwal:
-                                  () => _showHourPickerAndUpdateState(
-                                    (t) => setState(() => item.timeAwalBp = t),
-                                    item.timeAwalBp,
-                                  ),
-                              onTimeTapAkhir:
-                                  () => _showHourPickerAndUpdateState(
-                                    (t) => setState(() => item.timeAkhirBp = t),
-                                    item.timeAkhirBp,
-                                  ),
-                              flowmeterAwalController: item.flowAwalBp,
-                              flowmeterAkhirController: item.flowAkhirBp,
-                              flowmeterTotalController: item.flowTotalBp,
-                              selectedOil: item.selectedOilBp ?? selectedOilBp,
-                              onOilBpChanged:
-                                  (val) =>
-                                      setState(() => item.selectedOilBp = val),
-                            ),
-                          ],
+                              const Divider(),
+                            ],
+                          ),
                         ),
-                      ),
+
+                      if (inputItems[i].showRM == true)
+                        FraSectionRbdpoRolRps(
+                          dummyTanks: tankLists ?? [],
+                          selectedTank: inputItems[i].selectedTankRm,
+                          onTankChanged:
+                              (val) => setState(
+                                () => inputItems[i].selectedTankRm = val,
+                              ),
+                          selectedTimeAwal: inputItems[i].timeAwalRm,
+                          selectedTimeAkhir: inputItems[i].timeAkhirRm,
+                          onTimeTapAwal:
+                              () => _showHourPickerAndUpdateState(
+                                (t) => setState(
+                                  () => inputItems[i].timeAwalRm = t,
+                                ),
+                                inputItems[i].timeAwalRm,
+                              ),
+                          onTimeTapAkhir:
+                              () => _showHourPickerAndUpdateState(
+                                (t) => setState(
+                                  () => inputItems[i].timeAkhirRm = t,
+                                ),
+                                inputItems[i].timeAkhirRm,
+                              ),
+                          flowmeterAwalController: inputItems[i].flowAwalRm,
+                          flowmeterAkhirController: inputItems[i].flowAkhirRm,
+                          flowmeterTotalController: inputItems[i].flowTotalRm,
+                          onCrystallizerChanged:
+                              (val) => setState(
+                                () =>
+                                    inputItems[i].selectedCrystallizerRm = val,
+                              ),
+                          onOilRmChanged:
+                              (val) => setState(
+                                () => inputItems[i].selectedOilRm = val,
+                              ),
+                          selectedOil: inputItems[i].selectedOilRm,
+                          showCheckboxUseTankFromLastShiftChangedRm:
+                              (widget.isFromAddNewShift &&
+                                  inputItems[i] == inputItems.first),
+                          onUseTankFromLastShiftChangedRm: (bool? value) {
+                            setState(() {
+                              // Update status checkbox
+                              // inputItems[i].isUseLastTankRm = value;
+
+                              if (value == true && widget.entity != null) {
+                                inputItems[i].selectedTankRm =
+                                    widget.entity?.oilTypeRmFromTank;
+                              } else {
+                                // RESET JIKA UNCHECK (Kembali Kosong)
+                                setState(() {
+                                  inputItems[i].selectedTankRm = null;
+                                });
+                              }
+                            });
+                          },
+
+                            showCheckboxUseTankFromLastRowRm:
+                              (inputItems[i] != inputItems.first),
+
+                          onUseTankFromLastRowRm: (bool? value) {
+                            if (value == true &&
+                                inputItems[i - 1].selectedTankRm != null) {
+                              setState(() {
+                                inputItems[i].selectedTankRm =
+                                    inputItems[i - 1].selectedTankRm;
+                              });
+                            } else {
+                              setState(() {
+                                inputItems[i].selectedTankRm = null;
+                              });
+                            }
+                          },
+                        ),
+                      SizedBox(height: 16.0),
+
+                      if (inputItems[i].showFG == true)
+                        FraSectionOleinSoleinSstearin(
+                          tankLists: tankLists ?? [],
+                          selectedTank: inputItems[i].selectedTankFg,
+                          onTankChanged:
+                              (val) => setState(
+                                () => inputItems[i].selectedTankFg = val,
+                              ),
+                          selectedTimeAwal: inputItems[i].timeAwalFg,
+                          selectedTimeAkhir: inputItems[i].timeAkhirFg,
+                          onTimeTapAwal:
+                              () => _showHourPickerAndUpdateState(
+                                (t) => setState(
+                                  () => inputItems[i].timeAwalFg = t,
+                                ),
+                                inputItems[i].timeAwalFg,
+                              ),
+                          onTimeTapAkhir:
+                              () => _showHourPickerAndUpdateState(
+                                (t) => setState(
+                                  () => inputItems[i].timeAkhirFg = t,
+                                ),
+                                inputItems[i].timeAkhirFg,
+                              ),
+                          flowmeterAwalController: inputItems[i].flowAwalFg,
+                          flowmeterAkhirController: inputItems[i].flowAkhirFg,
+                          flowmeterTotalController: inputItems[i].flowTotalFg,
+                          // Logic selectedOilFg:
+                          // Jika ingin otomatis mengikuti 'selectedOilFg' global:
+                          // selectedOil: selectedOilFg,
+                          // Jika user bisa ganti per baris, gunakan inputItems[i].selectedOilFg
+                          selectedOil:
+                              inputItems[i].selectedOilFg ?? selectedOilFg,
+                          onOilFgChanged:
+                              (val) => setState(
+                                () => inputItems[i].selectedOilFg = val,
+                              ),
+                          onCrystallizerChanged:
+                              (val) => setState(
+                                () =>
+                                    inputItems[i].selectedCrystallizerFg = val,
+                              ),
+                        ),
+
+                      SizedBox(height: 16.0),
+
+                      if (inputItems[i].showBP == true)
+                        FraSectionStearinPmfHstrearin(
+                          tanksList: tankLists ?? [],
+                          selectedTank: inputItems[i].selectedTankBp,
+                          onTankChanged:
+                              (val) => setState(
+                                () => inputItems[i].selectedTankBp = val,
+                              ),
+                          selectedTimeAwal: inputItems[i].timeAwalBp,
+                          selectedTimeAkhir: inputItems[i].timeAkhirBp,
+                          onTimeTapAwal:
+                              () => _showHourPickerAndUpdateState(
+                                (t) => setState(
+                                  () => inputItems[i].timeAwalBp = t,
+                                ),
+                                inputItems[i].timeAwalBp,
+                              ),
+                          onTimeTapAkhir:
+                              () => _showHourPickerAndUpdateState(
+                                (t) => setState(
+                                  () => inputItems[i].timeAkhirBp = t,
+                                ),
+                                inputItems[i].timeAkhirBp,
+                              ),
+                          flowmeterAwalController: inputItems[i].flowAwalBp,
+                          flowmeterAkhirController: inputItems[i].flowAkhirBp,
+                          flowmeterTotalController: inputItems[i].flowTotalBp,
+                          selectedOil:
+                              inputItems[i].selectedOilBp ?? selectedOilBp,
+                          onOilBpChanged:
+                              (val) => setState(
+                                () => inputItems[i].selectedOilBp = val,
+                              ),
+                        ),
                     ],
                   ),
-                );
-              }).toList(),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Optional: Add a button to remove this specific row if needed
+                // IconButton(icon: Icon(Icons.delete), onPressed: () => _removeRow(i)),
+              },
 
               Container(
                 width: double.infinity,
@@ -790,50 +1118,40 @@ class _DailyProductionFractionPageState
         context.read<BusinessUnitProvider>().currentBusinessUnit?.buCode;
 
     DateTime getTransactionDate() {
-      final DateTime now = selectedTransactionDate;
-      final DateTime timeNow = DateTime.now();
+      final DateTime now = DateTime.now();
       return DateTime(
         now.year,
         now.month,
         now.day,
-     
+        now.hour,
+        now.minute,
+        now.second,
       );
     }
 
-    DateTime getPostingDate() {
-      // 1. Ambil tanggal dari pilihan user (jamnya 00:00:00)
-      final DateTime dateSelected = selectedTransactionDate;
+     DateTime getPostingDate() {
+      final DateTime now = DateTime.now();
 
-      // 2. Ambil waktu REALTIME dari sistem HP saat tombol save ditekan
-      final DateTime timeNow = DateTime.now();
-
-      // 3. Gunakan jam dari 'timeNow', bukan dari 'dateSelected'
-      final int hour = timeNow.hour;
+      final int hour = now.hour;
 
       if (hour <= 7) {
-        // Logic: Jika subuh (00:00 - 07:00), tanggal posting mundur 1 hari
-        // Kita kurangi 1 hari dari TANGGAL yang dipilih user
-        final DateTime previousDayDate = dateSelected.subtract(
-          const Duration(days: 1),
-        );
-
+        final DateTime previousDay = now.subtract(const Duration(days: 1));
         return DateTime(
-          previousDayDate.year,
-          previousDayDate.month,
-          previousDayDate.day,
-          timeNow.hour, // <--- Pakai jam realtime
-          timeNow.minute, // <--- Pakai menit realtime
-          timeNow.second, // <--- Pakai detik realtime
+          previousDay.year,
+          previousDay.month,
+          previousDay.day,
+          previousDay.hour,
+          previousDay.minute,
+          previousDay.second,
         );
       } else {
-        // Logic: Normal
         return DateTime(
-          dateSelected.year,
-          dateSelected.month,
-          dateSelected.day,
-          timeNow.hour, // <--- Pakai jam realtime
-          timeNow.minute, // <--- Pakai menit realtime
-          timeNow.second, // <--- Pakai detik realtime
+          now.year,
+          now.month,
+          now.day,
+          now.hour,
+          now.minute,
+          now.second,
         );
       }
     }
@@ -849,49 +1167,27 @@ class _DailyProductionFractionPageState
         .read<DailyProductionFractionationProvider>()
         .fetchLatestId(plantCode);
 
-   
-    Future<List<String>> buildTicketNumbers(int batchSize) async {
+    Future<String> buildTicketNumber() async {
       log("TICKET NUMBER FROM PROVIDER: $latestTicketIdFromProvider");
-
       if (latestTicketIdFromProvider == null) {
+        // return error snackbar saying plant code is not registered.
         log("id is null");
-        return [];
+        return "";
       }
-
-      // 1. Ambil prefix dan angka terakhir saat ini
-      // Asumsi format: PREFIX(9 char) + NUMBER(6 char)
-      String ticketPrefix = latestTicketIdFromProvider!.substring(0, 9);
-      String numberPart = latestTicketIdFromProvider!.substring(9);
-
-      int currentLastNumber = int.parse(numberPart);
-
-      // 2. Hitung angka terakhir yang baru setelah ditambah jumlah data (batchSize)
-      int newLastNumber = currentLastNumber + batchSize;
-
-      // 3. Update database autonumber ke angka TERAKHIR sekaligus
-      // Jadi jika batchSize 5, autonumber langsung lompat 5 angka.
+      log("lastDigit: ${latestTicketIdFromProvider.substring(9)}");
+      int digit = (int.parse((latestTicketIdFromProvider.substring(9))) + 1);
       final update = await context
           .read<DailyProductionFractionationProvider>()
-          .updateAutoNumber(plantCode, newLastNumber);
-
-      log("Updating autonumber to: $newLastNumber, success: $update");
-
-      if (!update) {
-        // Handle error jika gagal update DB
-        return [];
+          .updateAutoNumber(plantCode, digit);
+      String lastDigit = digit.toString().padLeft(6, '0');
+      if (lastDigit == "") {
+        lastDigit = "1";
       }
+      log("Last Digit: $lastDigit, is update successful: $update");
+      String ticketPrefixQc = latestTicketIdFromProvider.substring(0, 9);
+      log(ticketPrefixQc + lastDigit);
 
-      // 4. Generate List ID untuk dikembalikan ke UI
-      List<String> generatedIds = [];
-
-      for (int i = 1; i <= batchSize; i++) {
-        // Generate urutan: current + 1, current + 2, dst...
-        int sequenceNumber = currentLastNumber + i;
-        String formattedNumber = sequenceNumber.toString().padLeft(6, '0');
-        generatedIds.add(ticketPrefix + formattedNumber);
-      }
-
-      return generatedIds;
+      return ticketPrefixQc + lastDigit;
     }
 
     int? parseInt(String value) {
@@ -907,21 +1203,22 @@ class _DailyProductionFractionPageState
 
     if (!context.mounted) return;
 
-    final dataForm = widget.dataForm;
-
     try {
-      List<String> newTicketIds = await buildTicketNumbers(inputItems.length);
+      final postingDate = getPostingDate();
+      final dataForm = widget.dataForm;
+      String newTicketId = await buildTicketNumber();
 
-      if (newTicketIds.isEmpty || newTicketIds.length != inputItems.length) {
+      if (newTicketId.isEmpty) {
         return;
       }
+
       final entities =
           inputItems.asMap().entries.map((entry) {
             int index = entry.key;
             FractionationInputItem item = entry.value;
 
             return DailyProductionFractionationEntity(
-              id: newTicketIds[index],
+              id: (widget.isFromAddNewShift) ? widget.entity!.id : newTicketId,
               company: companyName,
               plant: currentPlant.code,
               transactionDate: getTransactionDate(),

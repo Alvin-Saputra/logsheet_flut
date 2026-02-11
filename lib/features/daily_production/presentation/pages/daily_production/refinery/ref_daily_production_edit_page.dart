@@ -680,7 +680,7 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
                       backgroundColor:
                           Colors.white, // backgroundColor: Colors.blue,
                       children: [
-                        if (i > 0)
+                        // if (i > 0)
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                             child: Column(
@@ -948,8 +948,7 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
 
                   const SizedBox(height: 16),
 
-                  // Optional: Add a button to remove this specific row if needed
-                  // IconButton(icon: Icon(Icons.delete), onPressed: () => _removeRow(i)),
+                 
                 },
 
                 Container(

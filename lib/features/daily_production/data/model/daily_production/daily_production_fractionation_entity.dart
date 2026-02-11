@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class DailyProductionFractionationEntity {
   // General Information
+  final int? ticketId;
   final String id;
   final String? company;
   final String? plant;
@@ -79,6 +80,7 @@ class DailyProductionFractionationEntity {
   bool? isCompleted;
 
   DailyProductionFractionationEntity({
+    this.ticketId,
     required this.id,
     required this.company,
     required this.plant,
@@ -191,6 +193,7 @@ class DailyProductionFractionationEntity {
     }
 
     return DailyProductionFractionationEntity(
+      ticketId: parseInt(map['ticket_id']),
       id: map['id'] as String,
       company: map['company'] as String?,
       plant: map['plant'] as String?,
