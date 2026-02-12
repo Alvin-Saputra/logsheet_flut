@@ -22,6 +22,9 @@ class AnalyticalResultIncomingMaterialByVesselHeaderEntity {
   final double? hasilAnalisaDobi;
   final double? hasilAnalisaPv;
   final double? hasilAnalisaAnv;
+  final double? hasilAnalisaTotox;
+  final double? hasilAnalisaCarotex;
+  final double? hasilAnalisaMineralOil;
 
   final String? remarks;
   final String? flag;
@@ -65,6 +68,9 @@ class AnalyticalResultIncomingMaterialByVesselHeaderEntity {
     required this.hasilAnalisaDobi,
     required this.hasilAnalisaPv,
     required this.hasilAnalisaAnv,
+    required this.hasilAnalisaTotox,
+    required this.hasilAnalisaCarotex,
+    required this.hasilAnalisaMineralOil,
     required this.remarks,
     required this.flag,
     required this.entryBy,
@@ -83,54 +89,8 @@ class AnalyticalResultIncomingMaterialByVesselHeaderEntity {
     required this.dateIssued,
     required this.revisionNo,
     required this.revisionDate,
-    required this.details
+    required this.details,
   });
-
-  // Map<String, dynamic> toMap() {
-  //   return {
-  //     'id': id,
-  //     'company': company,
-  //     'plant': plant,
-  //     'transaction_date': transactionDate?.toIso8601String(),
-  //     'material': material,
-  //     'arrival': arrival?.toIso8601String(),
-  //     'quantity': quantity,
-  //     'supplier': supplier,
-  //     'ship_name': shipName,
-  //     'contract_do_nomor': contractDoNomor,
-  //     'ffa': ffa,
-  //     'mni': mni,
-  //     'dobi': dobi,
-  //     'others': others,
-  //     'hasil_analisa_ffa': hasilAnalisaFfa,
-  //     'hasil_analisa_iv': hasilAnalisaIv,
-  //     'hasil_analisa_moisture': hasilAnalisaMoisture,
-  //     'hasil_analisa_dobi': hasilAnalisaDobi,
-  //     'hasil_analisa_pv': hasilAnalisaPv,
-  //     'hasil_analisa_anv': hasilAnalisaAnv,
-  //     'remarks': remarks,
-  //     'flag': flag,
-  //     'entry_by': entryBy,
-  //     'entry_date': entryDate?.toIso8601String(),
-  //     'prepared_by': preparedBy,
-  //     'prepared_date': preparedDate?.toIso8601String(),
-  //     'prepared_status': preparedStatus,
-  //     'prepared_status_remarks': preparedStatusRemarks,
-
-  //     // mapped from checked → approved (according to your DB columns)
-  //     'approved_by': approvedBy,
-  //     'approved_date': approvedDate?.toIso8601String(),
-  //     'approved_status': approvedStatus,
-  //     'approved_status_remarks': approvedStatusRemarks,
-
-  //     'updated_by': updatedBy,
-  //     'updated_date': updatedDate?.toIso8601String(),
-  //     'form_no': formNo,
-  //     'date_issued': dateIssued?.toIso8601String(),
-  //     'revision_no': revisionNo,
-  //     'revision_date': revisionDate?.toIso8601String(),
-  //   };
-  // }
 
   AnalyticalResultIncomingMaterialByVesselHeaderEntity copyWith({
     String? id,
@@ -154,6 +114,9 @@ class AnalyticalResultIncomingMaterialByVesselHeaderEntity {
     double? hasilAnalisaDobi,
     double? hasilAnalisaPv,
     double? hasilAnalisaAnv,
+    double? hasilAnalisaTotox,
+    double? hasilAnalisaCarotex,
+    double? hasilAnalisaMineralOil,
 
     String? remarks,
     String? flag,
@@ -221,6 +184,9 @@ class AnalyticalResultIncomingMaterialByVesselHeaderEntity {
       revisionNo: revisionNo ?? this.revisionNo,
       revisionDate: revisionDate ?? this.revisionDate,
       details: details ?? this.details,
+      hasilAnalisaTotox: hasilAnalisaTotox ?? this.hasilAnalisaTotox,
+      hasilAnalisaCarotex: hasilAnalisaCarotex ?? this.hasilAnalisaCarotex,
+      hasilAnalisaMineralOil: hasilAnalisaMineralOil ?? this.hasilAnalisaMineralOil,
     );
   }
 }

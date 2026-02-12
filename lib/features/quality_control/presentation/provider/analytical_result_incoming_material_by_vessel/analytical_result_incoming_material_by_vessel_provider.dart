@@ -175,11 +175,15 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
         "hasil_analisa_dobi": headerInput.hasilAnalisaDobi?.toString(),
         "hasil_analisa_pv": headerInput.hasilAnalisaPv?.toString(),
         "hasil_analisa_anv": headerInput.hasilAnalisaAnv?.toString(),
+        "hasil_analisa_totox": headerInput.hasilAnalisaTotox?.toString(),
+        "hasil_analisa_carotex": headerInput.hasilAnalisaCarotex?.toString(),
+        "hasil_analisa_mineral_oil":
+            headerInput.hasilAnalisaMineralOil?.toString(),
 
         "ffa": headerInput.ffa?.toString(),
         "mni": headerInput.mni?.toString(),
         "dobi": headerInput.dobi?.toString(),
-        "others": null,
+        "others": headerInput.others,
         "remarks": headerInput.remarks,
 
         // --- DETAIL ---
@@ -277,6 +281,10 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
         "hasil_analisa_dobi": headerInput.hasilAnalisaDobi?.toString(),
         "hasil_analisa_pv": headerInput.hasilAnalisaPv?.toString(),
         "hasil_analisa_anv": headerInput.hasilAnalisaAnv?.toString(),
+        "hasil_analisa_totox": headerInput.hasilAnalisaTotox?.toString(),
+        "hasil_analisa_carotex": headerInput.hasilAnalisaCarotex?.toString(),
+        "hasil_analisa_mineral_oil":
+            headerInput.hasilAnalisaMineralOil?.toString(),
         "ffa": headerInput.ffa?.toString(),
         "mni": headerInput.mni?.toString(),
         "dobi": headerInput.dobi?.toString(),
