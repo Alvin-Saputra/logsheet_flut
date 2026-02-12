@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/form_transfer_header_model.dart';
-import 'package:logsheet_app/features/form_transfer/presentation/pages/form_transfer_input_page.dart';
-import 'package:logsheet_app/features/form_transfer/presentation/provider/form_transfer_provider.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_header_model.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/form_transfer/form_transfer_input_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/form_transfer/form_transfer_provider.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/user_entity.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -121,32 +121,36 @@ class _FormTransferDetailPageState extends State<FormTransferDetailPage> {
   }
 
   String _getApprovalLevel() {
+    // 2-step approval: Lead (prepared) -> Manager (approved)
     // Determine which approval level is pending
-    if (_currentTransfer.jsonPreparedStatus == null) {
+    if (_isPending(_currentTransfer.jsonPreparedStatus)) {
       return 'prepared';
-    } else if (_currentTransfer.jsonCheckedStatus == null) {
-      return 'checked';
-    } else if (_currentTransfer.jsonApprovedStatus == null) {
+    } else if (_isPending(_currentTransfer.jsonApprovedStatus)) {
       return 'approved';
-    } else if (_currentTransfer.jsonAcknowledgedStatus == null) {
-      return 'acknowledged';
     }
     return '';
+  }
+
+  bool _isPending(String? status) {
+    if (status == null || status.isEmpty) return true;
+    final lowerStatus = status.toLowerCase();
+    return lowerStatus == 'pending' ||
+        lowerStatus == 'null' ||
+        lowerStatus == 'draft';
   }
 
   bool _canShowApprovalButtons(UserEntity? user) {
     final level = _getApprovalLevel();
     if (level.isEmpty) return false;
 
+    // 2-step approval: Lead (prepared) -> Manager (approved)
     switch (level) {
       case 'prepared':
-        return AppRoles.formTransferPreparedApproval.contains(user?.role);
-      case 'checked':
-        return AppRoles.formTransferCheckedApproval.contains(user?.role);
+        // Lead roles: LEAD, LEAD_QC
+        return AppRoles.leadQC.contains(user?.role);
       case 'approved':
-        return AppRoles.formTransferApprovedApproval.contains(user?.role);
-      case 'acknowledged':
-        return AppRoles.formTransferAcknowledgedApproval.contains(user?.role);
+        // Manager roles: MGR, MGR_QC, ADM
+        return AppRoles.qualityControlManagerApproval.contains(user?.role);
       default:
         return false;
     }
@@ -154,15 +158,12 @@ class _FormTransferDetailPageState extends State<FormTransferDetailPage> {
 
   String _getApprovalLevelLabel() {
     final level = _getApprovalLevel();
+    // 2-step approval labels
     switch (level) {
       case 'prepared':
-        return 'Prepared';
-      case 'checked':
-        return 'Checked';
+        return 'Lead Approval';
       case 'approved':
-        return 'Approved';
-      case 'acknowledged':
-        return 'Acknowledged';
+        return 'Manager Approval';
       default:
         return '';
     }
@@ -610,23 +611,7 @@ class _FormTransferDetailPageState extends State<FormTransferDetailPage> {
                 _currentTransfer.jsonPreparedStatusRemarks ?? '-',
               ),
               const Divider(),
-              _buildDataRow(
-                'Checked By',
-                _currentTransfer.jsonCheckedBy ?? '-',
-              ),
-              _buildDataRow(
-                'Checked Date',
-                formatDate(_currentTransfer.jsonCheckedDate),
-              ),
-              _buildDataRow(
-                'Checked Status',
-                _currentTransfer.jsonCheckedStatus ?? '-',
-              ),
-              _buildDataRow(
-                'Checked Remarks',
-                _currentTransfer.jsonCheckedStatusRemarks ?? '-',
-              ),
-              const Divider(),
+              // Note: Checked level removed for 2-step approval (Lead -> Manager)
               _buildDataRow(
                 'Approved By',
                 _currentTransfer.jsonApprovedBy ?? '-',
@@ -643,23 +628,7 @@ class _FormTransferDetailPageState extends State<FormTransferDetailPage> {
                 'Approved Remarks',
                 _currentTransfer.jsonApprovedStatusRemarks ?? '-',
               ),
-              const Divider(),
-              _buildDataRow(
-                'Acknowledged By',
-                _currentTransfer.jsonAcknowledgedBy ?? '-',
-              ),
-              _buildDataRow(
-                'Acknowledged Date',
-                formatDate(_currentTransfer.jsonAcknowledgedDate),
-              ),
-              _buildDataRow(
-                'Acknowledged Status',
-                _currentTransfer.jsonAcknowledgedStatus ?? '-',
-              ),
-              _buildDataRow(
-                'Acknowledged Remarks',
-                _currentTransfer.jsonAcknowledgedStatusRemarks ?? '-',
-              ),
+              // Note: Acknowledged level removed for 2-step approval
               const Divider(),
               _buildDataRow(
                 'Updated By',

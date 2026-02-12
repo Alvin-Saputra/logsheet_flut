@@ -56,18 +56,6 @@ class FormTransferHeaderModel {
   @JsonKey(name: 'prepared_status_remarks')
   final String? jsonPreparedStatusRemarks;
 
-  @JsonKey(name: 'checked_by')
-  final String? jsonCheckedBy;
-
-  @JsonKey(name: 'checked_date')
-  final String? jsonCheckedDate;
-
-  @JsonKey(name: 'checked_status')
-  final String? jsonCheckedStatus;
-
-  @JsonKey(name: 'checked_status_remarks')
-  final String? jsonCheckedStatusRemarks;
-
   @JsonKey(name: 'approved_by')
   final String? jsonApprovedBy;
 
@@ -79,18 +67,6 @@ class FormTransferHeaderModel {
 
   @JsonKey(name: 'approved_status_remarks')
   final String? jsonApprovedStatusRemarks;
-
-  @JsonKey(name: 'acknowledged_by')
-  final String? jsonAcknowledgedBy;
-
-  @JsonKey(name: 'acknowledged_date')
-  final String? jsonAcknowledgedDate;
-
-  @JsonKey(name: 'acknowledged_status')
-  final String? jsonAcknowledgedStatus;
-
-  @JsonKey(name: 'acknowledged_status_remarks')
-  final String? jsonAcknowledgedStatusRemarks;
 
   @JsonKey(name: 'updated_by')
   final String? jsonUpdatedBy;
@@ -122,18 +98,10 @@ class FormTransferHeaderModel {
     this.jsonPreparedDate,
     this.jsonPreparedStatus,
     this.jsonPreparedStatusRemarks,
-    this.jsonCheckedBy,
-    this.jsonCheckedDate,
-    this.jsonCheckedStatus,
-    this.jsonCheckedStatusRemarks,
     this.jsonApprovedBy,
     this.jsonApprovedDate,
     this.jsonApprovedStatus,
     this.jsonApprovedStatusRemarks,
-    this.jsonAcknowledgedBy,
-    this.jsonAcknowledgedDate,
-    this.jsonAcknowledgedStatus,
-    this.jsonAcknowledgedStatusRemarks,
     this.jsonUpdatedBy,
     this.jsonUpdatedDate,
     this.jsonDeletedAt,

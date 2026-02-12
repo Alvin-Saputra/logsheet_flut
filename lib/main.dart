@@ -14,9 +14,9 @@ import 'package:logsheet_app/features/daily_production/data/repository/daily_pro
 import 'package:logsheet_app/features/daily_production/data/repository/daily_production/daily_production_refinery_repository.dart';
 import 'package:logsheet_app/features/daily_production/presentation/provider/daily_production/daily_production_fractionation_provider.dart';
 import 'package:logsheet_app/features/daily_production/presentation/provider/daily_production/daily_production_refinery_provider.dart';
-import 'package:logsheet_app/features/form_transfer/data/datasources/remote/form_transfer_api_service.dart';
-import 'package:logsheet_app/features/form_transfer/data/repository/form_transfer_repository.dart';
-import 'package:logsheet_app/features/form_transfer/presentation/provider/form_transfer_provider.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/remote/form_transfer/form_transfer_api_service.dart';
+import 'package:logsheet_app/features/quality_control/data/repositories/form_transfer/form_transfer_repository.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/form_transfer/form_transfer_provider.dart';
 import 'package:logsheet_app/features/maintenance/data/datasources/change_product_checklist/change_product_checklist_mysql_service.dart';
 import 'package:logsheet_app/features/maintenance/data/datasources/maintenance_lamps_and_glass_mysql_service.dart';
 import 'package:logsheet_app/features/maintenance/data/datasources/start_up_produksi_checklist/start_up_produksi_checklist_mysql_service.dart';

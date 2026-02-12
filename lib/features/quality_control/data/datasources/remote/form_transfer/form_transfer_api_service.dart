@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/response/approve_form_transfer_response.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/response/create_form_transfer_response.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/response/delete_form_transfer_response.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/response/fetch_form_transfer_response.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/response/update_form_transfer_response.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/response/approve_form_transfer_response.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/response/create_form_transfer_response.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/response/delete_form_transfer_response.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/response/fetch_form_transfer_response.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/response/update_form_transfer_response.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'form_transfer_api_service.g.dart';

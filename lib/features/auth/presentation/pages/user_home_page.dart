@@ -2,28 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
-import 'package:logsheet_app/features/auth/presentation/provider/auth_provider.dart';
-import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
-import 'package:logsheet_app/features/master_data/data/model/master/user_entity.dart';
 import 'package:logsheet_app/features/alerts/alerts_page.dart';
+import 'package:logsheet_app/features/auth/presentation/provider/auth_provider.dart';
 import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/fractination/approval/fra_daily_production_approval_list_page.dart';
 import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/fractination/fra_daily_production_list_page.dart';
 import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/fractination/fra_daily_production_report_list_page.dart';
 import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/refinery/approval/ref_daily_production_approval_list_page.dart';
 import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/refinery/ref_daily_production_list_page.dart';
 import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/refinery/ref_daily_production_reports_list.dart';
-import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_approval_list_page.dart';
-import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_list_page.dart';
-import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_report_list_page.dart';
-import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_approval_list_page.dart';
-import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_list_page.dart';
-import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation_old/dry_fractionation_report_list_page.dart';
-import 'package:logsheet_app/features/production/presentation/pages/logsheet/deodorizing_filtration/deodorizing_filtration_approval_list_page.dart';
-import 'package:logsheet_app/features/production/presentation/pages/logsheet/deodorizing_filtration/deodorizing_filtration_list_page.dart';
-import 'package:logsheet_app/features/production/presentation/pages/logsheet/deodorizing_filtration/deodorizing_filtration_report_list_page.dart';
-import 'package:logsheet_app/features/production/presentation/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_apprroval_list_page.dart';
-import 'package:logsheet_app/features/production/presentation/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_list_page.dart';
-import 'package:logsheet_app/features/production/presentation/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_report_lists_page.dart';
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_change_product/maintenance_change_product_approval_list_page.dart';
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_change_product/maintenance_change_product_list_page.dart';
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_change_product/maintenance_change_product_report_list_page.dart';
@@ -33,6 +19,21 @@ import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_startup_production/maintenance_startup_production_approval_list_page.dart';
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_startup_production/maintenance_startup_production_list_page.dart';
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_startup_production/maintenance_startup_production_report_list_page.dart';
+import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
+import 'package:logsheet_app/features/master_data/data/model/master/user_entity.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/business_unit_provider.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_approval_list_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_list_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/dry_fractionation/dry_fractionation_report_list_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/logsheet/deodorizing_filtration/deodorizing_filtration_approval_list_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/logsheet/deodorizing_filtration/deodorizing_filtration_list_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/logsheet/deodorizing_filtration/deodorizing_filtration_report_list_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_apprroval_list_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_list_page.dart';
+import 'package:logsheet_app/features/production/presentation/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_report_lists_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_report_list_page.dart';
@@ -43,11 +44,9 @@ import 'package:logsheet_app/features/quality_control/presentation/pages/analyti
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_report_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_approval_list_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_input_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_report_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_approval_list_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_input_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_list_page.dart';
@@ -55,20 +54,17 @@ import 'package:logsheet_app/features/quality_control/presentation/pages/daily_q
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_report_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/form_transfer/form_transfer_approval_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/form_transfer/form_transfer_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/production/quality_approval_list_production_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/production/quality_list_production_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/production/quality_report_list_production_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/qc/quality_approval_list_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/qc/quality_report_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/qc/quality_list_qc_page.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/business_unit_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/qc/quality_report_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/quality_report/quality_report_qc_provider.dart';
-import 'package:logsheet_app/features/form_transfer/presentation/pages/form_transfer_list_page.dart';
-import 'package:logsheet_app/features/form_transfer/presentation/pages/form_transfer_approval_list_page.dart';
 import 'package:provider/provider.dart';
+
 import 'login_page.dart';
 
 class UserHomePage extends StatefulWidget {
@@ -1191,7 +1187,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 if (AppRoles.formTransferApprovedApproval.contains(userRole))
                   _buildDrawerItem(
                     icon: Icons.check_circle_outline,
-                    title: 'Approval (Approved)\n(F/QCO-018)',
+                    title: 'Approval\n(F/QCO-018)',
                     onTap: () {
                       Navigator.push(
                         context,

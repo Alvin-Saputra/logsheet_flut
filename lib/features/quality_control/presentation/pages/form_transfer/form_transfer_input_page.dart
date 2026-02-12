@@ -9,9 +9,9 @@ import 'package:logsheet_app/core/widgets/custom_section_card.dart';
 import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/core/widgets/custom_text_field.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/form_transfer_detail_model.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/form_transfer_header_model.dart';
-import 'package:logsheet_app/features/form_transfer/presentation/provider/form_transfer_provider.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_detail_model.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_header_model.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/form_transfer/form_transfer_provider.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/business_unit_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
@@ -522,18 +522,10 @@ class _FormTransferInputPageState extends State<FormTransferInputPage> {
         jsonPreparedDate: null,
         jsonPreparedStatus: null,
         jsonPreparedStatusRemarks: null,
-        jsonCheckedBy: null,
-        jsonCheckedDate: null,
-        jsonCheckedStatus: null,
-        jsonCheckedStatusRemarks: null,
         jsonApprovedBy: null,
         jsonApprovedDate: null,
         jsonApprovedStatus: null,
         jsonApprovedStatusRemarks: null,
-        jsonAcknowledgedBy: null,
-        jsonAcknowledgedDate: null,
-        jsonAcknowledgedStatus: null,
-        jsonAcknowledgedStatusRemarks: null,
         jsonUpdatedBy: null,
         jsonUpdatedDate: null,
         jsonDeletedAt: null,

@@ -3,10 +3,10 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/form_transfer_header_model.dart';
-import 'package:logsheet_app/features/form_transfer/presentation/pages/form_transfer_input_page.dart';
-import 'package:logsheet_app/features/form_transfer/presentation/pages/form_transfer_detail_page.dart';
-import 'package:logsheet_app/features/form_transfer/presentation/provider/form_transfer_provider.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_header_model.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/form_transfer/form_transfer_input_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/form_transfer/form_transfer_detail_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/form_transfer/form_transfer_provider.dart';
 import 'package:provider/provider.dart';
 
 class FormTransferListPage extends StatefulWidget {
@@ -401,33 +401,24 @@ class _FormTransferListPageState extends State<FormTransferListPage> {
   }
 
   String _getStatusText(FormTransferHeaderModel transfer) {
-    // Check approval hierarchy: Acknowledged > Approved > Checked > Prepared
-    if (transfer.jsonAcknowledgedStatus?.toLowerCase() == 'approved') {
-      return 'Approved';
-    }
+    // 2-step approval: Lead (prepared) -> Manager (approved)
+    // Check approval hierarchy: Manager > Lead
     if (transfer.jsonApprovedStatus?.toLowerCase() == 'approved') {
       return 'Approved';
     }
-    if (transfer.jsonCheckedStatus?.toLowerCase() == 'approved') {
-      return 'Approved';
-    }
     if (transfer.jsonPreparedStatus?.toLowerCase() == 'approved') {
-      return 'Approved';
+      return 'Lead Approved';
     }
 
     // Check for any rejection
-    if (transfer.jsonAcknowledgedStatus?.toLowerCase() == 'rejected' ||
-        transfer.jsonApprovedStatus?.toLowerCase() == 'rejected' ||
-        transfer.jsonCheckedStatus?.toLowerCase() == 'rejected' ||
+    if (transfer.jsonApprovedStatus?.toLowerCase() == 'rejected' ||
         transfer.jsonPreparedStatus?.toLowerCase() == 'rejected') {
       return 'Rejected';
     }
 
     // Check for in-progress/pending (any status submitted but not approved/rejected)
     if (transfer.jsonPreparedStatus?.toLowerCase() == 'submitted' ||
-        transfer.jsonCheckedStatus?.toLowerCase() == 'submitted' ||
-        transfer.jsonApprovedStatus?.toLowerCase() == 'submitted' ||
-        transfer.jsonAcknowledgedStatus?.toLowerCase() == 'submitted') {
+        transfer.jsonApprovedStatus?.toLowerCase() == 'submitted') {
       return 'In Progress';
     }
 
@@ -436,27 +427,26 @@ class _FormTransferListPageState extends State<FormTransferListPage> {
   }
 
   Color _getStatusColor(FormTransferHeaderModel transfer) {
-    // Approved (all levels) → Green
-    if (transfer.jsonAcknowledgedStatus?.toLowerCase() == 'approved' ||
-        transfer.jsonApprovedStatus?.toLowerCase() == 'approved' ||
-        transfer.jsonCheckedStatus?.toLowerCase() == 'approved' ||
-        transfer.jsonPreparedStatus?.toLowerCase() == 'approved') {
+    // 2-step approval: Lead (prepared) → Manager (approved)
+    // Approved (manager) → Green
+    if (transfer.jsonApprovedStatus?.toLowerCase() == 'approved') {
       return Colors.green;
     }
 
+    // Lead approved only → Light Green
+    if (transfer.jsonPreparedStatus?.toLowerCase() == 'approved') {
+      return Colors.green[300]!;
+    }
+
     // Rejected → Red
-    if (transfer.jsonAcknowledgedStatus?.toLowerCase() == 'rejected' ||
-        transfer.jsonApprovedStatus?.toLowerCase() == 'rejected' ||
-        transfer.jsonCheckedStatus?.toLowerCase() == 'rejected' ||
+    if (transfer.jsonApprovedStatus?.toLowerCase() == 'rejected' ||
         transfer.jsonPreparedStatus?.toLowerCase() == 'rejected') {
       return Colors.red;
     }
 
     // Pending/In Progress → Orange
     if (transfer.jsonPreparedStatus?.toLowerCase() == 'submitted' ||
-        transfer.jsonCheckedStatus?.toLowerCase() == 'submitted' ||
-        transfer.jsonApprovedStatus?.toLowerCase() == 'submitted' ||
-        transfer.jsonAcknowledgedStatus?.toLowerCase() == 'submitted') {
+        transfer.jsonApprovedStatus?.toLowerCase() == 'submitted') {
       return Colors.orange;
     }
 
@@ -506,7 +496,6 @@ class _FormTransferListPageState extends State<FormTransferListPage> {
     }
     return _selectedStatus;
   }
-
 
   String? _parseDateTimeForQuery(String? selectedDate) {
     if (selectedDate == null || selectedDate.isEmpty) return null;
