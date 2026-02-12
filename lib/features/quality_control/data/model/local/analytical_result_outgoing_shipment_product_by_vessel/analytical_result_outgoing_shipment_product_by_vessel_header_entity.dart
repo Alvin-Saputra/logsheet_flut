@@ -1,4 +1,3 @@
-
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_outgoing_shipment_product_by_vessel/analytical_result_outgoing_shipment_product_by_vessel_detail_entity.dart';
 
 class AnalyticalResultOutgoingShipmentProductByVesselHeaderEntity {
@@ -19,6 +18,7 @@ class AnalyticalResultOutgoingShipmentProductByVesselHeaderEntity {
   final double? hasilAnalisaColorR;
   final double? hasilAnalisaPv;
   final double? hasilAnalisaSMP;
+  final String? remark;
 
   final String? entryBy;
   final DateTime? entryDate;
@@ -56,6 +56,7 @@ class AnalyticalResultOutgoingShipmentProductByVesselHeaderEntity {
     required this.hasilAnalisaIv,
     required this.hasilAnalisaMoisture,
     required this.hasilAnalisaPv,
+    required this.remark,
     required this.entryBy,
     required this.entryDate,
     required this.preparedBy,
@@ -73,5 +74,6 @@ class AnalyticalResultOutgoingShipmentProductByVesselHeaderEntity {
     required this.revisionNo,
     required this.revisionDate,
     required this.details,
+    
   });
 }

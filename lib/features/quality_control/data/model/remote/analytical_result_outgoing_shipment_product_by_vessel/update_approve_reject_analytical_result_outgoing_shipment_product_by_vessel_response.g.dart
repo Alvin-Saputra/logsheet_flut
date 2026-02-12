@@ -1,0 +1,51 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'update_approve_reject_analytical_result_outgoing_shipment_product_by_vessel_response.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+UpdateApproveRejectAnalyticalResultOutgoingShipmentProductByVesselResponse
+_$UpdateApproveRejectAnalyticalResultOutgoingShipmentProductByVesselResponseFromJson(
+  Map<String, dynamic> json,
+) => UpdateApproveRejectAnalyticalResultOutgoingShipmentProductByVesselResponse(
+  success: json['success'] as bool,
+  message: json['message'] as String,
+  data:
+      json['data'] == null
+          ? null
+          : UpdateApproveRejectAnalyticalResultData.fromJson(
+            json['data'] as Map<String, dynamic>,
+          ),
+);
+
+Map<String, dynamic>
+_$UpdateApproveRejectAnalyticalResultOutgoingShipmentProductByVesselResponseToJson(
+  UpdateApproveRejectAnalyticalResultOutgoingShipmentProductByVesselResponse
+  instance,
+) => <String, dynamic>{
+  'success': instance.success,
+  'message': instance.message,
+  'data': instance.data,
+};
+
+UpdateApproveRejectAnalyticalResultData
+_$UpdateApproveRejectAnalyticalResultDataFromJson(Map<String, dynamic> json) =>
+    UpdateApproveRejectAnalyticalResultData(
+      id: json['id'] as String,
+      status: json['status'] as String,
+      remarks: json['remarks'] as String?,
+      updatedBy: json['updated_by'] as String,
+      updatedAt: json['updated_at'] as String,
+    );
+
+Map<String, dynamic> _$UpdateApproveRejectAnalyticalResultDataToJson(
+  UpdateApproveRejectAnalyticalResultData instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'status': instance.status,
+  'remarks': instance.remarks,
+  'updated_by': instance.updatedBy,
+  'updated_at': instance.updatedAt,
+};

@@ -48,6 +48,9 @@ import 'package:logsheet_app/features/quality_control/presentation/pages/analyti
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_report_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_vessel/analytical_result_outgoing_shipment_product_by_vessel_approval_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_vessel/analytical_result_outgoing_shipment_product_by_vessel_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_vessel/analytical_result_outgoing_shipment_product_by_vessel_report_list.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_report_list_page.dart';
@@ -94,7 +97,8 @@ class _UserHomePageState extends State<UserHomePage> {
       formAnalyticalResultIncomingMaterialByTruck,
       formAnalyticalResultIncomingPlantChemicalIngredient,
       formAnalyticalResultIncomingPlantFuel,
-      formAnalyticalResultOutgoingShipmentProductByTruck;
+      formAnalyticalResultOutgoingShipmentProductByTruck,
+      formAnalyticalResultOutgoingShipmentByVessel;
 
   Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
@@ -422,6 +426,18 @@ class _UserHomePageState extends State<UserHomePage> {
             )
             .first;
 
+     formAnalyticalResultOutgoingShipmentByVessel =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu ==
+                      "Analytical_Result_of_Outgoing_Shipment_By_Vessel" &&
+                  form.isActive == "T",
+            )
+            .first;
+
     // Daily_Production_Refinery_Fractination
     final userRole = widget.userEntity.role;
     return Scaffold(
@@ -662,20 +678,25 @@ class _UserHomePageState extends State<UserHomePage> {
                     );
                   },
                 ),
-
-                _buildDrawerItem(
-                  icon: Icons.list_alt,
-                  title: 'Approval\n(${formDailyStorageTankAnalytical?.code})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => DailyStorageTankAnalyticalApprovalListPage(),
-                      ),
-                    );
-                  },
-                ),
+                if (AppRoles.qualityControlManagerApproval.contains(
+                  userRole,
+                )) ...[
+                  _buildDrawerItem(
+                    icon: Icons.list_alt,
+                    title:
+                        'Approval\n(${formDailyStorageTankAnalytical?.code})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) =>
+                                  DailyStorageTankAnalyticalApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ],
             ),
             ExpansionTile(
@@ -784,22 +805,25 @@ class _UserHomePageState extends State<UserHomePage> {
                     );
                   },
                 ),
-
-                _buildDrawerItem(
-                  icon: Icons.list_alt,
-                  title:
-                      'Approval\n(${formDailyQualityCompositeFractionation?.code})(A)',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) =>
-                                DailyQualityCompositeFractionationApprovalListPage(),
-                      ),
-                    );
-                  },
-                ),
+                if (AppRoles.qualityControlManagerApproval.contains(
+                  userRole,
+                )) ...[
+                  _buildDrawerItem(
+                    icon: Icons.list_alt,
+                    title:
+                        'Approval\n(${formDailyQualityCompositeFractionation?.code})(A)',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) =>
+                                  DailyQualityCompositeFractionationApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ],
             ),
 
@@ -847,21 +871,24 @@ class _UserHomePageState extends State<UserHomePage> {
                     );
                   },
                 ),
-
-                _buildDrawerItem(
-                  icon: Icons.list_alt,
-                  title: 'Approval\n(FQOC-009)',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) =>
-                                AnalyticalResultIncomingMaterialByVesselApprovalListPage(),
-                      ),
-                    );
-                  },
-                ),
+                if (AppRoles.qualityControlManagerApproval.contains(
+                  userRole,
+                )) ...[
+                  _buildDrawerItem(
+                    icon: Icons.list_alt,
+                    title: 'Approval\n(FQOC-009)',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) =>
+                                  AnalyticalResultIncomingMaterialByVesselApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ],
             ),
 
@@ -909,22 +936,25 @@ class _UserHomePageState extends State<UserHomePage> {
                     );
                   },
                 ),
-
-                _buildDrawerItem(
-                  icon: Icons.list_alt,
-                  title:
-                      'Approval\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) =>
-                                AnalyticalResultIncomingMaterialByTruckApprovalListPage(),
-                      ),
-                    );
-                  },
-                ),
+                if (AppRoles.qualityControlManagerApproval.contains(
+                  userRole,
+                )) ...[
+                  _buildDrawerItem(
+                    icon: Icons.list_alt,
+                    title:
+                        'Approval\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) =>
+                                  AnalyticalResultIncomingMaterialByTruckApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ],
             ),
 
@@ -958,24 +988,26 @@ class _UserHomePageState extends State<UserHomePage> {
                     );
                   },
                 ),
-
-                _buildDrawerItem(
-                  icon: Icons.list_alt,
-                  title:
-                      'Approval\n(${formAnalyticalResultIncomingPlantChemicalIngredient?.code})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) =>
-                                // ParentAnalyticalResultIncomingPlantChemicalIngredient()
-                                AnalyticalResultIncomingPlantChemicalIngredientApprovalListPage(),
-                      ),
-                    );
-                  },
-                ),
-
+                if (AppRoles.qualityControlManagerApproval.contains(
+                  userRole,
+                )) ...[
+                  _buildDrawerItem(
+                    icon: Icons.list_alt,
+                    title:
+                        'Approval\n(${formAnalyticalResultIncomingPlantChemicalIngredient?.code})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) =>
+                                  // ParentAnalyticalResultIncomingPlantChemicalIngredient()
+                                  AnalyticalResultIncomingPlantChemicalIngredientApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
                 _buildDrawerItem(
                   icon: Icons.list_alt,
                   title:
@@ -1025,24 +1057,26 @@ class _UserHomePageState extends State<UserHomePage> {
                     );
                   },
                 ),
-
-                _buildDrawerItem(
-                  icon: Icons.list_alt,
-                  title:
-                      'Approval \n(${formAnalyticalResultIncomingPlantFuel?.code})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) =>
-                                // ParentAnalyticalResultIncomingPlantChemicalIngredient()
-                                AnalyticalResultIncomingPlantFuelApprovalListPage(),
-                      ),
-                    );
-                  },
-                ),
-
+                if (AppRoles.qualityControlManagerApproval.contains(
+                  userRole,
+                )) ...[
+                  _buildDrawerItem(
+                    icon: Icons.list_alt,
+                    title:
+                        'Approval \n(${formAnalyticalResultIncomingPlantFuel?.code})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) =>
+                                  // ParentAnalyticalResultIncomingPlantChemicalIngredient()
+                                  AnalyticalResultIncomingPlantFuelApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
                 _buildDrawerItem(
                   icon: Icons.list_alt,
                   title:
@@ -1092,24 +1126,26 @@ class _UserHomePageState extends State<UserHomePage> {
                     );
                   },
                 ),
-
-                _buildDrawerItem(
-                  icon: Icons.list_alt,
-                  title:
-                      'Approval \n(${formAnalyticalResultOutgoingShipmentProductByTruck?.code})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) =>
-                                // ParentAnalyticalResultIncomingPlantChemicalIngredient()
-                                AnalyticalResultOutgoingShipmentProductByTruckApprovalListPage(),
-                      ),
-                    );
-                  },
-                ),
-
+                if (AppRoles.qualityControlManagerApproval.contains(
+                  userRole,
+                )) ...[
+                  _buildDrawerItem(
+                    icon: Icons.list_alt,
+                    title:
+                        'Approval \n(${formAnalyticalResultOutgoingShipmentProductByTruck?.code})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) =>
+                                  // ParentAnalyticalResultIncomingPlantChemicalIngredient()
+                                  AnalyticalResultOutgoingShipmentProductByTruckApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
                 _buildDrawerItem(
                   icon: Icons.list_alt,
                   title:
@@ -1231,6 +1267,75 @@ class _UserHomePageState extends State<UserHomePage> {
                       );
                     },
                   ),
+              ],
+            ),
+
+            ExpansionTile(
+              leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
+              title: Text(
+                // 'Analytical Result Of Incoming Plant Chemical/Ingredient (F/QCO-010)\n(${formAnalyticalResultIncomingMaterialByTruck?.code})',
+                'Analytical Result Of Outgoing Shipment Product By Vessel \n(${formAnalyticalResultOutgoingShipmentByVessel?.code})',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title:
+                      'List \n(${formAnalyticalResultOutgoingShipmentByVessel?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                // ParentAnalyticalResultIncomingPlantChemicalIngredient()
+                                AnalyticalResultOutgoingShipmentProductByVesselListPage(),
+                      ),
+                    );
+                  },
+                ),
+                if (AppRoles.qualityControlManagerApproval.contains(
+                  userRole,
+                )) ...[
+                  _buildDrawerItem(
+                    icon: Icons.list_alt,
+                    title:
+                        'Approval \n(${formAnalyticalResultOutgoingShipmentByVessel?.code})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) =>
+                                  // ParentAnalyticalResultIncomingPlantChemicalIngredient()
+                                  AnalyticalResultOutgoingShipmentProductByVesselApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title:
+                      'Report \n(${formAnalyticalResultOutgoingShipmentByVessel?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                // ParentAnalyticalResultIncomingPlantChemicalIngredient()
+                                AnalyticalResultOutgoingShipmentProductByVesselReportList(),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ],

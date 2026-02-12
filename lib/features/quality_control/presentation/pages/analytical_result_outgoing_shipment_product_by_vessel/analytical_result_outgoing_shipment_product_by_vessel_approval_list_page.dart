@@ -7,52 +7,63 @@ import 'package:logsheet_app/core/widgets/custom_date_field.dart';
 import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
+import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_outgoing_shipment_product_by_vessel/analytical_result_outgoing_shipment_product_by_vessel_header_entity.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_approval_detail_page.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_vessel/analytical_result_outgoing_shipment_product_by_vessel_approval_detail_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_provider.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_outgoing_shipment_product_by_vessel/analytical_result_outgoing_shipment_product_by_vessel_provider.dart';
 import 'package:provider/provider.dart';
 
 // Dummy model class to simulate your report entity
 
-class AnalyticalResultIncomingMaterialByVesselApprovalListPage
+class AnalyticalResultOutgoingShipmentProductByVesselApprovalListPage
     extends StatefulWidget {
-  const AnalyticalResultIncomingMaterialByVesselApprovalListPage({super.key});
+  const AnalyticalResultOutgoingShipmentProductByVesselApprovalListPage({
+    super.key,
+  });
 
   @override
-  State<AnalyticalResultIncomingMaterialByVesselApprovalListPage>
+  State<AnalyticalResultOutgoingShipmentProductByVesselApprovalListPage>
   createState() =>
-      _AnalyticalResultIncomingMaterialByVesselApprovalListPageState();
+      _AnalyticalResultOutgoingShipmentProductByVesselApprovalListPageState();
 }
 
-class _AnalyticalResultIncomingMaterialByVesselApprovalListPageState
-    extends State<AnalyticalResultIncomingMaterialByVesselApprovalListPage> {
+class _AnalyticalResultOutgoingShipmentProductByVesselApprovalListPageState
+    extends
+        State<AnalyticalResultOutgoingShipmentProductByVesselApprovalListPage> {
   DataFormNoEntity? formData;
   final TextEditingController dateEntryController = TextEditingController();
   @override
   initState() {
     super.initState();
     context
-        .read<AnalyticalResultIncomingMaterialByVesselProvider>()
+        .read<AnalyticalResultOutgoingShipmentProductByVesselProvider>()
         .clearReports();
   }
 
   @override
   Widget build(BuildContext context) {
+    final userRole = context.read<UserProvider>().currentUser?.role;
     return Scaffold(
       appBar: _buildAppBar(),
       body: Column(
         children: [
           _buildFilterSection(context),
           Expanded(
-            child: Consumer<AnalyticalResultIncomingMaterialByVesselProvider>(
+            child: Consumer<
+              AnalyticalResultOutgoingShipmentProductByVesselProvider
+            >(
               builder: (
                 BuildContext context,
-                AnalyticalResultIncomingMaterialByVesselProvider provider,
+                AnalyticalResultOutgoingShipmentProductByVesselProvider
+                provider,
                 Widget? child,
               ) {
                 return (provider.isLoading)
                     ? const Center(child: CircularProgressIndicator())
-                    : (provider.reportListFromApi.isEmpty)
+                    : (provider.reportList.isEmpty)
                     ? const Center(child: Text("No Data Available"))
                     : Padding(
                       padding: const EdgeInsets.symmetric(
@@ -60,19 +71,20 @@ class _AnalyticalResultIncomingMaterialByVesselApprovalListPageState
                         vertical: 4,
                       ),
                       child: ListView.builder(
-                        itemCount: provider.reportListFromApi.length,
+                        itemCount: provider.reportList.length,
                         itemBuilder: (context, index) {
-                          final item = provider.reportListFromApi[index];
-                          log("item.transactionDate: ${item.transactionDate}");
+                          final item = provider.reportList[index];
+                          // log("item.transactionDate: ${item.transactionDate}");
                           final formattedDate = DateFormat(
                             'dd-MM-yyyy',
-                          ).format(item.transactionDate ?? DateTime.now());
+                          ).format(item.samplingDate ?? DateTime.now());
                           return _approvalCardItem(
                             id: item.id ?? '',
                             date: formattedDate,
                             preparedStatus: item.preparedStatus ?? '',
                             approvedStatus: item.approvedStatus ?? '',
-                            material: item.material,
+                            productName: item.productName,
+                            role: userRole,
                           );
                         },
                       ),
@@ -93,35 +105,14 @@ class _AnalyticalResultIncomingMaterialByVesselApprovalListPageState
             .where(
               (form) =>
                   form.isMenu ==
-                  "Analytical_Result_Of_Incoming_Material_By_Vessel",
+                  "Analytical_Result_of_Outgoing_Shipment_By_Vessel",
             )
             .first;
-    return AppBar(
-      title: Text("Approval (${formData!.code})"),
-      actions: [
-        Consumer<AnalyticalResultIncomingMaterialByVesselProvider>(
-          builder: (
-            BuildContext context,
-            AnalyticalResultIncomingMaterialByVesselProvider provider,
-            Widget? child,
-          ) {
-            return (provider.isLoading)
-                ? CircularProgressIndicator()
-                : IconButton(
-                  onPressed: () async {
-                    final plant =
-                        await context.read<PlantProvider>().currentPlant;
-                    await provider.fetchReport(plant?.code ?? '', '');
-                  },
-                  icon: Icon(Icons.replay),
-                );
-          },
-        ),
-      ],
-    );
+    return AppBar(title: Text("Approval (${formData!.code})"));
   }
 
   Widget _buildFilterSection(BuildContext context) {
+    final userRole = context.read<UserProvider>().currentUser?.role;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       child: Row(
@@ -147,8 +138,14 @@ class _AnalyticalResultIncomingMaterialByVesselApprovalListPageState
                 final plant = context.read<PlantProvider>().currentPlant;
                 final plantId = plant?.code ?? '';
                 await context
-                    .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-                    .fetchReport(plantId, formattedDate);
+                    .read<
+                      AnalyticalResultOutgoingShipmentProductByVesselProvider
+                    >()
+                    .fetchReport(
+                      formattedDate,
+                      isFilterBasedOnRole: true,
+                      role: userRole,
+                    );
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
               }
@@ -174,8 +171,8 @@ class _AnalyticalResultIncomingMaterialByVesselApprovalListPageState
     required String date,
     required String? preparedStatus,
     required String? approvedStatus,
-    required String? material,
-
+    required String? productName,
+    required String? role,
     IconData? icon,
     Color? iconColor,
     Color? cardColor,
@@ -216,15 +213,16 @@ class _AnalyticalResultIncomingMaterialByVesselApprovalListPageState
             context,
             MaterialPageRoute(
               builder:
-                  (context) =>
-                      AnalyticalResultIncomingMaterialByVesseApprovalDetailPage(
-                        data: context
-                            .read<
-                              AnalyticalResultIncomingMaterialByVesselProvider
-                            >()
-                            .reportListFromApi
-                            .firstWhere((element) => element.id == id),
-                      ),
+                  (
+                    context,
+                  ) => AnalyticalResultOutgoingShipmentProductByVesselApprovalDetailPage(
+                    data: context
+                        .read<
+                          AnalyticalResultOutgoingShipmentProductByVesselProvider
+                        >()
+                        .reportList
+                        .firstWhere((element) => element.id == id),
+                  ),
             ),
           ).then((_) async {
             if (!mounted) return;
@@ -235,8 +233,12 @@ class _AnalyticalResultIncomingMaterialByVesselApprovalListPageState
               'yyyy-MM-dd',
             );
             await context
-                .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-                .fetchReport(plant?.code ?? '', formattedDate);
+                .read<AnalyticalResultOutgoingShipmentProductByVesselProvider>()
+                .fetchReport(
+                  formattedDate,
+                  isFilterBasedOnRole: true,
+                  role: role,
+                );
           });
         },
         child: Padding(
@@ -262,7 +264,7 @@ class _AnalyticalResultIncomingMaterialByVesselApprovalListPageState
 
                     const SizedBox(height: 4),
                     Text(
-                      'Material: $material',
+                      'ProductName: $productName',
                       style: const TextStyle(fontSize: 14),
                     ),
 

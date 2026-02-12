@@ -13,18 +13,18 @@ import 'package:logsheet_app/features/quality_control/presentation/pages/analyti
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_outgoing_shipment_product_by_vessel/analytical_result_outgoing_shipment_product_by_vessel_provider.dart';
 import 'package:provider/provider.dart';
 
-class AnalyticalResultOutgoingShipmentProductByVesselListPage
+class AnalyticalResultOutgoingShipmentProductByVesselReportList
     extends StatefulWidget {
-  const AnalyticalResultOutgoingShipmentProductByVesselListPage({super.key});
+  const AnalyticalResultOutgoingShipmentProductByVesselReportList({super.key});
 
   @override
-  State<AnalyticalResultOutgoingShipmentProductByVesselListPage>
+  State<AnalyticalResultOutgoingShipmentProductByVesselReportList>
   createState() =>
-      _AnalyticalResultOutgoingShipmentProductByVesselListPageState();
+      _AnalyticalResultOutgoingShipmentProductByVesselReportListState();
 }
 
-class _AnalyticalResultOutgoingShipmentProductByVesselListPageState
-    extends State<AnalyticalResultOutgoingShipmentProductByVesselListPage> {
+class _AnalyticalResultOutgoingShipmentProductByVesselReportListState
+    extends State<AnalyticalResultOutgoingShipmentProductByVesselReportList> {
   DataFormNoEntity? formData;
 
   final TextEditingController dateEntryController = TextEditingController();
@@ -42,39 +42,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselListPageState
     return Scaffold(
       appBar: _buildAppBar(),
       body: _buildBody(userRole ?? ''),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (context) =>
-                      AnalyticalResultOutgoingShipmentProductByVesselInputPage(),
-            ),
-          ).then((_) async {
-            if (!mounted) return;
-
-            final plant = context.read<PlantProvider>().currentPlant;
-            final plantId = plant?.code ?? '';
-            final formattedDate = changeStringDateFormat(
-              dateEntryController.text,
-              'dd-MM-yyyy',
-              'yyyy-MM-dd',
-            );
-            await context
-                .read<AnalyticalResultOutgoingShipmentProductByVesselProvider>()
-                .fetchReport(
-                  formattedDate,
-                  isFilterBasedOnRole: true,
-                  role: userRole,
-                );
-          });
-        },
-        label: const Text("Tambah Report"),
-        icon: Icon(Icons.add),
-        backgroundColor: Color(0xFFB91C1C),
-        foregroundColor: Colors.white,
-      ),
+     
     );
   }
 
@@ -173,7 +141,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselListPageState
                     >()
                     .fetchReport(
                       formattedDate,
-                      isFilterBasedOnRole: true,
+                      isFilterBasedOnRole: false,
                       role: role,
                     );
               } else if (dateEntryController.text == "") {
@@ -237,7 +205,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselListPageState
                         AnalyticalResultOutgoingShipmentProductByVesselProvider
                       >()
                       .reportList
-                      .firstWhere((element) => element.id == id), isShowApprovalAction: true,
+                      .firstWhere((element) => element.id == id), isShowApprovalAction: false,
                 ),
           ),
         ).then((_) async {
@@ -254,7 +222,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselListPageState
               .read<AnalyticalResultOutgoingShipmentProductByVesselProvider>()
               .fetchReport(
                 formattedDate,
-                isFilterBasedOnRole: true,
+                isFilterBasedOnRole: false,
                 role: role,
               );
         });

@@ -52,6 +52,9 @@ class AnalyticalResultOutgoingShipmentProductByVesselHeaderModel
   @JsonKey(name: 'hasil_analisa_smp')
   final String? jsonHasilAnalisaSmp;
 
+  @JsonKey(name: 'remark')
+  final String? jsonRemark;
+
   @JsonKey(name: 'entry_by')
   final String? jsonEntryBy;
 
@@ -101,8 +104,9 @@ class AnalyticalResultOutgoingShipmentProductByVesselHeaderModel
   final String? jsonRevisionDate;
 
   // List Detail (Model)
-  @JsonKey(name: 'detail')
-  final List<AnalyticalResultOutgoingShipmentProductByVesselDetailModel>? jsonDetail;
+  @JsonKey(name: 'details')
+  final List<AnalyticalResultOutgoingShipmentProductByVesselDetailModel>?
+  jsonDetail;
 
   AnalyticalResultOutgoingShipmentProductByVesselHeaderModel({
     required this.jsonId,
@@ -137,6 +141,7 @@ class AnalyticalResultOutgoingShipmentProductByVesselHeaderModel
     this.jsonRevisionNo,
     this.jsonRevisionDate,
     this.jsonDetail,
+    this.jsonRemark,
   }) : super(
          id: jsonId,
          company: jsonCompany ?? '',
@@ -153,6 +158,7 @@ class AnalyticalResultOutgoingShipmentProductByVesselHeaderModel
          hasilAnalisaColorR: parseDouble(jsonHasilAnalisaColour),
          hasilAnalisaPv: parseDouble(jsonHasilAnalisaPv),
          hasilAnalisaSMP: parseDouble(jsonHasilAnalisaSmp),
+         remark:jsonRemark,
          entryBy: jsonEntryBy,
          entryDate: formatStringtoDate(jsonEntryDate ?? '', 'yyyy-MM-dd'),
          preparedBy: jsonPreparedBy,
@@ -169,7 +175,7 @@ class AnalyticalResultOutgoingShipmentProductByVesselHeaderModel
          dateIssued: formatStringtoDate(jsonDateIssued ?? '', 'yyyy-MM-dd'),
          revisionNo: jsonRevisionNo.toString(),
          revisionDate: formatStringtoDate(jsonRevisionDate ?? '', 'yyyy-MM-dd'),
-         details: jsonDetail??[],
+         details: jsonDetail ?? [],
        );
 
   factory AnalyticalResultOutgoingShipmentProductByVesselHeaderModel.fromJson(
