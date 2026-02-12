@@ -1,13 +1,13 @@
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
-import 'package:logsheet_app/features/form_transfer/data/datasources/remote/form_transfer_api_service.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/form_transfer_header_model.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/response/approve_form_transfer_response.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/response/create_form_transfer_response.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/response/delete_form_transfer_response.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/response/fetch_form_transfer_response.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/response/update_form_transfer_response.dart';
+import 'package:logsheet_app/features/quality_control/data/datasources/remote/form_transfer/form_transfer_api_service.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_header_model.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/response/approve_form_transfer_response.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/response/create_form_transfer_response.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/response/delete_form_transfer_response.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/response/fetch_form_transfer_response.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/response/update_form_transfer_response.dart';
 
 class FormTransferRepository {
   final FormTransferApiService apiService;
@@ -98,13 +98,7 @@ class FormTransferRepository {
     try {
       log('Approving form transfer: $id, level: $level');
       final ApproveFormTransferResponse response = await apiService
-          .approveFormTransfer(
-            token,
-            id,
-            level ?? '',
-            'Approved',
-            remarks,
-          );
+          .approveFormTransfer(token, id, level ?? '', 'Approved', remarks);
       log('Form transfer approved: ${response.message}');
       return response;
     } catch (e) {
@@ -122,13 +116,7 @@ class FormTransferRepository {
     try {
       log('Rejecting form transfer: $id, level: $level');
       final ApproveFormTransferResponse response = await apiService
-          .approveFormTransfer(
-            token,
-            id,
-            level ?? '',
-            'Rejected',
-            remarks,
-          );
+          .approveFormTransfer(token, id, level ?? '', 'Rejected', remarks);
       log('Form transfer rejected: ${response.message}');
       return response;
     } catch (e) {

@@ -3,9 +3,9 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/form_transfer_header_model.dart';
-import 'package:logsheet_app/features/form_transfer/presentation/pages/form_transfer_detail_page.dart';
-import 'package:logsheet_app/features/form_transfer/presentation/provider/form_transfer_provider.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_header_model.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/form_transfer/form_transfer_detail_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/form_transfer/form_transfer_provider.dart';
 import 'package:provider/provider.dart';
 
 /// Approval list page for Form Transfer
@@ -13,7 +13,7 @@ import 'package:provider/provider.dart';
 /// Shows items pending at a specific approval level.
 /// Each instance should only show items for ONE approval level.
 ///
-/// [approvalLevel] - 'prepared', 'checked', 'approved', or 'acknowledged'
+/// [approvalLevel] - 'prepared', 'approved' (2-step approval: Lead -> Manager)
 class FormTransferApprovalListPage extends StatefulWidget {
   final String approvalLevel;
 
@@ -55,15 +55,12 @@ class _FormTransferApprovalListPageState
   }
 
   String get _pageTitle {
+    // 2-step approval: Lead (prepared) -> Manager (approved)
     switch (widget.approvalLevel) {
       case 'prepared':
-        return 'Approval - Prepared';
-      case 'checked':
-        return 'Approval - Checked';
+        return 'Approval - Lead';
       case 'approved':
-        return 'Approval - Approved';
-      case 'acknowledged':
-        return 'Approval - Acknowledged';
+        return 'Approval - Manager';
       default:
         return 'Approval List';
     }
@@ -127,6 +124,7 @@ class _FormTransferApprovalListPageState
   }
 
   /// Filter list to show only items pending at the current approval level
+  /// 2-step approval: Lead (prepared) -> Manager (approved)
   List<FormTransferHeaderModel> _filterPendingAtCurrentLevel(
     List<FormTransferHeaderModel> transfers,
   ) {
@@ -135,18 +133,10 @@ class _FormTransferApprovalListPageState
         case 'prepared':
           // Show items where prepared is pending/null/empty and not yet approved
           return _isPending(transfer.jsonPreparedStatus);
-        case 'checked':
-          // Show items where prepared is approved but checked is pending
-          return _isApproved(transfer.jsonPreparedStatus) &&
-              _isPending(transfer.jsonCheckedStatus);
         case 'approved':
-          // Show items where checked is approved but approved is pending
-          return _isApproved(transfer.jsonCheckedStatus) &&
+          // Show items where prepared is approved but approved is pending
+          return _isApproved(transfer.jsonPreparedStatus) &&
               _isPending(transfer.jsonApprovedStatus);
-        case 'acknowledged':
-          // Show items where approved is approved but acknowledged is pending
-          return _isApproved(transfer.jsonApprovedStatus) &&
-              _isPending(transfer.jsonAcknowledgedStatus);
         default:
           return false;
       }
@@ -340,6 +330,7 @@ class _FormTransferApprovalListPageState
   }
 
   /// Build color-coded status badge for current approval level
+  /// 2-step approval: Lead (prepared) -> Manager (approved)
   Widget _buildStatusBadge(String level) {
     Color backgroundColor;
     Color textColor;
@@ -350,26 +341,14 @@ class _FormTransferApprovalListPageState
       case 'prepared':
         backgroundColor = Colors.blue[100]!;
         textColor = Colors.blue[800]!;
-        label = 'Prepared';
+        label = 'Lead';
         icon = Icons.edit;
-        break;
-      case 'checked':
-        backgroundColor = Colors.orange[100]!;
-        textColor = Colors.orange[800]!;
-        label = 'Checked';
-        icon = Icons.fact_check;
         break;
       case 'approved':
         backgroundColor = Colors.purple[100]!;
         textColor = Colors.purple[800]!;
-        label = 'Approved';
+        label = 'Manager';
         icon = Icons.approval;
-        break;
-      case 'acknowledged':
-        backgroundColor = Colors.teal[100]!;
-        textColor = Colors.teal[800]!;
-        label = 'Acknowledged';
-        icon = Icons.check_circle;
         break;
       default:
         backgroundColor = Colors.grey[200]!;
@@ -404,27 +383,18 @@ class _FormTransferApprovalListPageState
   }
 
   /// Build mini progress indicator showing approval flow
+  /// 2-step approval: Lead (P) -> Manager (A)
   Widget _buildApprovalProgressIndicator(FormTransferHeaderModel transfer) {
     final steps = [
       {
-        'label': 'P',
+        'label': 'L',
         'status': transfer.jsonPreparedStatus,
         'color': Colors.blue,
       },
       {
-        'label': 'C',
-        'status': transfer.jsonCheckedStatus,
-        'color': Colors.orange,
-      },
-      {
-        'label': 'A',
+        'label': 'M',
         'status': transfer.jsonApprovedStatus,
         'color': Colors.purple,
-      },
-      {
-        'label': 'K',
-        'status': transfer.jsonAcknowledgedStatus,
-        'color': Colors.teal,
       },
     ];
 
@@ -498,15 +468,12 @@ class _FormTransferApprovalListPageState
   }
 
   String _getLevelFromIndex(int index) {
+    // 2-step approval: Lead (prepared) -> Manager (approved)
     switch (index) {
       case 0:
         return 'prepared';
       case 1:
-        return 'checked';
-      case 2:
         return 'approved';
-      case 3:
-        return 'acknowledged';
       default:
         return '';
     }

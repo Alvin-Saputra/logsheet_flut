@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/form_transfer_header_model.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_header_model.dart';
 
 part 'fetch_form_transfer_response.g.dart';
 

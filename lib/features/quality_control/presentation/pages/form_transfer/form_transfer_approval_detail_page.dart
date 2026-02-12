@@ -4,9 +4,9 @@ import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/core/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/form_transfer_detail_model.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/form_transfer_header_model.dart';
-import 'package:logsheet_app/features/form_transfer/presentation/provider/form_transfer_provider.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_detail_model.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_header_model.dart';
+import 'package:logsheet_app/features/quality_control/presentation/provider/form_transfer/form_transfer_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -158,35 +158,21 @@ class _FormTransferApprovalDetailPageState
                     _buildDetailRows(transferItem!.jsonDetail!),
                   ),
 
-                // Approval Status Section
+                // Approval Status Section (2-step: Lead → Manager)
                 _buildSection('Approval Status', [
                   _buildApprovalStatusRow(
-                    'Prepared',
+                    'Lead Approval',
                     transferItem?.jsonPreparedBy,
                     transferItem?.jsonPreparedDate,
                     transferItem?.jsonPreparedStatus,
                     transferItem?.jsonPreparedStatusRemarks,
                   ),
                   _buildApprovalStatusRow(
-                    'Checked',
-                    transferItem?.jsonCheckedBy,
-                    transferItem?.jsonCheckedDate,
-                    transferItem?.jsonCheckedStatus,
-                    transferItem?.jsonCheckedStatusRemarks,
-                  ),
-                  _buildApprovalStatusRow(
-                    'Approved',
+                    'Manager Approval',
                     transferItem?.jsonApprovedBy,
                     transferItem?.jsonApprovedDate,
                     transferItem?.jsonApprovedStatus,
                     transferItem?.jsonApprovedStatusRemarks,
-                  ),
-                  _buildApprovalStatusRow(
-                    'Acknowledged',
-                    transferItem?.jsonAcknowledgedBy,
-                    transferItem?.jsonAcknowledgedDate,
-                    transferItem?.jsonAcknowledgedStatus,
-                    transferItem?.jsonAcknowledgedStatusRemarks,
                   ),
                 ]),
 
@@ -312,16 +298,17 @@ class _FormTransferApprovalDetailPageState
     UserProvider userProvider,
   ) {
     final userRole = userProvider.currentUser?.role;
-    final bool canApprove = _canApproveForLevel(userRole, widget.approvalLevel);
 
-    // Check if already approved/rejected at this level
-    final String? currentStatus = _getStatusForLevel(widget.approvalLevel);
+    // 2-step approval flow: Lead (prepared) -> Manager (approved)
+    final String? preparedStatus = transferItem?.jsonPreparedStatus;
+    final String? approvedStatus = transferItem?.jsonApprovedStatus;
 
-    if (currentStatus == 'Approved') {
+    // If both steps are approved
+    if (preparedStatus == 'Approved' && approvedStatus == 'Approved') {
       return _buildSection('Approval Actions', [
         const Center(
           child: Text(
-            'Transfer Approved',
+            'Transfer Fully Approved',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: Colors.green,
@@ -332,7 +319,8 @@ class _FormTransferApprovalDetailPageState
       ]);
     }
 
-    if (currentStatus == 'Rejected') {
+    // If either step is rejected
+    if (preparedStatus == 'Rejected' || approvedStatus == 'Rejected') {
       return _buildSection('Approval Actions', [
         const Center(
           child: Text(
@@ -347,112 +335,151 @@ class _FormTransferApprovalDetailPageState
       ]);
     }
 
-    if (!canApprove) {
-      return _buildSection('Approval Actions', [
-        Center(
-          child: Text(
-            'Waiting for ${_getLevelDisplayName(widget.approvalLevel)} approval...',
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.orange,
+    // Manager approval flow (MGR, MGR_QC, ADM)
+    if (AppRoles.qualityControlManagerApproval.contains(userRole)) {
+      // Manager can only approve if Lead has already approved
+      if (preparedStatus == 'Approved' && approvedStatus == null) {
+        return _buildSection('Approval Actions', [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: ElevatedButton(
+                    onPressed: () => _showRejectBottomSheet(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red[700],
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.close, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text('Reject', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: ElevatedButton(
+                    onPressed: () => _approveTransfer(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.check, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text('Approve', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ]);
+      } else if (preparedStatus == null) {
+        return _buildSection('Approval Actions', [
+          const Center(
+            child: Text(
+              'Waiting for Lead approval...',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.orange,
+              ),
             ),
+          ),
+        ]);
+      }
+    }
+
+    // Lead approval flow (LEAD, LEAD_QC)
+    if (AppRoles.leadQC.contains(userRole)) {
+      if (preparedStatus == null) {
+        return _buildSection('Approval Actions', [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: ElevatedButton(
+                    onPressed: () => _showRejectBottomSheet(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red[700],
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.close, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text('Reject', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: ElevatedButton(
+                    onPressed: () => _approveTransfer(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.check, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text('Approve', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ]);
+      } else if (preparedStatus == 'Approved' && approvedStatus == null) {
+        return _buildSection('Approval Actions', [
+          const Center(
+            child: Text(
+              'Waiting for Manager approval...',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.orange,
+              ),
+            ),
+          ),
+        ]);
+      }
+    }
+
+    // Default: waiting state for other roles
+    return _buildSection('Approval Actions', [
+      Center(
+        child: Text(
+          preparedStatus == null
+              ? 'Waiting for Lead approval...'
+              : 'Waiting for Manager approval...',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.orange,
           ),
         ),
-      ]);
-    }
-
-    return _buildSection('Approval Actions', [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: ElevatedButton(
-                onPressed: () => _showRejectBottomSheet(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red[700],
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.close, color: Colors.white),
-                    SizedBox(width: 8),
-                    Text('Reject', style: TextStyle(color: Colors.white)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: ElevatedButton(
-                onPressed: () => _approveTransfer(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.check, color: Colors.white),
-                    SizedBox(width: 8),
-                    Text('Approve', style: TextStyle(color: Colors.white)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     ]);
-  }
-
-  bool _canApproveForLevel(String? userRole, String level) {
-    switch (level) {
-      case 'prepared':
-        return AppRoles.formTransferPreparedApproval.contains(userRole);
-      case 'checked':
-        return AppRoles.formTransferCheckedApproval.contains(userRole);
-      case 'approved':
-        return AppRoles.formTransferApprovedApproval.contains(userRole);
-      case 'acknowledged':
-        return AppRoles.formTransferAcknowledgedApproval.contains(userRole);
-      default:
-        return false;
-    }
-  }
-
-  String? _getStatusForLevel(String level) {
-    switch (level) {
-      case 'prepared':
-        return transferItem?.jsonPreparedStatus;
-      case 'checked':
-        return transferItem?.jsonCheckedStatus;
-      case 'approved':
-        return transferItem?.jsonApprovedStatus;
-      case 'acknowledged':
-        return transferItem?.jsonAcknowledgedStatus;
-      default:
-        return null;
-    }
-  }
-
-  String _getLevelDisplayName(String level) {
-    switch (level) {
-      case 'prepared':
-        return 'Prepared';
-      case 'checked':
-        return 'Checked';
-      case 'approved':
-        return 'Approved';
-      case 'acknowledged':
-        return 'Acknowledged';
-      default:
-        return level;
-    }
   }
 
   Future<void> _approveTransfer(BuildContext context) async {

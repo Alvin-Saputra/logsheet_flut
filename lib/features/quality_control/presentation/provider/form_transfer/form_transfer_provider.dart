@@ -1,9 +1,9 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/form_transfer_detail_model.dart';
-import 'package:logsheet_app/features/form_transfer/data/model/remote/form_transfer_header_model.dart';
-import 'package:logsheet_app/features/form_transfer/data/repository/form_transfer_repository.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_detail_model.dart';
+import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_header_model.dart';
+import 'package:logsheet_app/features/quality_control/data/repositories/form_transfer/form_transfer_repository.dart';
 
 class FormTransferProvider extends ChangeNotifier {
   final FormTransferRepository repository;
@@ -138,7 +138,7 @@ class FormTransferProvider extends ChangeNotifier {
   }
 
   /// Approve a form transfer
-  /// [level] - 'prepared', 'checked', 'approved', 'acknowledged'
+  /// [level] - 'prepared', 'approved' (2-step approval: Lead -> Manager)
   Future<void> approveTransfer(String id, String token, {String? level}) async {
     log('Approving form transfer: $id, level: $level');
     _setLoading(true);
@@ -163,7 +163,7 @@ class FormTransferProvider extends ChangeNotifier {
   }
 
   /// Reject a form transfer
-  /// [level] - 'prepared', 'checked', 'approved', 'acknowledged'
+  /// [level] - 'prepared', 'approved' (2-step approval: Lead -> Manager)
   /// [remarks] - Required remarks for rejection
   Future<void> rejectTransfer(
     String id,
@@ -195,7 +195,7 @@ class FormTransferProvider extends ChangeNotifier {
   }
 
   /// Load pending approvals filtered by approval level
-  /// [level] - 'prepared', 'checked', 'approved', 'acknowledged'
+  /// [level] - 'prepared', 'approved' (2-step approval: Lead -> Manager)
   Future<void> loadPendingApprovals(String token, String level) async {
     log('Loading pending approvals for level: $level');
     _setLoading(true);
