@@ -522,9 +522,9 @@ class _DailyProductionRefineryApprovalDetailPageState
         username,
         status,
         role,
-        shiftNumber,
+        shiftNumber.toString(),
         _remarkController.text.isEmpty ? null : _remarkController.text,
-        report.id,
+        report.id!,
         plantCode,
       );
 

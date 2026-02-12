@@ -7,53 +7,54 @@ import 'package:logsheet_app/features/daily_production/data/model/daily_producti
 import 'package:mysql_client/mysql_client.dart';
 
 class DailyProductionRefineryMySQLService {
-  Future<bool> insertTicket(DailyProductionRefineryEntity entity) async {
+  Future<bool> insertTicket(
+    List<DailyProductionRefineryEntity> entities,
+  ) async {
+    if (entities.isEmpty) return false;
+
     MySQLConnection? connection;
-
     try {
-      var connResult = await getMySQLConnection();
+      final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log(
-          '(Daily Production Refinery MySQL) Failed to get MySQL connection for insert ticket.',
-        );
-        return false;
+        throw Exception("Gagal terhubung ke database");
       }
-
       connection = connResult.connection;
-      List<String> columns = [];
-      List<String> params = [];
-      final Map<String, dynamic> entityData = entity.toMap();
-      final Map<String, dynamic> sqlExecuteParams = {};
 
-      entityData.forEach((keyInEntityMap, value) {
-        String actualDbColumnName = keyInEntityMap;
-        String safeParameterName = keyInEntityMap;
-        dynamic formattedValue = value;
+      // Jalankan dalam Transaction agar atomik (semua berhasil atau semua gagal)
+      await connection!.transactional((txn) async {
+        // Cek duplikasi berdasarkan Grouping ID (asumsi ID dibuat di client/provider)
+        // Atau cek duplikasi bisnis (tanggal, plant, dll) jika diperlukan.
+        // Disini kita insert setiap baris.
 
-        columns.add('`$actualDbColumnName`');
-        params.add(':$safeParameterName');
-        sqlExecuteParams[safeParameterName] = formattedValue;
+        for (var item in entities) {
+          final Map<String, dynamic> entityData = item.toMap();
+          final List<String> columns = [];
+          final List<String> values = [];
+          final Map<String, dynamic> params = {};
+
+          entityData.forEach((key, value) {
+            // Kita skip ticket_id agar DB yang handle auto increment
+            if (key != 'ticket_id' && value != null) {
+              columns.add('`$key`');
+              values.add(':$key');
+              params[key] = value;
+            }
+          });
+
+          final insertSql =
+              'INSERT INTO t_daily_production_refinery (${columns.join(', ')}) VALUES (${values.join(', ')})';
+          await txn.execute(insertSql, params);
+        }
       });
 
-      final String sql =
-          'INSERT INTO t_daily_production_refinery (${columns.join(', ')}) VALUES (${params.join(', ')})';
-      log('Generated SQL: $sql');
-      log('Data for SQL: $sqlExecuteParams');
-      log(
-        connection!.connected
-            ? "Connected to the database"
-            : "Not Connected to the database",
-      );
-      final result = await connection.execute(sql, sqlExecuteParams);
-
-      return result.affectedRows > BigInt.from(0);
+      return true;
     } catch (e) {
-      log('Error inserting Quality Report Refinery Report: $e');
-      return false;
+      log('Insert ticket error: $e');
+      // Rethrow agar UI/Provider bisa menangkap error-nya
+      rethrow;
     } finally {
       try {
         await closeMySQLConnection(connection);
-        log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
       }
@@ -80,280 +81,60 @@ class DailyProductionRefineryMySQLService {
       String baseQuery;
       final Map<String, dynamic> params = {};
 
-      switch (role) {
-        case 'LEAD' || 'LEAD_PROD':
-          baseQuery = """
-          SELECT
-            a.id,
-            a.company,
-            a.plant,
-            a.transaction_date,
-            a.posting_date,
-            a.work_center,
-            a.shift,
-            a.cpo_tank,
-            a.oil_type_rm AS oil_type_rm_id,
-            b.raw_material AS oil_type_rm,
-            a.oil_type_rm_awal_jam,
-            a.oil_type_rm_awal_flowmeter,
-            a.oil_type_rm_akhir_jam,
-            a.oil_type_rm_akhir_flowmeter,
-            a.oil_type_rm_oip,
-            a.oil_type_rm_total,
-            a.oil_type_fg AS oil_type_fg_id,
-            b.finish_good AS oil_type_fg,
-            a.oil_type_fg_awal_jam,
-            a.oil_type_fg_awal_flowmeter,
-            a.oil_type_fg_akhir_jam,
-            a.oil_type_fg_akhir_flowmeter,
-            a.oil_type_fg_total,
-            a.oil_type_fg_to_tank,
-            a.bp_oil_type AS bp_oil_type_id,
-            b.by_product AS bp_oil_type,
-            a.bp_awal_jam,
-            a.bp_awal_flowmeter,
-            a.bp_akhir_jam,
-            a.bp_akhir_flowmeter,
-            a.bp_total,
-            a.bp_to_tank,
-            a.be_ref_tank,
-            a.be_ref_qty,
-            a.be_total_bag,
-            a.be_total_jenis,
-            a.be_lot_batch_number,
-            a.be_yield_percent,
-            a.pa_ref_tank,
-            a.pa_ref_qty,
-            a.pa_total,
-            a.pa_lot_batch_number,
-            a.pa_yield_percent,
-            a.remarks,
-            a.flag,
-            a.uu_item,
-            a.uu_budget_ref_tank,
-            a.uu_budget_qty,
-            a.uu_total_cpo,
-            a.uu_total_steam,
-            a.uu_steam_cpo,
-            a.uu_yield_percent,
-            a.entry_by,
-            a.entry_date,
-            a.prepared_by,
-            a.prepared_date,
-            a.prepared_status,
-            a.prepared_status_remarks,
-            a.verified_by,
-            a.verified_date,
-            a.verified_status,
-            a.checked_by,
-            a.checked_date,
-            a.checked_status,
-            a.checked_status_remarks,
-            a.form_no,
-            a.date_issued,
-            a.revision_no,
-            a.revision_date,
-            a.is_completed
-          FROM 
-                t_daily_production_refinery AS a
-          JOIN m_product AS b 
-          ON a.oil_type_rm = b.id
-          WHERE
-            a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
-  
-          """;
-
-          params["plantCode"] = plantCode;
-          break;
-        case 'OPR' || 'OPR_PROD' || 'MGR' || 'MGR_PROD':
-          baseQuery = """
-        SELECT
-          a.id,
-          a.company,
-          a.plant,
-          a.transaction_date,
-          a.posting_date,
-          a.work_center,
-          a.shift,
-          a.cpo_tank,
-          a.oil_type_rm AS oil_type_rm_id,
-          b.raw_material AS oil_type_rm,
-          a.oil_type_rm_awal_jam,
-          a.oil_type_rm_awal_flowmeter,
-          a.oil_type_rm_akhir_jam,
-          a.oil_type_rm_akhir_flowmeter,
-          a.oil_type_rm_oip,
-          a.oil_type_rm_total,
+      String selectColumns = """
+          a.*, 
           a.oil_type_fg AS oil_type_fg_id,
-          b.finish_good AS oil_type_fg,
-          a.oil_type_fg_awal_jam,
-          a.oil_type_fg_awal_flowmeter,
-          a.oil_type_fg_akhir_jam,
-          a.oil_type_fg_akhir_flowmeter,
-          a.oil_type_fg_total,
-          a.oil_type_fg_to_tank,
+          a.oil_type_rm AS oil_type_rm_id,
           a.bp_oil_type AS bp_oil_type_id,
-          b.by_product AS bp_oil_type,
-          a.bp_awal_jam,
-          a.bp_awal_flowmeter,
-          a.bp_akhir_jam,
-          a.bp_akhir_flowmeter,
-          a.bp_total,
-          a.bp_to_tank,
-          a.be_ref_tank,
-          a.be_ref_qty,
-          a.be_total_bag,
-          a.be_total_jenis,
-          a.be_lot_batch_number,
-          a.be_yield_percent,
-          a.pa_ref_tank,
-          a.pa_ref_qty,
-          a.pa_total,
-          a.pa_lot_batch_number,
-          a.pa_yield_percent,
-          a.remarks,
-          a.flag,
-          a.uu_item,
-          a.uu_budget_ref_tank,
-          a.uu_budget_qty,
-          a.uu_total_cpo,
-          a.uu_total_steam,
-          a.uu_steam_cpo,
-          a.uu_yield_percent,
-          a.entry_by,
-          a.entry_date,
-          a.prepared_by,
-          a.prepared_date,
-          a.prepared_status,
-          a.prepared_status_remarks,
-          a.verified_by,
-          a.verified_date,
-          a.verified_status,
-          a.checked_by,
-          a.checked_date,
-          a.checked_status,
-          a.checked_status_remarks,
-          a.form_no,
-          a.date_issued,
-          a.revision_no,
-          a.revision_date,
-          a.is_completed
-        FROM 
-          t_daily_production_refinery AS a
-        JOIN m_product AS b 
-        ON a.oil_type_rm = b.id
-        WHERE
-          a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T') 
-        """;
+          b.raw_material AS oil_type_rm,
+          c.finish_good AS oil_type_fg,
+          d.by_product AS bp_oil_type
+      """;
+
+      String fromAndJoin = """
+          FROM t_daily_production_refinery AS a
+          LEFT JOIN m_product AS b ON a.oil_type_rm = b.id
+          LEFT JOIN m_product AS c ON a.oil_type_fg = c.id
+          LEFT JOIN m_product AS d ON a.bp_oil_type = d.id
+      """;
+
+      String whereClause = "";
+
+      switch (role) {
+        case 'LEAD':
+        case 'LEAD_PROD':
+        case 'OPR':
+        case 'OPR_PROD':
+        case 'MGR':
+        case 'MGR_PROD':
+        case 'ADM':
+          whereClause =
+              "WHERE a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')";
           params["plantCode"] = plantCode;
           break;
 
-        case 'ADM':
-          // Query for Admin: Can see all reports.
-          baseQuery = """
-              SELECT
-                a.id,
-                a.company,
-                a.plant,
-                a.transaction_date,
-                a.posting_date,
-                a.work_center,
-                a.shift,
-                a.cpo_tank,
-                a.oil_type_rm AS oil_type_rm_id,
-                b.raw_material AS oil_type_rm,
-                a.oil_type_rm_awal_jam,
-                a.oil_type_rm_awal_flowmeter,
-                a.oil_type_rm_akhir_jam,
-                a.oil_type_rm_akhir_flowmeter,
-                a.oil_type_rm_oip,
-                a.oil_type_rm_total,
-                a.oil_type_fg AS oil_type_fg_id,
-                b.finish_good AS oil_type_fg,
-                a.oil_type_fg_awal_jam,
-                a.oil_type_fg_awal_flowmeter,
-                a.oil_type_fg_akhir_jam,
-                a.oil_type_fg_akhir_flowmeter,
-                a.oil_type_fg_total,
-                a.oil_type_fg_to_tank,
-                a.bp_oil_type AS bp_oil_type_id,
-                b.by_product AS bp_oil_type,
-                a.bp_awal_jam,
-                a.bp_awal_flowmeter,
-                a.bp_akhir_jam,
-                a.bp_akhir_flowmeter,
-                a.bp_total,
-                a.bp_to_tank,
-                a.be_ref_tank,
-                a.be_ref_qty,
-                a.be_total_bag,
-                a.be_total_jenis,
-                a.be_lot_batch_number,
-                a.be_yield_percent,
-                a.pa_ref_tank,
-                a.pa_ref_qty,
-                a.pa_total,
-                a.pa_lot_batch_number,
-                a.pa_yield_percent,
-                a.remarks,
-                a.flag,
-                a.uu_item,
-                a.uu_budget_ref_tank,
-                a.uu_budget_qty,
-                a.uu_total_cpo,
-                a.uu_total_steam,
-                a.uu_steam_cpo,
-                a.uu_yield_percent,
-                a.entry_by,
-                a.entry_date,
-                a.prepared_by,
-                a.prepared_date,
-                a.prepared_status,
-                a.prepared_status_remarks,
-                a.verified_by,
-                a.verified_date,
-                a.verified_status,
-                a.checked_by,
-                a.checked_date,
-                a.checked_status,
-                a.checked_status_remarks,
-                a.form_no,
-                a.date_issued,
-                a.revision_no,
-                a.revision_date,
-                a.is_completed
-              FROM 
-                t_daily_production_refinery AS a
-              JOIN m_product AS b 
-              ON a.oil_type_rm = b.id
-              WHERE a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')""";
-          params["plantCode"] = plantCode;
-          break;
         default:
           log('User role $role is not authorized to view reports.');
           return [];
       }
-      // Add date and time filters to the query for all roles
+
       if (dateFilter != null) {
-        if (baseQuery.contains("WHERE")) {
-          baseQuery += " AND a.transaction_date = :reportDate";
-        } else {
-          baseQuery += " WHERE a.transaction_date = :reportDate";
-        }
-        params["reportDate"] = dateFilter;
+        whereClause += " AND DATE(a.transaction_date) = :reportDate";
+
+        params["reportDate"] = DateFormat('yyyy-MM-dd').format(dateFilter);
       }
+
       if (time != null) {
-        if (baseQuery.contains("WHERE")) {
-          baseQuery += " AND a.time = :time";
-        } else {
-          baseQuery += " WHERE a.time = :time";
-        }
+        // Asumsi ada kolom 'time' atau field terkait jam
+        whereClause += " AND a.time = :time";
         params["time"] = time;
       }
 
-      baseQuery += " ORDER BY a.transaction_date DESC";
+      baseQuery =
+          "SELECT $selectColumns $fromAndJoin $whereClause ORDER BY a.transaction_date DESC";
 
       final IResultSet result = await connection!.execute(baseQuery, params);
+
       log(
         'Fetched ${result.rows.length} reports for user $username with role $role.',
       );
@@ -365,7 +146,6 @@ class DailyProductionRefineryMySQLService {
     } finally {
       try {
         await closeMySQLConnection(connection);
-        log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
       }
@@ -445,50 +225,114 @@ class DailyProductionRefineryMySQLService {
     }
   }
 
-  Future<bool> updateTicket(DailyProductionRefineryEntity entity) async {
+  Future<bool> updateTicket(
+    List<DailyProductionRefineryEntity> entities,
+    List<int> deletedTicketIds, // List ID yang akan dihapus
+  ) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for updating ticket.');
+        log('(MySQL) Failed to get connection for updating tickets.');
         return false;
       }
 
       connection = connResult.connection;
 
-      final entityData = entity.toMap();
-      final List<String> setClause = [];
-      final Map<String, dynamic> sqlExecuteParams = {};
+      // Mulai Transaksi
+      await connection!.transactional((txn) async {
+        // ---------------------------------------------------------
+        // 1. LOGIKA DELETE (Ditambahkan)
+        // Jalankan ini terlebih dahulu dalam transaksi yang sama
+        // ---------------------------------------------------------
+        if (deletedTicketIds.isNotEmpty) {
+          log('Processing deletions for ${deletedTicketIds.length} items...');
 
-      entityData.forEach((keyInEntityMap, value) {
-        if (keyInEntityMap != 'id') {
-          String actualDbColumnName = keyInEntityMap;
-          String safeParameterName = keyInEntityMap;
+          for (var id in deletedTicketIds) {
+            // Query delete standar
+            final deleteSql =
+                "UPDATE t_daily_production_refinery SET flag = 'D' WHERE ticket_id = :id";
 
-          setClause.add('`$actualDbColumnName` = :$safeParameterName');
-          sqlExecuteParams[safeParameterName] = value;
+            // Eksekusi delete
+            await txn.execute(deleteSql, {"id": id});
+          }
+          log('Deleted IDs: $deletedTicketIds');
+        }
+
+        // ---------------------------------------------------------
+        // 2. LOGIKA UPSERT (INSERT / UPDATE) - Kode Lama Anda
+        // ---------------------------------------------------------
+        for (var item in entities) {
+          // Cek Keberadaan Data
+          final checkSql =
+              "SELECT id FROM t_daily_production_refinery WHERE id = :id AND shift = :shift AND no=:no AND flag != 'D'";
+          final checkResult = await txn.execute(checkSql, {
+            "id": item.id,
+            "shift": item.shift,
+            "no": item.no,
+          });
+
+          bool isExists = checkResult.rows.isNotEmpty;
+
+          // Siapkan Data
+          final Map<String, dynamic> entityData = item.toMap();
+          final Map<String, dynamic> sqlExecuteParams = {};
+
+          if (isExists) {
+            // --- UPDATE ---
+            final List<String> setClause = [];
+
+            entityData.forEach((key, value) {
+              if (key != 'id' && key != 'entry_by' && key != 'entry_date') {
+                String safeParam = "u_$key";
+                setClause.add('`$key` = :$safeParam');
+                sqlExecuteParams[safeParam] = value;
+              }
+            });
+
+            sqlExecuteParams['ticket_id'] = item.ticketId;
+
+            final updateSql =
+                "UPDATE t_daily_production_refinery SET ${setClause.join(', ')} WHERE ticket_id = :ticket_id";
+
+            log('Updating ID: ${item.id}');
+            await txn.execute(updateSql, sqlExecuteParams);
+          } else {
+            // --- INSERT ---
+            List<String> columns = [];
+            List<String> valuesPlaceholder = [];
+
+            entityData.forEach((key, value) {
+              if (value != null) {
+                String safeParam = "i_$key";
+                columns.add('`$key`');
+                valuesPlaceholder.add(':$safeParam');
+                sqlExecuteParams[safeParam] = value;
+              }
+            });
+
+            final insertSql =
+                "INSERT INTO t_daily_production_refinery (${columns.join(', ')}) VALUES (${valuesPlaceholder.join(', ')})";
+
+            log('Inserting New Item ID: ${item.id}');
+            await txn.execute(insertSql, sqlExecuteParams);
+          }
         }
       });
-      sqlExecuteParams['id'] = entity.id;
 
-      final sql =
-          "UPDATE t_daily_production_refinery SET ${setClause.join(', ')} WHERE id = :id";
-
-      log('Generated UPDATE SQL: $sql');
-      log('Params for SQL: $sqlExecuteParams');
-
-      final result = await connection!.execute(sql, sqlExecuteParams);
-      log('ticket updated: ${result.affectedRows} row(s) affected.');
-      // return result.affectedRows > BigInt.from(0);
+      log(
+        'Success transaction: Updated/Inserted ${entities.length}, Deleted ${deletedTicketIds.length}.',
+      );
       return true;
     } catch (e) {
-      log('Error updating report: $e');
+      // Jika ada error pada delete ATAU update/insert, SEMUA akan di-rollback
+      log('Error during updateTicket transaction (Rolled Back): $e');
       return false;
     } finally {
       try {
         await closeMySQLConnection(connection);
       } catch (e) {
-        log('$e');
+        log('Error closing connection: $e');
       }
     }
   }
@@ -498,7 +342,7 @@ class DailyProductionRefineryMySQLService {
     final String username,
     final String status,
     final String userRole,
-    final int shift,
+    final String shift,
     final String? remark,
     final String id,
   ) async {
@@ -518,7 +362,7 @@ class DailyProductionRefineryMySQLService {
 
       if (AppRoles.managerProd.contains(userRole)) {
         sql =
-            "UPDATE t_daily_production_refinery SET verified_by = :username, verified_status = :status, verified_date = :date, checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
+            "UPDATE t_daily_production_refinery SET verified_by = :username, verified_status = :status, verified_date = :date, checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id AND flag != 'D'";
         params = {
           "username": username,
           "status": status,
@@ -528,7 +372,7 @@ class DailyProductionRefineryMySQLService {
         };
       } else if (AppRoles.leadProd.contains(userRole)) {
         sql =
-            "UPDATE t_daily_production_refinery SET prepared_by = :username, prepared_status = :status, prepared_date = :date, prepared_status_remarks = :remark WHERE id = :id";
+            "UPDATE t_daily_production_refinery SET prepared_by = :username, prepared_status = :status, prepared_date = :date, prepared_status_remarks = :remark WHERE id = :id AND flag != 'D'";
         params = {
           "username": username,
           "status": status,
@@ -557,34 +401,69 @@ class DailyProductionRefineryMySQLService {
     String plantCode,
   ) async {
     MySQLConnection? connection;
+
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for get reports for manager.');
+        log('Failed to get MySQL connection for get all reports.');
         return [];
       }
+
       connection = connResult.connection;
-      const sql = """
-        SELECT * FROM t_daily_production_refinery 
-        WHERE prepared_status = 'Approved' AND plant = :plantCode AND (flag IS NULL OR flag = 'T')
-        ORDER BY posting_date DESC
+      String baseQuery;
+      final Map<String, dynamic> params = {};
+
+      String selectColumns = """
+          a.*, 
+          a.oil_type_fg AS oil_type_fg_id,
+          a.oil_type_rm AS oil_type_rm_id,
+          a.bp_oil_type AS bp_oil_type_id,
+          b.raw_material AS oil_type_rm,
+          c.finish_good AS oil_type_fg,
+          d.by_product AS bp_oil_type
       """;
-      final result = await connection!.execute(sql, {"plantCode": plantCode});
-      log("Fetched ${result.rows.length} reports for manager.");
+
+      String fromAndJoin = """
+          FROM t_daily_production_refinery AS a
+          LEFT JOIN m_product AS b ON a.oil_type_rm = b.id
+          LEFT JOIN m_product AS c ON a.oil_type_fg = c.id
+          LEFT JOIN m_product AS d ON a.bp_oil_type = d.id
+      """;
+
+      String whereClause = "";
+
+      whereClause =
+          "WHERE a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')";
+      params["plantCode"] = plantCode;
+
+      baseQuery =
+          "SELECT $selectColumns $fromAndJoin $whereClause ORDER BY a.transaction_date DESC";
+
+      final IResultSet result = await connection!.execute(baseQuery, params);
+
+      // log(
+      //   'Fetched ${result.rows.length} reports for user $username with role $role.',
+      // );
+
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
-      log('Error fetching reports for manager: $e');
+      log('Error fetching all report for manager: $e');
       return [];
     } finally {
       try {
         await closeMySQLConnection(connection);
       } catch (e) {
-        log("$e");
+        log('Error closing connection: $e');
       }
     }
   }
 
-  Future<bool> deleteTicket(String id, String username) async {
+  Future<bool> deleteTicket(
+    String username,
+    String id,
+    String shift,
+    String plant,
+  ) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
@@ -594,15 +473,10 @@ class DailyProductionRefineryMySQLService {
       }
       connection = connResult.connection!;
       final result = await connection.execute(
-        "UPDATE t_daily_production_refinery SET flag = 'D', prepared_by= :username, prepared_status = :prepared_status, prepared_date = :prepared_date WHERE id = :id",
-        {
-          "username": username,
-          "prepared_status": "Deleted",
-          "prepared_date": "${DateTime.now()}",
-          "id": id,
-        },
+        "UPDATE t_daily_production_refinery SET flag = 'D' WHERE id = :id AND plant = :plant AND shift = :shift",
+        {"username": username, "plant": plant, "shift": shift, "id": id},
       );
-      log('Ticket $id terhapus: ${result.affectedRows} row(s) affected.');
+      log('Ticket berhasil dihapus: ${result.affectedRows} row(s) affected.');
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
       log('Error deleting ticket: $e');
@@ -647,49 +521,70 @@ class DailyProductionRefineryMySQLService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getTickets(
+  Future<List<Map<String, dynamic>>> fetchFilteredTickets(
     DateTime? dateFilter,
-    String plantCode, {
-    String? shift = "All",
-  }) async {
+    String plantCode,
+  ) async {
     MySQLConnection? connection;
+
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for getTickets.');
+        log('Failed to get MySQL connection for get all reports.');
         return [];
       }
+
       connection = connResult.connection;
-      String query =
-          "SELECT * FROM t_daily_production_refinery WHERE DATE(posting_date) = :dateFilter AND plant = :plantCode";
+      String baseQuery;
+      final Map<String, dynamic> params = {};
 
-      dateFilter ??= DateTime.now();
+      String selectColumns = """
+          a.*, 
+          a.oil_type_fg AS oil_type_fg_id,
+          a.oil_type_rm AS oil_type_rm_id,
+          a.bp_oil_type AS bp_oil_type_id,
+          b.raw_material AS oil_type_rm,
+          c.finish_good AS oil_type_fg,
+          d.by_product AS bp_oil_type
+      """;
 
-      final Map<String, dynamic> params = {
-        "dateFilter": DateFormat('yyyy-MM-dd').format(dateFilter),
-        "plantCode": plantCode,
-      };
-      log("Params: $params");
+      String fromAndJoin = """
+          FROM t_daily_production_refinery AS a
+          LEFT JOIN m_product AS b ON a.oil_type_rm = b.id
+          LEFT JOIN m_product AS c ON a.oil_type_fg = c.id
+          LEFT JOIN m_product AS d ON a.bp_oil_type = d.id
+      """;
 
-      if (shift != null && shift != "All") {
-        query += " AND shift = :shift";
-        params['shift'] = shift;
+      String whereClause = "";
+
+      whereClause =
+          "WHERE a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')";
+      params["plantCode"] = plantCode;
+
+      if (dateFilter != null) {
+        whereClause += " AND DATE(a.transaction_date) = :reportDate";
+
+        params["reportDate"] = DateFormat('yyyy-MM-dd').format(dateFilter);
       }
-      log("Query: $query");
-      log("Params: $params");
 
-      final IResultSet result = await connection!.execute(query, params);
-      log("PRM Tickets fetched: ${result.rows.length}");
+      baseQuery =
+          "SELECT $selectColumns $fromAndJoin $whereClause ORDER BY a.transaction_date DESC";
+
+      final IResultSet result = await connection!.execute(baseQuery, params);
+
+      // log(
+      //   'Fetched ${result.rows.length} reports for user $username with role $role.',
+      // );
+
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
-      log(
-        "(PRM MySQL) Error getting all pretreatment bleaching filtration tickets: $e",
-      );
+      log('Error fetching all report for manager: $e');
       return [];
     } finally {
-      if (connection != null) {
-        await connection.close();
-        log('(PRM MySQL) MySQL connection closed for getTickets.');
+      try {
+        await closeMySQLConnection(connection);
+      } catch (e) {
+        log('Error closing connection: $e');
       }
     }
   }

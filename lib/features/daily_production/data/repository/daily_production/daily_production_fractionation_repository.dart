@@ -13,8 +13,13 @@ class DailyProductionFractionationRepository {
     return await _mySQLService.insertTicket(entity);
   }
 
-  Future<bool> deleteTicket(String username, String shift, String plant, String transaction_date)async {
-    return await _mySQLService.deleteTicket(username, shift, plant, transaction_date);
+  Future<bool> deleteTicket(
+    String username,
+    String id,
+    String shift,
+    String plant,
+  ) async {
+    return await _mySQLService.deleteTicket(username, id, shift, plant);
   }
 
   // Fetch all Quality Refinery Report
@@ -25,24 +30,23 @@ class DailyProductionFractionationRepository {
     String role,
     String plantCode,
   ) async {
-    try{
-    final List<Map<String, dynamic>> reportsData = await _mySQLService
-        .getAllTickets(dateFilter, time, username, role, plantCode);
+    try {
+      final List<Map<String, dynamic>> reportsData = await _mySQLService
+          .getAllTickets(dateFilter, time, username, role, plantCode);
 
-    log(reportsData.length.toString());
+      log(reportsData.length.toString());
 
-    log('converting to list...');
+      log('converting to list...');
 
-    final List<DailyProductionFractionationEntity> mapToList =
-        reportsData
-            .map((maps) => DailyProductionFractionationEntity.fromMap(maps))
-            .toList();
+      final List<DailyProductionFractionationEntity> mapToList =
+          reportsData
+              .map((maps) => DailyProductionFractionationEntity.fromMap(maps))
+              .toList();
 
-    log('converted ${mapToList.length.toString()}');
+      log('converted ${mapToList.length.toString()}');
 
-    return mapToList;
-    }
-    catch(e){
+      return mapToList;
+    } catch (e) {
       rethrow;
     }
   }
@@ -56,9 +60,10 @@ class DailyProductionFractionationRepository {
   }
 
   Future<bool> updateReportTicket(
-    List<DailyProductionFractionationEntity> report,
+    List<DailyProductionFractionationEntity> entities,
+    List<int> deletedTicketIds,
   ) async {
-    return await _mySQLService.updateTicket(report);
+    return await _mySQLService.updateTicket(entities, deletedTicketIds);
   }
 
   Future<List<DailyProductionFractionationEntity>> getReportsForManager(
@@ -74,14 +79,12 @@ class DailyProductionFractionationRepository {
   }
 
   Future<bool> sendApproveRejectTicket(
-    String username,
-    String status,
-    String userRole,
-    String shift,
-    String? remark,
-    String plant,
-    String transaction_date,
-    String work_center
+    final String username,
+    final String status,
+    final String userRole,
+    final String shift,
+    final String? remark,
+    final String id,
   ) async {
     return await _mySQLService.sendApproveRejectTicket(
       username,
@@ -89,9 +92,7 @@ class DailyProductionFractionationRepository {
       userRole,
       shift,
       remark,
-      plant,
-      transaction_date,
-      work_center
+      id,
     );
   }
 
@@ -116,10 +117,9 @@ class DailyProductionFractionationRepository {
   Future<List<DailyProductionFractionationEntity>> getFilteredTickets(
     DateTime? dateFilter,
     String plantCode,
-    String? shift,
   ) async {
     final List<Map<String, dynamic>> filteredTicketList = await _mySQLService
-        .getTickets(dateFilter, plantCode, shift: shift);
+        .fetchFilteredTickets(dateFilter, plantCode);
 
     List<DailyProductionFractionationEntity> filteredTicketListFromMap =
         filteredTicketList

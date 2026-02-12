@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 
 class DailyProductionRefineryEntity {
-  // General Information
+  // Primary Key (Auto Increment dari Database)
+  final int? ticketId;
+
+  // Grouping Key (Satu tiket bisa memiliki banyak baris dengan ID ini yang sama)
   final String id;
+
+  // General Information
   final String? company;
   final String? plant;
   final DateTime? transactionDate;
   final DateTime? postingDate;
   final String? workCenter;
   final String? shift;
+  final int? no;
   final String? cpoTank;
 
   // Raw Material (RM)
@@ -61,15 +67,6 @@ class DailyProductionRefineryEntity {
   final String? flag;
 
   // Utility Usage (UU)
-  // final String? uuItem;
-  // final String? uuBudgetRefTank;
-  // final String? uuBudgetQty;
-  // final int? uuTotalCpo;
-  // final int? uuTotalSteam;
-  // final String? uuSteamCpo;
-  // final double? uuYieldPercent;
-
-
   final String? uuItem;
   final String? uuBudgetRefTank;
   final double? uuBudgetQty;
@@ -77,7 +74,6 @@ class DailyProductionRefineryEntity {
   final double? uuTotalSteam;
   final double? uuSteamCpo;
   final double? uuYieldPercent;
-
 
   // Approval & Tracking
   String? entryBy;
@@ -102,75 +98,77 @@ class DailyProductionRefineryEntity {
   bool? isCompleted;
 
   DailyProductionRefineryEntity({
+    this.ticketId,
     required this.id,
-    required this.company,
-    required this.plant,
-    required this.transactionDate,
-    required this.postingDate,
-    required this.workCenter,
-    required this.shift,
-    required this.cpoTank,
-    required this.oilTypeRmId,
+    this.company,
+    this.plant,
+    this.transactionDate,
+    this.postingDate,
+    this.workCenter,
+    this.shift,
+    this.no,
+    this.cpoTank,
+    this.oilTypeRmId,
     this.oilTypeRm,
-    required this.oilTypeRmAwalJam,
-    required this.oilTypeRmAwalFlowmeter,
-    required this.oilTypeRmAkhirJam,
-    required this.oilTypeRmAkhirFlowmeter,
-    required this.oilTypeRmTotal,
-    required this.oilTypeRmOip,
-    required this.oilTypeFgId,
+    this.oilTypeRmAwalJam,
+    this.oilTypeRmAwalFlowmeter,
+    this.oilTypeRmAkhirJam,
+    this.oilTypeRmAkhirFlowmeter,
+    this.oilTypeRmTotal,
+    this.oilTypeRmOip,
+    this.oilTypeFgId,
     this.oilTypeFg,
-    required this.oilTypeFgAwalJam,
-    required this.oilTypeFgAwalFlowmeter,
-    required this.oilTypeFgAkhirJam,
-    required this.oilTypeFgAkhirFlowmeter,
-    required this.oilTypeFgTotal,
-    required this.oilTypeFgToTank,
-    required this.oilTypeBpId,
+    this.oilTypeFgAwalJam,
+    this.oilTypeFgAwalFlowmeter,
+    this.oilTypeFgAkhirJam,
+    this.oilTypeFgAkhirFlowmeter,
+    this.oilTypeFgTotal,
+    this.oilTypeFgToTank,
+    this.oilTypeBpId,
     this.oilTypeBp,
-    required this.bpAwalJam,
-    required this.bpAwalFlowmeter,
-    required this.bpAkhirJam,
-    required this.bpAkhirFlowmeter,
-    required this.bpTotal,
-    required this.bpToTank,
-    required this.beRefTank,
-    required this.beRefQty,
-    required this.beTotalBag,
-    required this.beTotalJenis,
-    required this.beLotBatchNumber,
-    required this.beYieldPercent,
-    required this.paRefTank,
-    required this.paRefQty,
-    required this.paTotal,
-    required this.paLotBatchNumber,
-    required this.paYieldPercent,
-    required this.remarks,
-    required this.flag,
-    required this.uuItem,
-    required this.uuBudgetRefTank,
-    required this.uuBudgetQty,
-    required this.uuTotalCpo,
-    required this.uuTotalSteam,
-    required this.uuSteamCpo,
-    required this.uuYieldPercent,
-    required this.entryBy,
-    required this.entryDate,
-    required this.preparedBy,
-    required this.preparedDate,
-    required this.preparedStatus,
-    required this.verifiedBy,
-    required this.verifiedDate,
-    required this.verifiedStatus,
-    required this.checkedBy,
-    required this.checkedDate,
-    required this.checkedStatus,
-    required this.checkedStatusRemarks,
-    required this.formNo,
-    required this.dateIssued,
-    required this.revisionNo,
-    required this.revisionDate,
-    required this.isCompleted,
+    this.bpAwalJam,
+    this.bpAwalFlowmeter,
+    this.bpAkhirJam,
+    this.bpAkhirFlowmeter,
+    this.bpTotal,
+    this.bpToTank,
+    this.beRefTank,
+    this.beRefQty,
+    this.beTotalBag,
+    this.beTotalJenis,
+    this.beLotBatchNumber,
+    this.beYieldPercent,
+    this.paRefTank,
+    this.paRefQty,
+    this.paTotal,
+    this.paLotBatchNumber,
+    this.paYieldPercent,
+    this.remarks,
+    this.flag,
+    this.uuItem,
+    this.uuBudgetRefTank,
+    this.uuBudgetQty,
+    this.uuTotalCpo,
+    this.uuTotalSteam,
+    this.uuSteamCpo,
+    this.uuYieldPercent,
+    this.entryBy,
+    this.entryDate,
+    this.preparedBy,
+    this.preparedDate,
+    this.preparedStatus,
+    this.verifiedBy,
+    this.verifiedDate,
+    this.verifiedStatus,
+    this.checkedBy,
+    this.checkedDate,
+    this.checkedStatus,
+    this.checkedStatusRemarks,
+    this.formNo,
+    this.dateIssued,
+    this.revisionNo,
+    this.revisionDate,
+    this.isCompleted,
   });
 
   factory DailyProductionRefineryEntity.fromMap(Map<String, dynamic> map) {
@@ -218,13 +216,15 @@ class DailyProductionRefineryEntity {
     }
 
     return DailyProductionRefineryEntity(
-      id: map['id'] as String,
+      ticketId: parseInt(map['ticket_id']), // Primary Key Baru
+      id: map['id'] as String, // Grouping Key
       company: map['company'] as String?,
       plant: map['plant'] as String?,
       transactionDate: parseDateTime(map['transaction_date']),
       postingDate: parseDateTime(map['posting_date']),
       workCenter: map['work_center'] as String?,
       shift: map['shift'] as String?,
+      no: parseInt(map['no']),
       cpoTank: map['cpo_tank'] as String?,
       oilTypeRmId: map['oil_type_rm_id'] as String?,
       oilTypeRm: map['oil_type_rm'] as String?,
@@ -265,10 +265,6 @@ class DailyProductionRefineryEntity {
       flag: map['flag'] as String?,
       uuItem: map['uu_item'] as String?,
       uuBudgetRefTank: map['uu_budget_ref_tank'] as String?,
-      // uuBudgetQty: map['uu_budget_qty'] as String?,
-      // uuTotalCpo: parseInt(map['uu_total_cpo']),
-      // uuTotalSteam: parseInt(map['uu_total_steam']),
-      // uuSteamCpo: map['uu_steam_cpo'] as String?,
       uuBudgetQty: parseDouble(map['uu_budget_qty']),
       uuTotalCpo: parseDouble(map['uu_total_cpo']),
       uuTotalSteam: parseDouble(map['uu_total_steam']),
@@ -296,23 +292,22 @@ class DailyProductionRefineryEntity {
 
   Map<String, dynamic> toMap() {
     String? formatTimeOfDay(TimeOfDay? time) {
-      if (time == null) {
-        return null;
-      }
-      // padLeft ensures that single-digit hours/minutes get a leading zero (e.g., 9 becomes '09')
+      if (time == null) return null;
       final hour = time.hour.toString().padLeft(2, '0');
       final minute = time.minute.toString().padLeft(2, '0');
-      return '$hour:$minute:00'; // We add ':00' for seconds to match the standard TIME format
+      return '$hour:$minute:00';
     }
 
     return {
-      'id': id,
+      // 'ticket_id': ticketId, // Tidak perlu disertakan saat insert karena auto increment
+      'id': id, // Grouping Key
       'company': company,
       'plant': plant,
       'transaction_date': transactionDate?.toIso8601String(),
       'posting_date': postingDate?.toIso8601String(),
       'work_center': workCenter,
       'shift': shift,
+      'no': no,
       'cpo_tank': cpoTank,
       'oil_type_rm': oilTypeRmId,
       'oil_type_rm_awal_jam': formatTimeOfDay(oilTypeRmAwalJam),
@@ -375,6 +370,7 @@ class DailyProductionRefineryEntity {
   }
 
   DailyProductionRefineryEntity copyWith({
+    int? ticketId,
     String? id,
     String? company,
     String? plant,
@@ -382,6 +378,7 @@ class DailyProductionRefineryEntity {
     DateTime? postingDate,
     String? workCenter,
     String? shift,
+    int? no,
     String? cpoTank,
     String? oilTypeRmId,
     String? oilTypeRm,
@@ -422,10 +419,6 @@ class DailyProductionRefineryEntity {
     String? flag,
     String? uuItem,
     String? uuBudgetRefTank,
-    // String? uuBudgetQty,
-    // int? uuTotalCpo,
-    // int? uuTotalSteam,
-    // String? uuSteamCpo,
     double? uuBudgetQty,
     double? uuTotalCpo,
     double? uuTotalSteam,
@@ -450,6 +443,7 @@ class DailyProductionRefineryEntity {
     bool? isCompleted,
   }) {
     return DailyProductionRefineryEntity(
+      ticketId: ticketId ?? this.ticketId,
       id: id ?? this.id,
       company: company ?? this.company,
       plant: plant ?? this.plant,
@@ -457,25 +451,22 @@ class DailyProductionRefineryEntity {
       postingDate: postingDate ?? this.postingDate,
       workCenter: workCenter ?? this.workCenter,
       shift: shift ?? this.shift,
+      no: no ?? this.no,
       cpoTank: cpoTank ?? this.cpoTank,
       oilTypeRmId: oilTypeRmId ?? this.oilTypeRmId,
       oilTypeRm: oilTypeRm ?? this.oilTypeRm,
       oilTypeRmAwalJam: oilTypeRmAwalJam ?? this.oilTypeRmAwalJam,
-      oilTypeRmAwalFlowmeter:
-          oilTypeRmAwalFlowmeter ?? this.oilTypeRmAwalFlowmeter,
+      oilTypeRmAwalFlowmeter: oilTypeRmAwalFlowmeter ?? this.oilTypeRmAwalFlowmeter,
       oilTypeRmAkhirJam: oilTypeRmAkhirJam ?? this.oilTypeRmAkhirJam,
-      oilTypeRmAkhirFlowmeter:
-          oilTypeRmAkhirFlowmeter ?? this.oilTypeRmAkhirFlowmeter,
+      oilTypeRmAkhirFlowmeter: oilTypeRmAkhirFlowmeter ?? this.oilTypeRmAkhirFlowmeter,
       oilTypeRmOip: oilTypeRmOip ?? this.oilTypeRmOip,
       oilTypeRmTotal: oilTypeRmTotal ?? this.oilTypeRmTotal,
       oilTypeFgId: oilTypeFgId ?? this.oilTypeFgId,
       oilTypeFg: oilTypeFg ?? this.oilTypeFg,
       oilTypeFgAwalJam: oilTypeFgAwalJam ?? this.oilTypeFgAwalJam,
-      oilTypeFgAwalFlowmeter:
-          oilTypeFgAwalFlowmeter ?? this.oilTypeFgAwalFlowmeter,
+      oilTypeFgAwalFlowmeter: oilTypeFgAwalFlowmeter ?? this.oilTypeFgAwalFlowmeter,
       oilTypeFgAkhirJam: oilTypeFgAkhirJam ?? this.oilTypeFgAkhirJam,
-      oilTypeFgAkhirFlowmeter:
-          oilTypeFgAkhirFlowmeter ?? this.oilTypeFgAkhirFlowmeter,
+      oilTypeFgAkhirFlowmeter: oilTypeFgAkhirFlowmeter ?? this.oilTypeFgAkhirFlowmeter,
       oilTypeFgTotal: oilTypeFgTotal ?? this.oilTypeFgTotal,
       oilTypeFgToTank: oilTypeFgToTank ?? this.oilTypeFgToTank,
       oilTypeBpId: oilTypeBpId ?? this.oilTypeBpId,
@@ -517,11 +508,11 @@ class DailyProductionRefineryEntity {
       checkedBy: checkedBy ?? this.checkedBy,
       checkedDate: checkedDate ?? this.checkedDate,
       checkedStatus: checkedStatus ?? this.checkedStatus,
+      checkedStatusRemarks: checkedStatusRemarks ?? this.checkedStatusRemarks,
       formNo: formNo ?? this.formNo,
       dateIssued: dateIssued ?? this.dateIssued,
       revisionNo: revisionNo ?? this.revisionNo,
       revisionDate: revisionDate ?? this.revisionDate,
-      checkedStatusRemarks: checkedStatusRemarks ?? this.checkedStatusRemarks,
       isCompleted: isCompleted ?? this.isCompleted,
     );
   }

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 
 class CustomDateField extends StatelessWidget {
@@ -20,6 +22,7 @@ class CustomDateField extends StatelessWidget {
   Widget build(BuildContext context) {
     if (controller.text.isEmpty) {
       final now = DateTime.now();
+
       controller.text = "${now.day}-${now.month}-${now.year}";
     }
     return GestureDetector(
@@ -37,6 +40,8 @@ class CustomDateField extends StatelessWidget {
                   lastDate: isLimitDate ? DateTime.now() : DateTime(2100),
                 );
                 if (picked != null) {
+                  final now = DateTime.now();
+                  log("ini tanggal $now");
                   controller.text =
                       "${picked.day}-${picked.month}-${picked.year}";
                 }

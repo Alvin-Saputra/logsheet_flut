@@ -9,12 +9,17 @@ class DailyProductionRefineryRepository {
   DailyProductionRefineryRepository(this._mySQLService);
 
   // Insert Ticket
-  Future<bool> insert(DailyProductionRefineryEntity entity) async {
+  Future<bool> insert(List<DailyProductionRefineryEntity> entity) async {
     return await _mySQLService.insertTicket(entity);
   }
 
-  Future<bool> deleteTicket(String id, String username) async {
-    return await _mySQLService.deleteTicket(id, username);
+  Future<bool> deleteTicket(
+    String username,
+    String id,
+    String shift,
+    String plant,
+  ) async {
+    return await _mySQLService.deleteTicket(username, id, shift, plant);
   }
 
   // Fetch all Quality Refinery Report
@@ -50,8 +55,11 @@ class DailyProductionRefineryRepository {
     return await _mySQLService.updateAutoNumber(plantCode, newAutoNumber);
   }
 
-  Future<bool> updateReportTicket(DailyProductionRefineryEntity report) async {
-    return await _mySQLService.updateTicket(report);
+  Future<bool> updateReportTicket(
+    List<DailyProductionRefineryEntity> entities,
+    List<int> deletedTicketIds,
+  ) async {
+    return await _mySQLService.updateTicket(entities, deletedTicketIds);
   }
 
   Future<List<DailyProductionRefineryEntity>> getReportsForManager(
@@ -70,7 +78,7 @@ class DailyProductionRefineryRepository {
     String username,
     String status,
     String userRole,
-    int shift,
+    String shift,
     String? remark,
     String id,
   ) async {
@@ -105,10 +113,9 @@ class DailyProductionRefineryRepository {
   Future<List<DailyProductionRefineryEntity>> getFilteredTickets(
     DateTime? dateFilter,
     String plantCode,
-    String? shift,
   ) async {
     final List<Map<String, dynamic>> filteredTicketList = await _mySQLService
-        .getTickets(dateFilter, plantCode, shift: shift);
+        .fetchFilteredTickets(dateFilter, plantCode);
 
     List<DailyProductionRefineryEntity> filteredTicketListFromMap =
         filteredTicketList

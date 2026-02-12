@@ -94,57 +94,6 @@ class _DailyProductionFractionationDetailPageState
     );
   }
 
-  Widget CustomSectionCardData(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 150, // Adjusted width for potentially longer labels
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF655F5B),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(value, style: const TextStyle(color: Colors.black54)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget CustomSectionCard(String title, List<Widget> children) {
-    return Card(
-      color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: Color(0xFF655F5B),
-              ),
-            ),
-            const SizedBox(height: 12),
-            ...children,
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().currentUser;
@@ -259,6 +208,7 @@ class _DailyProductionFractionationDetailPageState
                 'Plant',
                 _displayValue(_listCurrentReport[0].plant),
               ),
+              CustomSectionCardData('Ticket ID', _listCurrentReport[0].id),
             ]),
 
             CustomSectionCard('Detail Data', [
@@ -290,10 +240,7 @@ class _DailyProductionFractionationDetailPageState
                   return Column(
                     children: [
                       SizedBox(height: 12.0),
-                      CustomSectionCardData(
-                        'Ticket ID',
-                        _listCurrentReport[pageIndex].id,
-                      ),
+
                       SizedBox(height: 12.0),
                       CustomSectionCard('Raw Material (RM)', [
                         CustomSectionCardData(
@@ -629,7 +576,7 @@ class _DailyProductionFractionationDetailPageState
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: ElevatedButton(
                             onPressed: () {
-                             _showApprovedRejectedBottomSheet(
+                              _showApprovedRejectedBottomSheet(
                                 context,
                                 false,
                                 shift,
@@ -711,13 +658,9 @@ class _DailyProductionFractionationDetailPageState
                     onPressed: () async {
                       final result = await provider.deleteTicketById(
                         userProvider.currentUser?.username ?? "",
+                        _listCurrentReport[0].id,
                         _listCurrentReport[0].shift ?? "",
                         _listCurrentReport[0].plant ?? "",
-                        formatDatetoString(
-                              _listCurrentReport[0].transactionDate,
-                              'yyyy-MM-dd HH:mm:ss',
-                            ) ??
-                            "",
                       );
 
                       if (result) {
@@ -788,15 +731,10 @@ class _DailyProductionFractionationDetailPageState
                           user.username,
                           isApproved ? "Approved" : "Rejected",
                           user.role,
-                          _listCurrentReport[0].shift ?? "",
+                          shift,
                           isApproved ? null : _remarkController.text,
-                          _listCurrentReport[0].plant ?? "",
-                          formatDatetoString(
-                                _listCurrentReport[0].transactionDate,
-                                'yyyy-MM-dd HH:mm:ss',
-                              ) ??
-                              "",
-                          _listCurrentReport[0].workCenter ?? "",
+                          _listCurrentReport[0].plant!,
+                          _listCurrentReport[0].id,
                         );
 
                     if (result) {

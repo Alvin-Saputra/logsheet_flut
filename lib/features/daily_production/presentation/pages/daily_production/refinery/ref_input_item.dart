@@ -1,35 +1,35 @@
 import 'package:flutter/material.dart';
 
-class FractionationInputItem {
-  // --- SECTION 1: RM (RBDPO/ROL/RPS) ---
+class RefineryInputItem {
 
+  //  ------ Rm Section -------
   final TextEditingController flowAwalRm = TextEditingController();
   final TextEditingController flowAkhirRm = TextEditingController();
   final TextEditingController flowTotalRm = TextEditingController();
+  final TextEditingController oipRm = TextEditingController();
   String? selectedTankRm;
   String? selectedOilRm;
-  String? selectedCrystallizerRm;
   TimeOfDay? timeAwalRm;
   TimeOfDay? timeAkhirRm;
   bool? showRM;
+  // bool? isUseLastTankRm = false;
 
-  // --- SECTION 2: FG (OLEIN/SOLEIN) ---
+  // ---- Finish good section ----
   final TextEditingController flowAwalFg = TextEditingController();
   final TextEditingController flowAkhirFg = TextEditingController();
   final TextEditingController flowTotalFg = TextEditingController();
   String? selectedTankFg;
-  String? selectedCrystallizerFg;
-  String? selectedOilFg; // Jika setiap baris bisa beda product
+  String? selectedOilFg;
   TimeOfDay? timeAwalFg;
   TimeOfDay? timeAkhirFg;
   bool? showFG;
 
-  // --- SECTION 3: BP (STEARIN/PMF) ---
+  // ---- By Product section ----
   final TextEditingController flowAwalBp = TextEditingController();
   final TextEditingController flowAkhirBp = TextEditingController();
   final TextEditingController flowTotalBp = TextEditingController();
   String? selectedTankBp;
-  String? selectedOilBp; // Jika setiap baris bisa beda by-product
+  String? selectedOilBp;
   TimeOfDay? timeAwalBp;
   TimeOfDay? timeAkhirBp;
   bool? showBP;
@@ -38,7 +38,7 @@ class FractionationInputItem {
   int? existingNo;
   int? ticketId;
 
-  FractionationInputItem({
+  RefineryInputItem({
     this.showRM = true,
     this.showFG = true,
     this.showBP = true,

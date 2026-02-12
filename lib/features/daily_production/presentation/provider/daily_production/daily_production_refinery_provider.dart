@@ -88,7 +88,7 @@ class DailyProductionRefineryProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> insertTicket(DailyProductionRefineryEntity entity) async {
+  Future<bool> insertTicket(List<DailyProductionRefineryEntity> entity) async {
     _setLoading(true);
     _setErrorMessage(null);
 
@@ -114,15 +114,25 @@ class DailyProductionRefineryProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> deleteTicketById(String id, String username) async {
+  Future<bool> deleteTicketById(
+    String username,
+    String id,
+    String shift,
+    String plant,
+  ) async {
     _setLoadingDelete(true);
     _setErrorMessage(null);
     try {
-      final response = await _repository.deleteTicket(id, username);
+      final response = await _repository.deleteTicket(
+        username,
+        id,
+        shift,
+        plant,
+      );
       log("Quality Refinery Provider deleteTicketById response: $response");
       _setLoadingDelete(false);
 
-      _reportsList.removeWhere((element) => element.id == id);
+      // _reportsList.removeWhere((element) => element.id == id);
       notifyListeners();
 
       return response;
@@ -214,16 +224,17 @@ class DailyProductionRefineryProvider with ChangeNotifier {
   }
 
   Future<bool> updateReport(
-    DailyProductionRefineryEntity report,
+    List<DailyProductionRefineryEntity> entities,
     String username,
     String role,
     String plantCode,
+    List<int> deletedTicketIds,
   ) async {
     _setLoading(true);
     _setErrorMessage(null);
     try {
       log('Updating report...');
-      final result = await _repository.updateReportTicket(report);
+      final result = await _repository.updateReportTicket(entities, deletedTicketIds);
       log(result.toString());
       await fetchAllTickets(null, null, username, role, plantCode);
       await Future.delayed(const Duration(milliseconds: 300));
@@ -240,7 +251,7 @@ class DailyProductionRefineryProvider with ChangeNotifier {
     String username,
     String status,
     String userRole,
-    int shift,
+    String shift,
     String? remark,
     String id,
     String plantCode,
@@ -286,7 +297,6 @@ class DailyProductionRefineryProvider with ChangeNotifier {
   Future<void> fetchFilteredTickets(
     DateTime? dateFilter,
     String plantCode,
-    String? shift,
   ) async {
     _setLoadingFilterTicket(true);
     _setErrorMessage(null);
@@ -295,7 +305,6 @@ class DailyProductionRefineryProvider with ChangeNotifier {
       _filteredTickets = await _repository.getFilteredTickets(
         dateFilter,
         plantCode,
-        shift,
       );
       notifyListeners();
     } catch (e) {

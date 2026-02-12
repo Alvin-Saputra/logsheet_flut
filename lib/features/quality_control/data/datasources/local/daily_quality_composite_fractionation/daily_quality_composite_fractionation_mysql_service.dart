@@ -10,27 +10,26 @@ class DailyQualityCompositeFractionationMysqlService {
       "t_daily_quality_composite_fractionation";
 
   Future<Map<String, dynamic>> insertDailyQualityCompositeFractionationReport({
-  required DailyQualityCompositeFractionationEntity report,
-  required String date,
-  required String time,
-  required String workCenter,
-}) async {
-  MySQLConnection? connection;
+    required DailyQualityCompositeFractionationEntity report,
+    required String date,
+    required String time,
+    required String workCenter,
+  }) async {
+    MySQLConnection? connection;
 
-  try {
-    final connResult = await getMySQLConnection();
-    if (connResult.connection == null) {
-      log('Failed to get MySQL connection for insertDailyQualityCompositeFractionationReport');
-      return {
-        "success": false,
-        "message": "Gagal terhubung ke database",
-      };
-    }
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log(
+          'Failed to get MySQL connection for insertDailyQualityCompositeFractionationReport',
+        );
+        return {"success": false, "message": "Gagal terhubung ke database"};
+      }
 
-    connection = connResult.connection!;
+      connection = connResult.connection!;
 
-    // 🔎 Check duplicate
-    final String checkSql = """
+      // 🔎 Check duplicate
+      final String checkSql = """
       SELECT COUNT(*) as count 
       FROM $dailyQualityCompositeFractionationTable 
       WHERE work_center = :wc 
@@ -38,62 +37,62 @@ class DailyQualityCompositeFractionationMysqlService {
         AND time = :time
     """;
 
-    final IResultSet checkResult = await connection.execute(checkSql, {
-      "wc": workCenter,
-      "date": date,
-      "time": time,
-    });
-
-    final int existingCount =
-        int.tryParse(checkResult.rows.first.assoc()['count']?.toString() ?? '0') ?? 0;
-
-    if (existingCount > 0) {
-      log(
-        'Validation Failed: Duplicate entry found for '
-        'WorkCenter: $workCenter, Date: $date, Time: $time',
-      );
-      return {
-        "success": false,
-        "message": "Data dengan Work Center, tanggal, dan jam yang sama sudah ada",
-      };
-    }
-
-    // 🧾 Transaction
-    await connection.transactional((_) async {
-      final Map<String, dynamic> reportMap = report.toMap();
-      final List<String> reportColumns = [];
-      final List<String> reportParams = [];
-      final Map<String, dynamic> reportSqlParams = {};
-
-      reportMap.forEach((key, value) {
-        reportColumns.add('`$key`');
-        reportParams.add(':$key');
-        reportSqlParams[key] = value;
+      final IResultSet checkResult = await connection.execute(checkSql, {
+        "wc": workCenter,
+        "date": date,
+        "time": time,
       });
 
-      final String reportSql =
-          'INSERT INTO $dailyQualityCompositeFractionationTable '
-          '(${reportColumns.join(', ')}) '
-          'VALUES (${reportParams.join(', ')})';
+      final int existingCount =
+          int.tryParse(
+            checkResult.rows.first.assoc()['count']?.toString() ?? '0',
+          ) ??
+          0;
 
-      await connection!.execute(reportSql, reportSqlParams);
-    });
+      if (existingCount > 0) {
+        log(
+          'Validation Failed: Duplicate entry found for '
+          'WorkCenter: $workCenter, Date: $date, Time: $time',
+        );
+        return {
+          "success": false,
+          "message":
+              "Data dengan Work Center, tanggal, dan jam yang sama sudah ada",
+        };
+      }
 
-    return {
-      "success": true,
-      "message": "Data berhasil disimpan",
-    };
-  } catch (e) {
-    log('Error in insertDailyQualityCompositeFractionation: $e');
-    return {
-      "success": false,
-      "message": "Terjadi kesalahan saat menyimpan data",
-    };
-  } finally {
-    await connection?.close();
+      // 🧾 Transaction
+      await connection.transactional((_) async {
+        final Map<String, dynamic> reportMap = report.toMap();
+        final List<String> reportColumns = [];
+        final List<String> reportParams = [];
+        final Map<String, dynamic> reportSqlParams = {};
+
+        reportMap.forEach((key, value) {
+          reportColumns.add('`$key`');
+          reportParams.add(':$key');
+          reportSqlParams[key] = value;
+        });
+
+        final String reportSql =
+            'INSERT INTO $dailyQualityCompositeFractionationTable '
+            '(${reportColumns.join(', ')}) '
+            'VALUES (${reportParams.join(', ')})';
+
+        await connection!.execute(reportSql, reportSqlParams);
+      });
+
+      return {"success": true, "message": "Data berhasil disimpan"};
+    } catch (e) {
+      log('Error in insertDailyQualityCompositeFractionation: $e');
+      return {
+        "success": false,
+        "message": "Terjadi kesalahan saat menyimpan data",
+      };
+    } finally {
+      await connection?.close();
+    }
   }
-}
-
 
   Future<bool> updateAutoNumber(String plantCode, int newAutoNumber) async {
     MySQLConnection? connection;
@@ -202,13 +201,13 @@ class DailyQualityCompositeFractionationMysqlService {
 
       // 3. Initialize dynamic parameters map
       Map<String, dynamic> params = {};
-
+      params['startDateTimeStr'] = dbFormatter.format(startDateTime);
+      params['endDateTimeStr'] = dbFormatter.format(endDateTime);
+      
       if (AppRoles.leadQC.contains(role)) {
         // --- LEAD QC QUERY (Shift Based: 08:00 - 08:00) ---
 
         // Add time-specific parameters to the map
-        params['startDateTimeStr'] = dbFormatter.format(startDateTime);
-        params['endDateTimeStr'] = dbFormatter.format(endDateTime);
 
         baseQuery = """
           SELECT 
@@ -239,7 +238,6 @@ class DailyQualityCompositeFractionationMysqlService {
 
         // Add standard parameter
 
-
         baseQuery = """
           SELECT *
           FROM t_daily_quality_composite_fractionation AS a
@@ -264,7 +262,6 @@ class DailyQualityCompositeFractionationMysqlService {
           AND a.flag = 'T'
           AND a.work_center = 'FRAC-02'
         """;
-
       }
 
       // 4. Pass the dynamic 'params' map instead of the hardcoded map

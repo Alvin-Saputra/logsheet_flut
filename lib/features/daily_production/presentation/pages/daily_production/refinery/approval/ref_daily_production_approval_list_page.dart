@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/features/daily_production/data/model/daily_production/daily_production_refinery_entity.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
+// Pastikan import Detail Page untuk Approval sudah benar
 import 'package:logsheet_app/features/daily_production/presentation/pages/daily_production/refinery/approval/ref_daily_production_approval_detail_page.dart';
 import 'package:logsheet_app/features/daily_production/presentation/provider/daily_production/daily_production_refinery_provider.dart';
-import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class DailyProductionRefineryApprovalListPage extends StatefulWidget {
@@ -23,222 +24,227 @@ class _DailyProductionRefineryApprovalListPageState
   @override
   void initState() {
     super.initState();
-    // Fetch data when the page loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchData();
+    });
+  }
+
+  void _fetchData() {
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context
-          .read<DailyProductionRefineryProvider>()
-          .fetchReportsForManager(plantCode),
-    );
+    
+    // Fetch Data
+    context
+        .read<DailyProductionRefineryProvider>()
+        .fetchReportsForManager(plantCode);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Find the form number details for the app bar title
-    try {
-      formRefinery = context
-          .read<DataFormNoProvider>()
-          .dataFormNoList
-          .firstWhere(
-            (form) =>
-                form.isMenu == "Daily_Production_Refinery" &&
-                form.isActive == "T",
-          );
-    } catch (e) {
-      formRefinery = null; // Handle case where form is not found
-    }
-    return Scaffold(appBar: _buildAppBar(), body: _buildBody());
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Refinery Approval List"),
+        actions: [
+          IconButton(onPressed: _fetchData, icon: const Icon(Icons.refresh)),
+        ],
+      ),
+      body: _buildBody(),
+    );
   }
 
-  AppBar _buildAppBar() =>
-      AppBar(title: Text("Refinery Approval (${formRefinery?.code ?? 'N/A'})"));
-
   Widget _buildBody() {
+    // 1. Tentukan Role User
+    final currentUser = context.watch<UserProvider>().currentUser;
+    final String userRole = currentUser?.role ?? "";
+
+    final bool isManager = userRole.contains("MGR_PROD") || userRole.contains("MGR");
+
     return Consumer<DailyProductionRefineryProvider>(
       builder: (context, provider, child) {
-        // Loading State
         if (provider.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        // Error State
-        if (provider.errorMessage != null) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Error: ${provider.errorMessage!}',
-                    style: const TextStyle(color: Colors.red, fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  OutlinedButton(
-                    onPressed: _refreshData,
-                    child: const Text("Refresh"),
-                  ),
-                ],
-              ),
-            ),
-          );
+        List<DailyProductionRefineryEntity> rawList = provider.reportsForManager;
+
+        if (rawList.isEmpty) {
+          return const Center(child: Text("No data needing approval"));
         }
 
-        // Empty State
-        if (provider.reportsForManager.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'No data available for approval',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 8),
-                  OutlinedButton(
-                    onPressed: _refreshData,
-                    child: const Text("Refresh"),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
+        // ============================================================
+        // GROUPING LOGIC
+        // ============================================================
+        Map<String, List<DailyProductionRefineryEntity>> ticketMap = {};
 
-        // Grouping the reports by date and work center
-        final allReports = provider.reportsForManager;
-        final Map<String, List<DailyProductionRefineryEntity>> groupedReports =
-            {};
-
-        for (var report in allReports) {
-          if (report.postingDate != null && report.workCenter != null) {
-            final dateKey = DateFormat(
-              'yyyy-MM-dd',
-            ).format(report.postingDate!);
-            final compositeKey = "$dateKey|${report.workCenter}";
-            groupedReports.putIfAbsent(compositeKey, () => []).add(report);
+        for (var item in rawList) {
+          if (!ticketMap.containsKey(item.id)) {
+            ticketMap[item.id] = [];
           }
+          ticketMap[item.id]!.add(item);
         }
 
-        // Sort keys to show the most recent dates first
-        final List<String> groupKeys = groupedReports.keys.toList();
-        groupKeys.sort((a, b) => b.compareTo(a));
+        var allTickets = ticketMap.values.toList();
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: ListView.builder(
-            itemCount: groupKeys.length,
-            itemBuilder: (context, index) {
-              final compositeKey = groupKeys[index];
-              final reportsForGroup = groupedReports[compositeKey]!;
-              final keyParts = compositeKey.split('|');
-              final date = keyParts[0];
-              final workCenter = keyParts[1];
+        // Sort by Date Descending
+        allTickets.sort((a, b) {
+          DateTime dateA = a.first.transactionDate ?? DateTime(2000);
+          DateTime dateB = b.first.transactionDate ?? DateTime(2000);
+          return dateB.compareTo(dateA);
+        });
 
-              // --- Approval Logic ---
-              // Assumption: A day is ready for approval if all 3 shifts are present
-              // and have been prepared ('Approved' by the previous role).
-              const int requiredShifts = 3;
-              final shifts = reportsForGroup.map((r) => r.shift).toSet();
-              final isReadyForApproval =
-                  reportsForGroup.length >= requiredShifts &&
-                  shifts.contains('1') &&
-                  shifts.contains('2') &&
-                  shifts.contains('3') &&
-                  reportsForGroup.every((r) => r.preparedStatus == "Approved");
+        return ListView.builder(
+          padding: const EdgeInsets.all(8),
+          itemCount: allTickets.length,
+          itemBuilder: (context, index) {
+            List<DailyProductionRefineryEntity> thisTicketRows = allTickets[index];
+            final headerData = thisTicketRows.first;
 
-              final isApprovedForDay = reportsForGroup.every(
-                (r) => r.checkedStatus == 'Approved',
-              );
-              final isRejectedForDay = reportsForGroup.any(
-                (r) => r.checkedStatus == 'Rejected',
-              );
-
-              // --- Card UI Logic ---
-              Color cardColor = Colors.white;
-              IconData icon = Icons.hourglass_bottom_rounded;
-              Color iconColor = Colors.grey[700]!;
-              String statusText = 'Shift Belum Lengkap';
-
-              if (isReadyForApproval) {
-                cardColor = Colors.white;
-                icon = Icons.pending_actions_rounded;
-                iconColor = Colors.blue;
-                statusText = 'Pending Approval';
+            // Grouping per Shift
+            Map<String, List<DailyProductionRefineryEntity>> shiftMap = {};
+            for (var item in thisTicketRows) {
+              String shiftKey = item.shift ?? "Unknown";
+              if (!shiftMap.containsKey(shiftKey)) {
+                shiftMap[shiftKey] = [];
               }
+              shiftMap[shiftKey]!.add(item);
+            }
+            var sortedShiftKeys = shiftMap.keys.toList()..sort();
 
-              if (isApprovedForDay) {
-                cardColor = Colors.green[50]!;
-                icon = Icons.check_circle_rounded;
-                iconColor = Colors.green;
-                statusText = 'Approved';
-              } else if (isRejectedForDay) {
-                cardColor = Colors.red[50]!;
-                icon = Icons.cancel_rounded;
-                iconColor = Colors.red;
-                statusText = 'Rejected';
-              }
+            String titleDate = headerData.transactionDate != null
+                ? DateFormat('dd MMM yyyy').format(headerData.transactionDate!)
+                : "-";
+            String titleWC = headerData.workCenter ?? "-";
 
-              return Card(
-                color: cardColor,
-                child: ListTile(
-                  leading: Icon(icon, color: iconColor),
-                  title: Text(
-                    'Date: $date',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    'Work Center: $workCenter\nStatus: $statusText',
-                    style: TextStyle(color: iconColor, height: 1.4),
-                  ),
-                  onTap: () {
-                    if (isReadyForApproval) {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder:
-                              (context) =>
-                                  DailyProductionRefineryApprovalDetailPage(
-                                    reportEntities: reportsForGroup,
-                                    reportIdentifier: compositeKey,
-                                  ),
-                        ),
-                      );
-                    } else if (isApprovedForDay) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'This group has already been approved.',
-                          ),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'All shifts must be prepared before approval.',
-                          ),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  },
+            // Status Global Tiket (untuk warna icon)
+            bool hasRejection = thisTicketRows.any(
+              (e) => e.preparedStatus == "Rejected" || e.checkedStatus == "Rejected",
+            );
+
+            return Card(
+              elevation: 2,
+              margin: const EdgeInsets.only(bottom: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: hasRejection
+                    ? const BorderSide(color: Colors.red, width: 1)
+                    : BorderSide.none,
+              ),
+              child: ExpansionTile(
+                leading: Icon(
+                  Icons.verified_user,
+                  color: hasRejection ? Colors.red : Colors.orange,
                 ),
-              );
-            },
-          ),
+                title: Text(
+                  "${headerData.id}",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text("$titleDate • WC: $titleWC"),
+                childrenPadding: const EdgeInsets.all(8),
+                children: sortedShiftKeys.map((shiftKey) {
+                  List<DailyProductionRefineryEntity> itemsInThisShift = shiftMap[shiftKey]!;
+                  var repItem = itemsInThisShift.first;
+
+                  // Status Helper Booleans
+                  bool isPrepared = repItem.preparedStatus == "Approved";
+                  bool isChecked = repItem.checkedStatus == "Approved";
+                  bool isRejected = repItem.preparedStatus == "Rejected" ||
+                      repItem.checkedStatus == "Rejected";
+
+                  // Cek apakah Lead belum melakukan apa-apa (Null)
+                  bool isLeadPending = repItem.preparedStatus == null;
+
+                  return ListTile(
+                    leading: const Icon(Icons.access_time),
+                    title: Text('Shift $shiftKey'),
+                    subtitle: Text(
+                      _getApprovalStatusText(repItem),
+                      style: TextStyle(
+                        color: _getApprovalStatusColor(repItem),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {
+                      
+                     
+                      if (isManager) {
+                    
+                        if (isLeadPending) {
+                          _showSnackBar("Gagal: Shift ini belum di-approve oleh Lead.");
+                          return; 
+                        }
+
+                      
+                        if (repItem.preparedStatus == "Rejected") {
+                          _showSnackBar("Gagal: Shift ini statusnya REJECTED oleh Lead.");
+                          return; 
+                        }
+
+    
+                        if (isPrepared && !isChecked) {
+                       
+                          _navigateToDetail(context, itemsInThisShift);
+                        } else if (isChecked) {
+                          _showSnackBar("Shift ini sudah Anda approve (Checked).");
+                         
+                           _navigateToDetail(context, itemsInThisShift);
+                        }
+                      } 
+                      else {
+               
+                        _navigateToDetail(context, itemsInThisShift);
+                      }
+                    },
+                  );
+                }).toList(),
+              ),
+            );
+          },
         );
       },
     );
   }
 
-  void _refreshData() {
-    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
-    context.read<DailyProductionRefineryProvider>().fetchReportsForManager(
-      plantCode,
+  void _navigateToDetail(
+      BuildContext context, List<DailyProductionRefineryEntity> items) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DailyProductionRefineryApprovalDetailPage(
+          reportEntities: items,
+          reportIdentifier: "${items.first.id} - Shift ${items.first.shift}",
+        ),
+      ),
+    ).then((value) {
+      if (value == true) {
+        _fetchData();
+      }
+    });
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+        backgroundColor: Colors.redAccent, // Beri warna merah untuk error
+      ),
     );
+  }
+
+  String _getApprovalStatusText(DailyProductionRefineryEntity item) {
+    if (item.checkedStatus == "Approved") return "Approved (Manager Prod))";
+    if (item.checkedStatus == "Rejected") return "Rejected (Manager Prod)";
+    if (item.preparedStatus == "Approved") return "Waiting Check (Lead Prod)";
+    if (item.preparedStatus == "Rejected") return "Rejected (Lead Prod)";
+    // Jika null
+    return "Waiting Approval (Lead)";
+  }
+
+  Color _getApprovalStatusColor(DailyProductionRefineryEntity item) {
+    if (item.checkedStatus == "Approved") return Colors.green;
+    if (item.checkedStatus == "Rejected" || item.preparedStatus == "Rejected") {
+      return Colors.red;
+    }
+    return Colors.orange;
   }
 }

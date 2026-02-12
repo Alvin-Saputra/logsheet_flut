@@ -12,10 +12,7 @@ import 'package:logsheet_app/features/master_data/presentation/provider/master/p
 import 'package:logsheet_app/features/master_data/presentation/provider/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
-class FraSectionRbdpoRolRps extends StatelessWidget {
-  // final int? selectedHourAwal;
-  // final int? selectedHourAkhir;
-
+class FraSectionRbdpoRolRps extends StatefulWidget {
   final TimeOfDay? selectedTimeAwal;
   final TimeOfDay? selectedTimeAkhir;
   final VoidCallback onTimeTapAwal;
@@ -30,6 +27,13 @@ class FraSectionRbdpoRolRps extends StatelessWidget {
   final Function(String?) onTankChanged;
   final Function(String?) onCrystallizerChanged;
   final Function(String?) onOilRmChanged;
+
+  final Function(bool?) onUseTankFromLastShiftChangedRm;
+  bool showCheckboxUseTankFromLastShiftChangedRm;
+
+  final Function(bool?) onUseTankFromLastRowRm;
+  bool showCheckboxUseTankFromLastRowRm;
+
   FraSectionRbdpoRolRps({
     super.key,
     required this.dummyTanks,
@@ -47,7 +51,19 @@ class FraSectionRbdpoRolRps extends StatelessWidget {
     required this.onCrystallizerChanged,
     required this.onOilRmChanged,
     required this.selectedOil,
+    required this.onUseTankFromLastShiftChangedRm,
+    this.showCheckboxUseTankFromLastShiftChangedRm = false,
+    required this.onUseTankFromLastRowRm,
+    this.showCheckboxUseTankFromLastRowRm = false,
   });
+
+  @override
+  State<FraSectionRbdpoRolRps> createState() => _FraSectionRbdpoRolRpsState();
+}
+
+class _FraSectionRbdpoRolRpsState extends State<FraSectionRbdpoRolRps> {
+  bool isCheckedLastShiftTank = false;
+  bool isCheckedLastRow = false;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +77,41 @@ class FraSectionRbdpoRolRps extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const CustomSectionTitle(title: 'RBDPO/ROL/RPS'),
+            (widget.showCheckboxUseTankFromLastShiftChangedRm)
+                ? Row(
+                  children: [
+                    Checkbox(
+                      value: isCheckedLastShiftTank,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          isCheckedLastShiftTank =
+                              value ?? false; // ← ini yang WAJIB
+                        });
 
+                        widget.onUseTankFromLastShiftChangedRm(value);
+                      },
+                    ),
+                    Text('Use Tank From Last Shift'),
+                  ],
+                )
+                : Container(),
+            (widget.showCheckboxUseTankFromLastRowRm)
+                ? Row(
+                  children: [
+                    Checkbox(
+                      value: isCheckedLastRow,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          isCheckedLastRow = value ?? false;
+                        });
+
+                        widget.onUseTankFromLastRowRm(value);
+                      },
+                    ),
+                    const Text("Use Tank From Last Row"),
+                  ],
+                )
+                : Container(),
             const SizedBox(height: 12),
             Consumer<ProductProvider>(
               builder: (context, provider, child) {
@@ -122,7 +172,7 @@ class FraSectionRbdpoRolRps extends StatelessWidget {
                   "FRACTIONATION LIST LENGTH: ${provider.productFractionationList.length}",
                 );
                 return DropdownButtonFormField<String>(
-                  value: selectedOil,
+                  value: widget.selectedOil,
                   items:
                       provider.productFractionationList.map((oil) {
                         return DropdownMenuItem<String>(
@@ -135,8 +185,13 @@ class FraSectionRbdpoRolRps extends StatelessWidget {
                       }).toList(),
                   onChanged: (value) {
                     if (value != null) {
-                      onOilRmChanged(value);
+                      widget.onOilRmChanged(value);
                     }
+                    validator:
+                    (value) {
+                      if (value == null) return 'Oil Type wajib dipilih';
+                      return null;
+                    };
                   },
                   decoration: InputDecoration(
                     filled: true,
@@ -210,7 +265,7 @@ class FraSectionRbdpoRolRps extends StatelessWidget {
                   );
                 }
                 return DropdownButtonFormField(
-                  value: selectedTank,
+                  value: widget.selectedTank,
                   items:
                       provider.tankSourceList.map((tank) {
                         return DropdownMenuItem(
@@ -218,7 +273,11 @@ class FraSectionRbdpoRolRps extends StatelessWidget {
                           child: Text("${tank.code} | ${tank.name}"),
                         );
                       }).toList(),
-                  onChanged: onTankChanged,
+                  onChanged: widget.onTankChanged,
+                  validator: (value) {
+                    if (value == null) return 'Tank wajib dipilih';
+                    return null;
+                  },
                   decoration: InputDecoration(hintText: 'Pilih Tank'),
                 );
               },
@@ -280,15 +339,22 @@ class FraSectionRbdpoRolRps extends StatelessWidget {
                   );
                 }
                 return DropdownButtonFormField(
-                  value: selectedCrystallizer,
+                  value: widget.selectedCrystallizer,
                   items:
-                      provider.tankSourceList.where((element) => element.category == "CR",).map((tank) {
-                        return DropdownMenuItem(
-                          value: tank.code,
-                          child: Text("${tank.code} | ${tank.name}"),
-                        );
-                      }).toList(),
-                  onChanged: onCrystallizerChanged,
+                      provider.tankSourceList
+                          .where((element) => element.category == "CR")
+                          .map((tank) {
+                            return DropdownMenuItem(
+                              value: tank.code,
+                              child: Text("${tank.code} | ${tank.name}"),
+                            );
+                          })
+                          .toList(),
+                  onChanged: widget.onCrystallizerChanged,
+                  validator: (value) {
+                    if (value == null) return 'Crystallizer wajib dipilih';
+                    return null;
+                  },
                   decoration: InputDecoration(hintText: 'Pilih CR'),
                 );
               },
@@ -297,35 +363,37 @@ class FraSectionRbdpoRolRps extends StatelessWidget {
             const Text("Awal", style: _sectionTextStyle),
             const SizedBox(height: 10),
             CustomHourMinuteField(
-              selectedTime: selectedTimeAwal,
-              onTap: onTimeTapAwal,
+              selectedTime: widget.selectedTimeAwal,
+              onTap: widget.onTimeTapAwal,
             ),
             const SizedBox(height: 12),
             CustomTextField(
-              controller: flowmeterAwalController,
+              controller: widget.flowmeterAwalController,
               label: 'Flowmeter',
               icon: Icons.speed,
               isNumeric: true,
+              isRequired: true,
             ),
             const SizedBox(height: 12),
             const Text("Akhir", style: _sectionTextStyle),
             const SizedBox(height: 10),
             CustomHourMinuteField(
-              selectedTime: selectedTimeAkhir,
-              onTap: onTimeTapAkhir,
+              selectedTime: widget.selectedTimeAkhir,
+              onTap: widget.onTimeTapAkhir,
             ),
             const SizedBox(height: 12),
             CustomTextField(
-              controller: flowmeterAkhirController,
+              controller: widget.flowmeterAkhirController,
               label: 'Flowmeter',
               icon: Icons.speed,
               isNumeric: true,
+              isRequired: true,
             ),
             const SizedBox(height: 12),
             const Text("Total", style: _sectionTextStyle),
             const SizedBox(height: 10),
             CustomTextField(
-              controller: flowmeterTotalController,
+              controller: widget.flowmeterTotalController,
               label: 'Total',
               icon: Icons.functions,
               isNumeric: true,
