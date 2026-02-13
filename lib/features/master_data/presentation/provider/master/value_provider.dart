@@ -87,6 +87,9 @@ class ValueProvider with ChangeNotifier {
       _oilTypeLists = await _valueRepository.getAllOilTypes().timeout(
         const Duration(seconds: 60),
       );
+
+      _oilTypeLists = _oilTypeLists.where((item) => item.isActive == "T").toList();
+
       notifyListeners();
       log("(ValueProvider) oil type list length: $_oilTypeLists");
     } catch (e) {
