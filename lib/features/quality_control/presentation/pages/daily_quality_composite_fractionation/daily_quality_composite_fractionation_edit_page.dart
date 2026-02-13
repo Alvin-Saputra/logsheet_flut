@@ -359,19 +359,47 @@ class _DailyQualityCompositeFractionationEditPageState
     );
   }
 
-  void _showHourPicker(BuildContext context) {
-    showModalBottomSheet(
+void _showHourPicker(BuildContext context) {
+    // showModalBottomSheet(
+    //   context: context,
+    //   backgroundColor: Colors.white,
+    //   shape: const RoundedRectangleBorder(
+    //     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    //   ),
+    //   builder:
+    //       (context) => CustomHourPicker(
+    //         selectedHour: selectedHour,
+    //         onHourSelected: (hour) {
+    //           setState(() => selectedHour = hour);
+    //         },
+    //       ),
+    // );
+
+    showDialog(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder:
-          (context) => CustomHourPicker(
-            selectedHour: selectedHour,
-            onHourSelected: (hour) {
-              setState(() => selectedHour = hour);
-            },
+          (context) => Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                20,
+              ), // Rounded corners on all sides
+            ),
+            // Using a Column with mainAxisSize.min ensures the dialog
+            // wraps the content height rather than taking up the full screen.
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CustomHourPicker(
+                  selectedHour: selectedHour,
+                  onHourSelected: (hour) {
+                    setState(() => selectedHour = hour);
+                    // Optional: Close dialog immediately after selection
+                    // Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
           ),
     );
   }

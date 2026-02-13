@@ -114,11 +114,11 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
   }
 
   Widget _buildBody(BuildContext context) {
-    return Padding(
-       padding: EdgeInsetsGeometry.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
+    return Form(
+      key: _formKey,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
               CustomSectionCard('General Data', [
