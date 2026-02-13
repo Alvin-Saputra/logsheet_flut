@@ -130,12 +130,12 @@ class _AnalyticalResultIncomingPlantFuelInputPageState
             .where(
               (form) =>
                   form.isMenu ==
-                  "Analytical_Result_of_Out_Going_Shipment_Product_By_Truck",
+                  "Analytical_Result_of_Incoming_Plant_Fuel_Solar_Coal",
             )
             .first;
     return AppBar(
       title: Text(
-        "Analytical Result Incoming Material By Truck Input (${formData!.code})",
+        "Analytical Result of Incoming Plant Fuel Solar Input (${formData!.code})",
       ),
       actions: [],
     );

@@ -88,7 +88,7 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
                   "Analytical_Result_of_Out_Going_Shipment_Product_By_Truck",
             )
             .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
+    return AppBar(title: Text("Analytical Result of Out Going Shipment Product By Truck List (${formData!.code})"), actions: [
         
       ],
     );

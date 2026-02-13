@@ -164,7 +164,7 @@ class _DailyQualityCompositeFractionationEditPageState
       elevation: 1,
       iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
       title: Text(
-        'Quality Report - ${formData!.code}',
+        'Daily Quality Composite Fractionation ${formData!.code}',
         style: TextStyle(
           color: Color(0xFF655F5B),
           fontWeight: FontWeight.bold,

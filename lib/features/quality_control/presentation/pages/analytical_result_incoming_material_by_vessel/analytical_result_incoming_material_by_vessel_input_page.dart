@@ -105,12 +105,17 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                   "Analytical_Result_Of_Incoming_Material_By_Vessel",
             )
             .first;
-    return AppBar(title: Text("Input (${formData!.code})"), actions: []);
+    return AppBar(
+      title: Text(
+        "Analytical Result Of Incoming Material By Vessel (${formData!.code})",
+      ),
+      actions: [],
+    );
   }
 
   Widget _buildBody(BuildContext context) {
     return Padding(
-      padding: EdgeInsetsGeometry.all(16.0),
+       padding: EdgeInsetsGeometry.all(16.0),
       child: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -245,28 +250,28 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                       icon: Icons.person_rounded,
                       isNumeric: false,
                     ),
-
+          
                     CustomTextField(
                       controller: ffaController,
                       label: "FFA (%)",
                       icon: Icons.person_rounded,
                       isNumeric: true,
                     ),
-
+          
                     CustomTextField(
                       controller: miController,
                       label: "M&I (%)",
                       icon: Icons.person_rounded,
                       isNumeric: true,
                     ),
-
+          
                     CustomTextField(
                       controller: dobiController,
                       label: "Dobi (%)",
                       icon: Icons.person_rounded,
                       isNumeric: true,
                     ),
-
+          
                     CustomTextField(
                       controller: othersController,
                       label: "Others",
@@ -281,42 +286,42 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                     
                   ],
                 ),
-
+          
                 CustomTextField(
                   controller: hasilAnalisaFfaController,
                   label: "FFA",
                   icon: Icons.person_rounded,
                   isNumeric: true,
                 ),
-
+          
                 CustomTextField(
                   controller: hasilAnalisaIvController,
                   label: "IV",
                   icon: Icons.person_rounded,
                   isNumeric: true,
                 ),
-
+          
                 CustomTextField(
                   controller: hasilAnalisaMoistureController,
                   label: "Moisture",
                   icon: Icons.person_rounded,
                   isNumeric: true,
                 ),
-
+          
                 CustomTextField(
                   controller: hasilAnalisaDobiController,
                   label: "Dobi",
                   icon: Icons.person_rounded,
                   isNumeric: true,
                 ),
-
+          
                 CustomTextField(
                   controller: hasilAnalisaPvController,
                   label: "PV",
                   icon: Icons.person_rounded,
                   isNumeric: true,
                 ),
-
+          
                 CustomTextField(
                   controller: hasilAnalisaAnvController,
                   label: "AnV",
@@ -342,16 +347,16 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                   isNumeric: true,
                 ),
               ]),
-
+          
               CustomSectionCard('Detail Data', [
                 _detailGeneratorSection(),
                 if (detailControllers.isNotEmpty) _detailFormList(),
               ]),
-
+          
               CustomSectionCard('Remarks', [
                 CustomRemarkField(controller: remarkController),
               ]),
-
+          
               Consumer<AnalyticalResultIncomingMaterialByVesselProvider>(
                 builder: (
                   BuildContext context,
@@ -367,26 +372,26 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                           //   showSnackBar("Mohon lengkapi semua field", context);
                           //   return;
                           // }
-
+          
                           if (selectedMaterial == null) {
                             showSnackBar("Oil Type wajib dipilih", context);
                             return;
                           }
-
+          
                           if (dateEntryController.text == "") {
                             showSnackBar("Tanggal Wajib dipilih", context);
                             return;
                           }
-
+          
                           // if (numberOfRows == 0 || numberOfRows == null) {
                           //   showSnackBar("Wajib Generate Details", context);
                           //   return;
                           // }
-
+          
                           // if (!_validateDetailRows(context)) return;
-
+          
                           final bool isSuccess = await _insertData();
-
+          
                           if (isSuccess) {
                             showSnackBar("Berhasil menyimpan data", context);
                             Navigator.of(context).pop();
@@ -707,7 +712,9 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
         hasilAnalisaAnv: parseDouble(hasilAnalisaAnvController.text),
         hasilAnalisaTotox: parseDouble(hasilAnalisaTotoxController.text),
         hasilAnalisaCarotex: parseDouble(hasilAnalisaCarotexController.text),
-        hasilAnalisaMineralOil: parseDouble(hasilAnalisaMineralOilController.text),
+        hasilAnalisaMineralOil: parseDouble(
+          hasilAnalisaMineralOilController.text,
+        ),
         remarks: remarkController.text,
 
         flag: 'T',

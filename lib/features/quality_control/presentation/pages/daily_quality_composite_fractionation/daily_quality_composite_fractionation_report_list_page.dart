@@ -45,7 +45,7 @@ class _DailyQualityCompositeFractionationReportListPageState
                   form.isMenu == "Daily_Quality_Composite_Fractionation",
             )
             .first;
-    return AppBar(title: Text("Report List (${formData!.code})"), actions: [
+    return AppBar(title: Text("Daily Quality Composite Fractionation Report List (${formData!.code})"), actions: [
         
       ],
     );

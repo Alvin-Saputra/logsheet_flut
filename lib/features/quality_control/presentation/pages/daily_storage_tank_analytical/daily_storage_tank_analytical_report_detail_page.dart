@@ -1,13 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:logsheet_app/core/utils/app_roles.dart';
-import 'package:logsheet_app/features/maintenance/data/model/change_product_checklist/maintenance_change_product_checklist_report_entity.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/user_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/daily_storage_tank_analytical/daily_storage_tank_analytical_from_db_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/daily_storage_tank_analytical/daily_storage_tank_analytical_to_db_entity.dart';
-import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_change_product/maintenance_change_product_edit_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_edit_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_report_detail_page.dart';
 import 'package:logsheet_app/core/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/core/widgets/custom_stateless_checklist_item_row.dart';
@@ -264,7 +258,7 @@ class _DailyStorageTankAnalyticalReportDetailPageState
       backgroundColor: Colors.white,
       elevation: 1,
       title: const Text(
-        'Change Product Detail',
+        'Daily Storage Tank Analytical Detail',
         style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
       ),
       centerTitle: true,

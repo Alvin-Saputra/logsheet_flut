@@ -181,7 +181,7 @@ class _AnalyticalResultIncomingMaterialByVesselEditPageState
             .first;
     return AppBar(
       title: Text(
-        "Analytical Result Incoming Material By Vessel Input (${formData!.code})",
+        "Analytical Result Incoming Material By Vessel Edit (${formData!.code})",
       ),
       actions: [],
     );

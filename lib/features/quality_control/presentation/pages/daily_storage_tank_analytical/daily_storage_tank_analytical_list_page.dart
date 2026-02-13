@@ -62,7 +62,7 @@ class _DailyStorageTankAnalyticalListPageState
             .dataFormNoList
             .where((form) => form.isMenu == "Daily_Storage_Tank_Analytical")
             .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
+    return AppBar(title: Text("Daily Storage Tank Analytical (${formData!.code})"), actions: [
         
       ],
     );

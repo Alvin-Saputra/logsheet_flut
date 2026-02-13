@@ -116,7 +116,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselInputPageState
             .first;
     return AppBar(
       title: Text(
-        "Analytical Result of OutGoing Shipment By Vessel (${formData!.code})",
+        "Analytical Result of OutGoing Shipment By Vessel Input(${formData!.code})",
       ),
       actions: [],
     );

@@ -396,7 +396,7 @@ class _DailyStorageTankAnalyticalListDetailPageState
       backgroundColor: Colors.white,
       elevation: 1,
       title: const Text(
-        'Change Product Detail',
+        'Daily Storage Tank Analytical Detail',
         style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
       ),
       centerTitle: true,

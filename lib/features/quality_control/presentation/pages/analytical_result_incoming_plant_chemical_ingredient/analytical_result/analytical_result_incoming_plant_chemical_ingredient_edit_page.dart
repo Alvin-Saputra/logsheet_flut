@@ -262,7 +262,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientEditPageState
             .first;
     return AppBar(
       title: Text(
-        "Analytical Result Incoming Material Plant_Chemical_Ingredient (${formData!.code})",
+        "Analytical Result of Incoming Plant Chemical Ingredient Edit (${formData!.code})",
       ),
       actions: [],
     );

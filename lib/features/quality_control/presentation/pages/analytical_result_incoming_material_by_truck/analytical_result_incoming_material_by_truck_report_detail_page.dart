@@ -334,7 +334,7 @@ class _AnalyticalResultIncomingMaterialByTruckReportDetailPageState
       backgroundColor: Colors.white,
       elevation: 1,
       title: const Text(
-        'Detail',
+        'Analytical Result Incoming Material By Truck Detail',
         style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
       ),
       centerTitle: true,

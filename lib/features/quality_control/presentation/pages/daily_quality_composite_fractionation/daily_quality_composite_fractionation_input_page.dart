@@ -120,7 +120,7 @@ class _DailyQualityCompositeFractionationInputPageState
       elevation: 1,
       iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
       title: Text(
-        'Quality Report - ${formData!.code}',
+        'Daily Quality Composite Fractionation ${formData!.code}',
         style: TextStyle(
           color: Color(0xFF655F5B),
           fontWeight: FontWeight.bold,
@@ -992,9 +992,10 @@ class _DailyQualityCompositeFractionationInputPageState
         updatedBy: null,
         updatedDate: null,
         formNo: formData?.code,
-        dateIssued: formData?.dateIssued,
+        // dateIssued: formData?.dateIssued,
+        dateIssued: null,
         revisionNo: formData?.revisionNo.toString(),
-        revisionDate: formData?.revisionDate,
+        revisionDate: null,
       );
 
       final isSuccess = await context

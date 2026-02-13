@@ -4,13 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
-import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_change_product/maintenance_change_product_approval_detail_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_approval_detail_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_approval_detail_page.dart';
-import 'package:logsheet_app/features/maintenance/presentation/provider/change_product_checklist/maintenance_change_product_checklist_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
 import 'package:provider/provider.dart';
 
 // Dummy model class to simulate your report entity
@@ -89,7 +85,7 @@ class _DailyQualityCompositeFractionationApprovalListPageState
             )
             .first;
     return AppBar(
-      title: Text("Approval (${formData!.code})"),
+      title: Text("Daily Quality Composite Fractionation Approval List Page(${formData!.code})"),
       actions: [
         Consumer<DailyQualityCompositeFractionationProvider>(
           builder: (

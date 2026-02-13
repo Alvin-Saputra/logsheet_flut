@@ -103,7 +103,7 @@ class _AnalyticalResultOutgoingShipmentProductByTruckApprovalListPageState
             )
             .first;
     return AppBar(
-      title: Text("Approval (${formData!.code})"),
+      title: Text("Analytical Result of Out Going Shipment Product By Truck Approval List(${formData!.code})"),
       actions: [
         Consumer<AnalyticalResultOutgoingShipmentProductByTruckProvider>(
           builder: (

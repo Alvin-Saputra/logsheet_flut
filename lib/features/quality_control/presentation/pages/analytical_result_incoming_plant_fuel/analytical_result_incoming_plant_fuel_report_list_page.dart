@@ -15,21 +15,16 @@ import 'package:logsheet_app/features/quality_control/presentation/provider/anal
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_provider.dart';
 import 'package:provider/provider.dart';
 
-class AnalyticalResultIncomingPlantFuelReportListPage
-    extends StatefulWidget {
-  const AnalyticalResultIncomingPlantFuelReportListPage({
-    super.key,
-  });
+class AnalyticalResultIncomingPlantFuelReportListPage extends StatefulWidget {
+  const AnalyticalResultIncomingPlantFuelReportListPage({super.key});
 
   @override
-  State<AnalyticalResultIncomingPlantFuelReportListPage>
-  createState() =>
+  State<AnalyticalResultIncomingPlantFuelReportListPage> createState() =>
       _AnalyticalResultIncomingPlantFuelReportListPageState();
 }
 
 class _AnalyticalResultIncomingPlantFuelReportListPageState
-    extends
-        State<AnalyticalResultIncomingPlantFuelReportListPage> {
+    extends State<AnalyticalResultIncomingPlantFuelReportListPage> {
   DataFormNoEntity? formData;
 
   final TextEditingController dateEntryController = TextEditingController();
@@ -37,9 +32,7 @@ class _AnalyticalResultIncomingPlantFuelReportListPageState
   @override
   initState() {
     super.initState();
-    context
-        .read<AnalyticalResultIncomingPlantFuelProvider>()
-        .clearReports();
+    context.read<AnalyticalResultIncomingPlantFuelProvider>().clearReports();
   }
 
   @override
@@ -56,12 +49,14 @@ class _AnalyticalResultIncomingPlantFuelReportListPageState
             .where(
               (form) =>
                   form.isMenu ==
-                  "Analytical_Result_of_Out_Going_Shipment_Product_By_Truck",
+                  "Analytical_Result_of_Incoming_Plant_Fuel_Solar_Coal",
             )
             .first;
-    return AppBar(title: Text("Report List (${formData!.code})"), actions: [
-        
-      ],
+    return AppBar(
+      title: Text(
+        "Analytical Result of Incoming Plant Fuel Solar Report List (${formData!.code})",
+      ),
+      actions: [],
     );
   }
 
@@ -74,13 +69,10 @@ class _AnalyticalResultIncomingPlantFuelReportListPageState
             padding: const EdgeInsets.all(8.0),
             child: Builder(
               builder: (context) {
-                return Consumer<
-                  AnalyticalResultIncomingPlantFuelProvider
-                >(
+                return Consumer<AnalyticalResultIncomingPlantFuelProvider>(
                   builder: (
                     BuildContext context,
-                    AnalyticalResultIncomingPlantFuelProvider
-                    provider,
+                    AnalyticalResultIncomingPlantFuelProvider provider,
                     Widget? child,
                   ) {
                     return (provider.isLoading)
@@ -139,9 +131,7 @@ class _AnalyticalResultIncomingPlantFuelReportListPageState
                 final plant = context.read<PlantProvider>().currentPlant;
                 final plantId = plant?.code ?? '';
                 await context
-                    .read<
-                      AnalyticalResultIncomingPlantFuelProvider
-                    >()
+                    .read<AnalyticalResultIncomingPlantFuelProvider>()
                     .fetchReport(plantId, formattedDate);
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
@@ -193,13 +183,9 @@ class _AnalyticalResultIncomingPlantFuelReportListPageState
           context,
           MaterialPageRoute(
             builder:
-                (
-                  context,
-                ) => AnalyticalResultIncomingPlantFuelReportDetailPage(
+                (context) => AnalyticalResultIncomingPlantFuelReportDetailPage(
                   data: context
-                      .read<
-                        AnalyticalResultIncomingPlantFuelProvider
-                      >()
+                      .read<AnalyticalResultIncomingPlantFuelProvider>()
                       .reportList
                       .firstWhere((element) => element.analytical.id == id),
                 ),

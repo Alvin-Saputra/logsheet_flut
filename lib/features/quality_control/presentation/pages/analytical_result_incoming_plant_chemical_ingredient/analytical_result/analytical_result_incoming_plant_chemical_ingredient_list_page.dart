@@ -95,7 +95,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
                   "Analytical_Result_of_Incoming_Plant_Chemical_Ingredient",
             )
             .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
+    return AppBar(title: Text("Analytical Result of Incoming Plant Chemical Ingredient List (${formData!.code})"), actions: [
         
       ],
     );

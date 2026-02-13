@@ -161,14 +161,14 @@ class AnalyticalResultOutgoingShipmentProductByTruckProvider
         _reportList = data;
 
         log("report List Length: ${_reportList.length}");
-        // if (purpose == "list" && AppRoles.leadQC.contains(role)) {
-        //   _reportList =
-        //       _reportList
-        //           .where(
-        //             (item) => item.correctedStatus == null,
-        //           )
-        //           .toList();
-        // }
+        if (purpose == "list" && AppRoles.leadQC.contains(role)) {
+          _reportList =
+              _reportList
+                  .where(
+                    (item) => item.correctedStatus == null,
+                  )
+                  .toList();
+        }
         log("report List Length: ${_reportList.length}");
 
         notifyListeners();

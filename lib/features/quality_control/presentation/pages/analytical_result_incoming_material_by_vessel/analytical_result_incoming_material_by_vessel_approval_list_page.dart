@@ -115,7 +115,7 @@ class _AnalyticalResultIncomingMaterialByVesselApprovalListPageState
             )
             .first;
     return AppBar(
-      title: Text("Approval (${formData!.code})"),
+      title: Text("Analytical Result Of Incoming Material By Vessel Approval List (${formData!.code})"),
       actions: [
         Consumer<AnalyticalResultIncomingMaterialByVesselProvider>(
           builder: (

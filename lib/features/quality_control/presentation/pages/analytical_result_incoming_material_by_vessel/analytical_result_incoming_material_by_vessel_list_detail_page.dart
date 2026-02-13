@@ -562,7 +562,7 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
       backgroundColor: Colors.white,
       elevation: 1,
       title: const Text(
-        'Detail',
+        'Analytical Result Of Incoming Material By Vessel Detail',
         style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
       ),
       centerTitle: true,

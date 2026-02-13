@@ -57,7 +57,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselReportListState
                   "Analytical_Result_of_Outgoing_Shipment_By_Vessel",
             )
             .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
+    return AppBar(title: Text("Analytical Result of OutGoing Shipment By Vessel Report List (${formData!.code})"), actions: [
         
       ],
     );

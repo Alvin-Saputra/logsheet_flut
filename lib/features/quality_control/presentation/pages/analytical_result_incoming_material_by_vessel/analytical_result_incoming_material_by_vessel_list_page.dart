@@ -108,7 +108,7 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
                   "Analytical_Result_Of_Incoming_Material_By_Vessel",
             )
             .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
+    return AppBar(title: Text("Analytical Result Of Incoming Material By Vessel List (${formData!.code})"), actions: [
         
       ],
     );

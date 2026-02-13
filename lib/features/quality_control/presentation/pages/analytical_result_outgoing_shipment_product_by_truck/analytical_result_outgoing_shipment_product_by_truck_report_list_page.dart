@@ -10,25 +10,25 @@ import 'package:logsheet_app/core/widgets/custom_date_field.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_input_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_list_detail_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_report_detail_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_provider.dart';
 import 'package:provider/provider.dart';
 
-class AnalyticalResultOutgoingShipmentProductByTruckListPage
+class AnalyticalResultOutgoingShipmentProductByTruckReportListPage
     extends StatefulWidget {
-  const AnalyticalResultOutgoingShipmentProductByTruckListPage({super.key});
+  const AnalyticalResultOutgoingShipmentProductByTruckReportListPage({super.key});
 
   @override
-  State<AnalyticalResultOutgoingShipmentProductByTruckListPage> createState() =>
-      _AnalyticalResultOutgoingShipmentProductByTruckListPageState();
+  State<AnalyticalResultOutgoingShipmentProductByTruckReportListPage> createState() =>
+      _AnalyticalResultOutgoingShipmentProductByTruckReportListPageState();
 }
 
-class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
-    extends State<AnalyticalResultOutgoingShipmentProductByTruckListPage> {
+class _AnalyticalResultOutgoingShipmentProductByTruckReportListPageState
+    extends State<AnalyticalResultOutgoingShipmentProductByTruckReportListPage> {
   DataFormNoEntity? formData;
 
   final TextEditingController dateEntryController = TextEditingController();
+
   @override
   initState() {
     super.initState();
@@ -55,8 +55,6 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
           ).then((_) async {
             if (!mounted) return;
 
-            final plant = context.read<PlantProvider>().currentPlant;
-            final plantId = plant?.code ?? '';
             final formattedDate = changeStringDateFormat(
               dateEntryController.text,
               'dd-MM-yyyy',
@@ -86,9 +84,11 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
                   "Analytical_Result_of_Out_Going_Shipment_Product_By_Truck",
             )
             .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
-        
-      ],
+    return AppBar(
+      title: Text(
+        "Analytical Result of Out Going Shipment Product By Truck Report List (${formData!.code})",
+      ),
+      actions: [],
     );
   }
 
@@ -124,6 +124,8 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
                               entryBy: item.entryBy ?? '',
                               productName: item.productName,
                               role: role,
+                              approvedStatus: item.approvedStatus ?? '',
+                              preparedStatus: item.correctedStatus ?? '',
                             );
                           },
                         );
@@ -160,8 +162,6 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
                 );
                 log('Searching for date: $formattedDate');
 
-                final plant = context.read<PlantProvider>().currentPlant;
-                final plantId = plant?.code ?? '';
                 await context
                     .read<
                       AnalyticalResultOutgoingShipmentProductByTruckProvider
@@ -170,8 +170,6 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
               }
-
-              // }
             },
             icon: const Icon(Icons.search),
             label: const Text('Cari'),
@@ -195,30 +193,43 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
     required String? productName,
     required String? entryBy,
     required String? role,
+    required String approvedStatus,
+    required String preparedStatus,
+    Color? badgeColor,
+    String? showedStatus,
   }) {
+    if (preparedStatus == "Approved" && approvedStatus == "Approved") {
+      badgeColor = Colors.green;
+      showedStatus = "Approved";
+    } else if (preparedStatus == "Rejected" || approvedStatus == "Rejected") {
+      badgeColor = Colors.red;
+      showedStatus = "Rejected";
+    } else if (preparedStatus != '') {
+      badgeColor = Colors.orange;
+      showedStatus = "Prepared";
+    } else if (preparedStatus == '') {
+      badgeColor = Colors.blue;
+      showedStatus = "Submitted";
+    }
     return InkWell(
-      borderRadius: BorderRadius.circular(12),
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder:
-                (
-                  context,
-                ) => AnalyticalResultOutgoingShipmentProductByTruckReportDetailPage(
-                  data: context
-                      .read<
-                        AnalyticalResultOutgoingShipmentProductByTruckProvider
-                      >()
-                      .reportList
-                      .firstWhere((element) => element.id == id),
-                ),
+                (context) =>
+                    AnalyticalResultOutgoingShipmentProductByTruckReportDetailPage(
+                      data: context
+                          .read<
+                            AnalyticalResultOutgoingShipmentProductByTruckProvider
+                          >()
+                          .reportList
+                          .firstWhere((element) => element.id == id),
+                    ),
           ),
         ).then((_) async {
           if (!mounted) return;
 
-          final plant = context.read<PlantProvider>().currentPlant;
-          final plantId = plant?.code ?? '';
           final formattedDate = changeStringDateFormat(
             dateEntryController.text,
             'dd-MM-yyyy',
@@ -251,6 +262,17 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
                       vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: badgeColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '$showedStatus',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
