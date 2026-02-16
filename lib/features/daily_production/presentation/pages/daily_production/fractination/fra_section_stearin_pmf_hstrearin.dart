@@ -210,15 +210,16 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
                         ),
                       );
                     }
-                    return DropdownButtonFormField(
-                      value: selectedTank,
-                      items:
-                          provider.tankSourceList.map((tank) {
-                            return DropdownMenuItem(
-                              value: tank.code,
-                              child: Text("${tank.code} | ${tank.name}"),
-                            );
-                          }).toList(),
+                    final tankItems = _buildUniqueTankItems(
+                      provider.tankSourceList,
+                    );
+                    final selectedTankValue = _resolveSelectedDropdownValue(
+                      selectedTank,
+                      tankItems,
+                    );
+                    return DropdownButtonFormField<String>(
+                      value: selectedTankValue,
+                      items: tankItems,
                       onChanged: onTankChanged,
                       validator: (value) {
                         if (value == null) return 'Tank wajib dipilih';
@@ -275,6 +276,34 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
       ),
     );
   }
+}
+
+List<DropdownMenuItem<String>> _buildUniqueTankItems(
+  Iterable<TankEntity> tanks,
+) {
+  final seenCodes = <String>{};
+  final items = <DropdownMenuItem<String>>[];
+  for (final tank in tanks) {
+    final code = tank.code.trim();
+    if (code.isEmpty || !seenCodes.add(code)) continue;
+    items.add(
+      DropdownMenuItem<String>(
+        value: code,
+        child: Text("$code | ${tank.name}"),
+      ),
+    );
+  }
+  return items;
+}
+
+String? _resolveSelectedDropdownValue(
+  String? selectedValue,
+  List<DropdownMenuItem<String>> items,
+) {
+  final normalized = selectedValue?.trim();
+  if (normalized == null || normalized.isEmpty) return null;
+  final matches = items.where((item) => item.value == normalized).length;
+  return matches == 1 ? normalized : null;
 }
 
 const _sectionTextStyle = TextStyle(

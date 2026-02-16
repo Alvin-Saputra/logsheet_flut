@@ -79,6 +79,7 @@ class _DailyProductionFractionPageState
   List<MasterValueEntity>? oilLists;
 
   final List<String> dummyShiftOptions = ['1', '2', '3', '4', '5'];
+  final Set<String> _usedShiftOptions = <String>{};
 
   String? selectedShiftBleaching;
 
@@ -177,24 +178,107 @@ class _DailyProductionFractionPageState
     }
   }
 
+  bool get _isAddShiftMode => widget.isFromAddNewShift && widget.entity != null;
+
+  bool get _isWorkCenterLockedForAddShift =>
+      _isAddShiftMode &&
+      (widget.entity?.workCenter?.trim().isNotEmpty ?? false);
+
+  List<String> get _availableShiftOptions {
+    if (!_isAddShiftMode) {
+      return dummyShiftOptions;
+    }
+    return dummyShiftOptions
+        .where((shift) => !_usedShiftOptions.contains(shift))
+        .toList();
+  }
+
+  void _syncAddShiftContext() {
+    if (!_isAddShiftMode) {
+      return;
+    }
+
+    final ticketId = widget.entity!.id;
+    final provider = context.read<DailyProductionFractionationProvider>();
+    final usedShiftOptions = <String>{};
+
+    void collectShifts(List<DailyProductionFractionationEntity> source) {
+      for (final item in source) {
+        if (item.id != ticketId) continue;
+        final shift = item.shift?.trim();
+        if (shift != null && dummyShiftOptions.contains(shift)) {
+          usedShiftOptions.add(shift);
+        }
+      }
+    }
+
+    collectShifts(provider.reportsList);
+    collectShifts(provider.filteredTickets);
+
+    final fallbackShift = widget.entity?.shift?.trim();
+    if (fallbackShift != null && dummyShiftOptions.contains(fallbackShift)) {
+      usedShiftOptions.add(fallbackShift);
+    }
+
+    _usedShiftOptions
+      ..clear()
+      ..addAll(usedShiftOptions);
+
+    selectedWorkCenter = widget.entity?.workCenter;
+    final availableShifts = _availableShiftOptions;
+    selectedShift =
+        availableShifts.contains(selectedShift)
+            ? selectedShift
+            : (availableShifts.isNotEmpty ? availableShifts.first : null);
+  }
+
+  Future<void> _fetchInitialDataIfNeeded() async {
+    final valueProvider = context.read<ValueProvider>();
+    final productProvider = context.read<ProductProvider>();
+    final crystallizerProvider = context.read<CrystallizerProvider>();
+    final futures = <Future<void>>[];
+
+    if (valueProvider.workCenterFractLists.isEmpty) {
+      futures.add(valueProvider.fetchWorkCenterFractLists());
+    }
+    if (valueProvider.tankSourceList.isEmpty) {
+      futures.add(valueProvider.fetchTankSourceLists());
+    }
+    if (productProvider.productFractionationList.isEmpty) {
+      futures.add(productProvider.fetchProducts());
+    }
+    if (crystallizerProvider.crystallizerList.isEmpty) {
+      futures.add(crystallizerProvider.fetchCrystallizer());
+    }
+
+    if (futures.isNotEmpty) {
+      await Future.wait(futures);
+    }
+
+    if (!mounted) return;
+    setState(() {
+      tankLists = valueProvider.tankSourceList;
+      if (_isWorkCenterLockedForAddShift) {
+        selectedWorkCenter = widget.entity?.workCenter;
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     _addNewRow();
     final valueProvider = context.read<ValueProvider>();
-    final productProvider = context.read<ProductProvider>();
-    final crystallizerProvider = context.read<CrystallizerProvider>();
+    tankLists = valueProvider.tankSourceList;
 
-    if (valueProvider.tankSourceList.isEmpty ||
-        productProvider.productFractionationList.isEmpty ||
-        crystallizerProvider.crystallizerList.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-        await valueProvider.fetchAllInitialData();
-        await productProvider.fetchProducts();
-        await crystallizerProvider.fetchCrystallizer();
-        tankLists = valueProvider.tankSourceList;
-      });
+    if (_isWorkCenterLockedForAddShift) {
+      selectedWorkCenter = widget.entity?.workCenter;
     }
+    _syncAddShiftContext();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _fetchInitialDataIfNeeded();
+    });
   }
 
   Future<void> showSaveConfirmationDialog(
@@ -256,6 +340,9 @@ class _DailyProductionFractionPageState
                 ? '${utilityBudget['FRAC-02']}'
                 : '${utilityBudget['FRAC-01']}'
             : 'N/A';
+    final availableShiftOptions = _availableShiftOptions;
+    final selectedShiftValue =
+        availableShiftOptions.contains(selectedShift) ? selectedShift : null;
     return Scaffold(
       backgroundColor: const Color(0xFFEFF3F9),
       appBar: CustomAppBar(
@@ -332,11 +419,14 @@ class _DailyProductionFractionPageState
                           ),
                         );
                       }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedWorkCenter = value;
-                    });
-                  },
+                  onChanged:
+                      _isWorkCenterLockedForAddShift
+                          ? null
+                          : (value) {
+                            setState(() {
+                              selectedWorkCenter = value;
+                            });
+                          },
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: const Color(0xFFF0ECE9),
@@ -386,9 +476,9 @@ class _DailyProductionFractionPageState
             const SizedBox(height: 8),
 
             DropdownButtonFormField<String>(
-              value: selectedShift,
+              value: selectedShiftValue,
               items:
-                  dummyShiftOptions.map((item) {
+                  availableShiftOptions.map((item) {
                     return DropdownMenuItem<String>(
                       value: item,
                       child: Text(
@@ -397,11 +487,14 @@ class _DailyProductionFractionPageState
                       ),
                     );
                   }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedShift = value;
-                });
-              },
+              onChanged:
+                  availableShiftOptions.isEmpty
+                      ? null
+                      : (value) {
+                        setState(() {
+                          selectedShift = value;
+                        });
+                      },
               decoration: InputDecoration(
                 filled: true,
                 fillColor: const Color(0xFFF0ECE9),
@@ -409,7 +502,10 @@ class _DailyProductionFractionPageState
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
-                labelText: 'Pilih Shift',
+                labelText:
+                    availableShiftOptions.isEmpty
+                        ? 'Semua shift sudah dibuat'
+                        : 'Pilih Shift',
                 floatingLabelBehavior: FloatingLabelBehavior.auto,
                 prefixIcon: Padding(
                   padding: const EdgeInsets.all(12.0),
@@ -847,7 +943,7 @@ class _DailyProductionFractionPageState
                             });
                           },
 
-                            showCheckboxUseTankFromLastRowRm:
+                          showCheckboxUseTankFromLastRowRm:
                               (inputItems[i] != inputItems.first),
 
                           onUseTankFromLastRowRm: (bool? value) {
@@ -1129,7 +1225,7 @@ class _DailyProductionFractionPageState
       );
     }
 
-     DateTime getPostingDate() {
+    DateTime getPostingDate() {
       final DateTime now = DateTime.now();
 
       final int hour = now.hour;
@@ -1201,6 +1297,25 @@ class _DailyProductionFractionPageState
       ).showSnackBar(SnackBar(content: Text(message)));
     }
 
+    final workCenterForSubmission =
+        _isWorkCenterLockedForAddShift
+            ? widget.entity?.workCenter
+            : selectedWorkCenter;
+
+    if (workCenterForSubmission == null || workCenterForSubmission.isEmpty) {
+      _showSnackBar('Silakan pilih Work Center terlebih dahulu.');
+      return;
+    }
+
+    if (selectedShift == null || selectedShift!.isEmpty) {
+      _showSnackBar(
+        _isAddShiftMode && _availableShiftOptions.isEmpty
+            ? 'Semua shift untuk ticket ini sudah dibuat.'
+            : 'Silakan pilih Shift terlebih dahulu.',
+      );
+      return;
+    }
+
     if (!context.mounted) return;
 
     try {
@@ -1223,7 +1338,7 @@ class _DailyProductionFractionPageState
               plant: currentPlant.code,
               transactionDate: getTransactionDate(),
               postingDate: getPostingDate(),
-              workCenter: selectedWorkCenter,
+              workCenter: workCenterForSubmission,
               shift: selectedShift,
               no: index + 1,
               oilTypeRmId: item.selectedOilRm,

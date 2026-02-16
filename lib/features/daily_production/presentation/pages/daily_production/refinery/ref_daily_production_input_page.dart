@@ -70,6 +70,7 @@ class _DailyProductionPageState
   List<MasterValueEntity>? oilTypeLists;
 
   final List<String> dummyShiftOptions = ['1', '2', '3', "4", "5"];
+  final Set<String> _usedShiftOptions = <String>{};
   String? selectedShift;
 
   final beTotalBagController = TextEditingController();
@@ -211,37 +212,103 @@ class _DailyProductionPageState
     setState(() => isLoading = false);
   }
 
+  bool get _isAddShiftMode => widget.isFromAddNewShift && widget.entity != null;
+
+  bool get _isWorkCenterLockedForAddShift =>
+      _isAddShiftMode &&
+      (widget.entity?.workCenter?.trim().isNotEmpty ?? false);
+
+  List<String> get _availableShiftOptions {
+    if (!_isAddShiftMode) {
+      return dummyShiftOptions;
+    }
+    return dummyShiftOptions
+        .where((shift) => !_usedShiftOptions.contains(shift))
+        .toList();
+  }
+
+  void _syncAddShiftContext() {
+    if (!_isAddShiftMode) {
+      return;
+    }
+
+    final ticketId = widget.entity!.id;
+    final provider = context.read<DailyProductionRefineryProvider>();
+    final usedShiftOptions = <String>{};
+
+    void collectShifts(List<DailyProductionRefineryEntity> source) {
+      for (final item in source) {
+        if (item.id != ticketId) continue;
+        final shift = item.shift?.trim();
+        if (shift != null && dummyShiftOptions.contains(shift)) {
+          usedShiftOptions.add(shift);
+        }
+      }
+    }
+
+    collectShifts(provider.reportsList);
+    collectShifts(provider.filteredTickets);
+
+    final fallbackShift = widget.entity?.shift?.trim();
+    if (fallbackShift != null && dummyShiftOptions.contains(fallbackShift)) {
+      usedShiftOptions.add(fallbackShift);
+    }
+
+    _usedShiftOptions
+      ..clear()
+      ..addAll(usedShiftOptions);
+
+    selectedRefineryMachine = widget.entity?.workCenter;
+    final availableShifts = _availableShiftOptions;
+    selectedShift =
+        availableShifts.contains(selectedShift)
+            ? selectedShift
+            : (availableShifts.isNotEmpty ? availableShifts.first : null);
+  }
+
+  Future<void> _fetchInitialDataIfNeeded() async {
+    final valueProvider = context.read<ValueProvider>();
+    final productProvider = context.read<ProductProvider>();
+    final futures = <Future<void>>[];
+
+    if (valueProvider.workCenterLists.isEmpty) {
+      futures.add(valueProvider.fetchWorkCenterLists());
+    }
+    if (valueProvider.tankSourceList.isEmpty) {
+      futures.add(valueProvider.fetchTankSourceLists());
+    }
+    if (productProvider.productRefineryList.isEmpty) {
+      futures.add(productProvider.fetchProducts());
+    }
+
+    if (futures.isNotEmpty) {
+      await Future.wait(futures);
+    }
+
+    if (!mounted) return;
+    setState(() {
+      tankLists = valueProvider.tankSourceList;
+      if (_isWorkCenterLockedForAddShift) {
+        selectedRefineryMachine = widget.entity?.workCenter;
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     _addNewRow();
     final valueProvider = context.read<ValueProvider>();
-    final productProvider = context.read<ProductProvider>();
+    tankLists = valueProvider.tankSourceList;
 
-    setState(() {
-      tankLists = valueProvider.tankSourceList;
-
-      // set selected value SETELAH list tersedia
+    if (_isWorkCenterLockedForAddShift) {
       selectedRefineryMachine = widget.entity?.workCenter;
-    });
-
-    if (valueProvider.tankSourceList.isEmpty ||
-        productProvider.productFractionationList.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-        await valueProvider.fetchWorkCenterLists();
-        await valueProvider.fetchAllInitialData();
-        await productProvider.fetchProducts();
-
-        if (!mounted) return;
-
-        setState(() {
-          tankLists = valueProvider.tankSourceList;
-
-          // ⬅️ SETELAH items tersedia
-          selectedRefineryMachine = widget.entity?.workCenter;
-        });
-      });
     }
+    _syncAddShiftContext();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _fetchInitialDataIfNeeded();
+    });
   }
 
   Future<void> showSaveConfirmationDialog(
@@ -316,6 +383,9 @@ class _DailyProductionPageState
 
     // Determine current shift based on local time for display
     final currentShift = getShiftBasedOnTimeAndDate(DateTime.now()).toString();
+    final availableShiftOptions = _availableShiftOptions;
+    final selectedShiftValue =
+        availableShiftOptions.contains(selectedShift) ? selectedShift : null;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
@@ -391,24 +461,27 @@ class _DailyProductionPageState
                           ),
                         );
                       }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedRefineryMachine = value;
-                      if (selectedRefineryMachine == "REF-02") {
-                        ref500Bleaching = true;
-                        ref150Bleaching = false;
+                  onChanged:
+                      _isWorkCenterLockedForAddShift
+                          ? null
+                          : (value) {
+                            setState(() {
+                              selectedRefineryMachine = value;
+                              if (selectedRefineryMachine == "REF-02") {
+                                ref500Bleaching = true;
+                                ref150Bleaching = false;
 
-                        ref500Phosphoric = true;
-                        ref150Phosphoric = false;
-                      } else {
-                        ref500Bleaching = false;
-                        ref150Bleaching = true;
+                                ref500Phosphoric = true;
+                                ref150Phosphoric = false;
+                              } else {
+                                ref500Bleaching = false;
+                                ref150Bleaching = true;
 
-                        ref500Phosphoric = false;
-                        ref150Phosphoric = true;
-                      }
-                    });
-                  },
+                                ref500Phosphoric = false;
+                                ref150Phosphoric = true;
+                              }
+                            });
+                          },
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: const Color(0xFFF0ECE9),
@@ -459,9 +532,9 @@ class _DailyProductionPageState
             const SizedBox(height: 8),
 
             DropdownButtonFormField<String>(
-              value: selectedShift,
+              value: selectedShiftValue,
               items:
-                  dummyShiftOptions.map((item) {
+                  availableShiftOptions.map((item) {
                     return DropdownMenuItem<String>(
                       value: item,
                       child: Text(
@@ -470,11 +543,14 @@ class _DailyProductionPageState
                       ),
                     );
                   }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedShift = value;
-                });
-              },
+              onChanged:
+                  availableShiftOptions.isEmpty
+                      ? null
+                      : (value) {
+                        setState(() {
+                          selectedShift = value;
+                        });
+                      },
               decoration: InputDecoration(
                 filled: true,
                 fillColor: const Color(0xFFF0ECE9),
@@ -482,7 +558,10 @@ class _DailyProductionPageState
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
-                labelText: 'Pilih Shift',
+                labelText:
+                    availableShiftOptions.isEmpty
+                        ? 'Semua shift sudah dibuat'
+                        : 'Pilih Shift',
                 floatingLabelBehavior: FloatingLabelBehavior.auto,
                 prefixIcon: Padding(
                   padding: const EdgeInsets.all(12.0),
@@ -709,7 +788,8 @@ class _DailyProductionPageState
                             });
                           },
                           showCheckboxUseTankFromLastShiftChangedRm:
-                              (widget.isFromAddNewShift && inputItems[i] == inputItems.first),
+                              (widget.isFromAddNewShift &&
+                                  inputItems[i] == inputItems.first),
 
                           showCheckboxUseTankFromLastRowRm:
                               (inputItems[i] != inputItems.first),
@@ -1159,6 +1239,25 @@ class _DailyProductionPageState
       ).showSnackBar(SnackBar(content: Text(message)));
     }
 
+    final workCenterForSubmission =
+        _isWorkCenterLockedForAddShift
+            ? widget.entity?.workCenter
+            : selectedRefineryMachine;
+
+    if (workCenterForSubmission == null || workCenterForSubmission.isEmpty) {
+      showSnackBar('Silakan pilih Work Center terlebih dahulu.');
+      return;
+    }
+
+    if (selectedShift == null || selectedShift!.isEmpty) {
+      showSnackBar(
+        _isAddShiftMode && _availableShiftOptions.isEmpty
+            ? 'Semua shift untuk ticket ini sudah dibuat.'
+            : 'Silakan pilih Shift terlebih dahulu.',
+      );
+      return;
+    }
+
     if (!context.mounted) return;
 
     try {
@@ -1181,7 +1280,7 @@ class _DailyProductionPageState
               plant: currentPlant.code,
               transactionDate: getTransactionDate(),
               postingDate: getPostingDate(),
-              workCenter: selectedRefineryMachine,
+              workCenter: workCenterForSubmission,
               shift: selectedShift,
               no: index + 1,
               cpoTank: item.selectedTankRm,
@@ -1210,7 +1309,7 @@ class _DailyProductionPageState
               bpToTank: item.selectedTankBp,
 
               // Bleaching Earth - Mapped to Global State Controllers
-              beRefTank: selectedRefineryMachine,
+              beRefTank: workCenterForSubmission,
               beRefQty:
                   "1 Bag (1000 Kg)", // Not explicitly captured in UI, usually handled by Bag count
               beTotalBag: bleachingBagController.text,
@@ -1219,7 +1318,7 @@ class _DailyProductionPageState
               beYieldPercent: parseDouble(bleachingYieldPercentController),
 
               // Phosphoric Acid - Mapped to Global State Controllers
-              paRefTank: selectedRefineryMachine,
+              paRefTank: workCenterForSubmission,
               paRefQty: paValue,
               paTotal: phosphoricTotalController.text,
               paLotBatchNumber: parseInt(phosphoricBatchController.text),
@@ -1230,7 +1329,7 @@ class _DailyProductionPageState
 
               // Utility Usage - Mapped to Global State/Values
               uuItem: steamItem,
-              uuBudgetRefTank: selectedRefineryMachine,
+              uuBudgetRefTank: workCenterForSubmission,
               uuBudgetQty:
                   budgetValue != null ? double.tryParse(budgetValue!) : null,
               uuTotalCpo: parseDouble(totalOilController),
