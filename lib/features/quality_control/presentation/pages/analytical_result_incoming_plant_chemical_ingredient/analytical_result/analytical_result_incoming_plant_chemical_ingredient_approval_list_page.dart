@@ -99,7 +99,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientApprovalListPageState
             )
             .first;
     return AppBar(
-      title: Text("Approval (${formData!.code})"),
+      title: Text("Analytical Result of Incoming Plant Chemical Ingredient Approval List (${formData!.code})"),
       actions: [
         Consumer<AnalyticalResultIncomingPlantChemicalIngredientProvider>(
           builder: (

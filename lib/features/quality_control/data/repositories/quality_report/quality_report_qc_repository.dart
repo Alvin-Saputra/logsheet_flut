@@ -147,14 +147,14 @@ class QualityReportQCRepository {
   getDailyProductionRefineryByFilter({
     DateTime? transactionDate,
     required String plantCode,
-    int? shift,
+    // int? shift,
     String? workCenter,
   }) async {
     final List<Map<String, dynamic>> filteredTicketList = await _mySQLService
         .getDailyProductionRefineryByFilter(
           plantCode: plantCode,
           transactionDate: transactionDate,
-          shift: shift,
+          // shift: shift,
           workCenter: workCenter,
         );
 

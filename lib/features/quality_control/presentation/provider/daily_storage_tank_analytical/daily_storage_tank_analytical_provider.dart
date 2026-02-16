@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/daily_storage_tank_analytical/daily_storage_tank_analytical_from_db_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/daily_storage_tank_analytical/daily_storage_tank_analytical_to_db_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/daily_storage_tank_analytical/daily_storage_tank_analytical_repository.dart';
@@ -176,9 +177,10 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
   }
 
   Future<void> getAllDailyStorageTankReport(
-    String? dateFilter,
+    String? dateFilter, {
     String? role,
-  ) async {
+    bool isFilterBasedOnRole = false,
+  }) async {
     _setLoading(true);
     _setErrorMessage(null);
     try {
@@ -189,10 +191,19 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
       );
       _reportsList = _reportsList.where((item) => item.flag == 'T').toList();
 
-      notifyListeners();
+      if (isFilterBasedOnRole && AppRoles.leadQC.contains(role)) {
+        _reportsList =
+            _reportsList.where((item) => item.preparedStatus == null).toList();
+      } else if (isFilterBasedOnRole &&
+          AppRoles.qualityControlManagerApproval.contains(role)) {
+        _reportsList =
+            _reportsList
+                .where((item) => item.preparedStatus == "Approved")
+                .toList();
+      }
 
-      // await Future.delayed(const Duration(seconds: 1));
       _setLoading(false);
+      notifyListeners();
       log('Report List length: ${_reportsList.length}');
     } catch (e) {
       _setErrorMessage('Failed to fetch Quality Reports: $e');
@@ -294,5 +305,9 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
       _setErrorMessage('Failed to fetch approval daily storage: $e');
       _setLoadingApproval(false);
     }
+  }
+
+  void clearReports() {
+    _reportsList.clear();
   }
 }

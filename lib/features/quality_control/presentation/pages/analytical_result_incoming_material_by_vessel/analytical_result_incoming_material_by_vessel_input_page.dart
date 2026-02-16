@@ -58,6 +58,12 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
       TextEditingController();
   final TextEditingController hasilAnalisaAnvController =
       TextEditingController();
+  final TextEditingController hasilAnalisaTotoxController =
+      TextEditingController();
+  final TextEditingController hasilAnalisaCarotexController =
+      TextEditingController();
+  final TextEditingController hasilAnalisaMineralOilController =
+      TextEditingController();
 
   final TextEditingController remarkController = TextEditingController();
 
@@ -99,15 +105,20 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                   "Analytical_Result_Of_Incoming_Material_By_Vessel",
             )
             .first;
-    return AppBar(title: Text("Input (${formData!.code})"), actions: []);
+    return AppBar(
+      title: Text(
+        "Analytical Result Of Incoming Material By Vessel (${formData!.code})",
+      ),
+      actions: [],
+    );
   }
 
   Widget _buildBody(BuildContext context) {
-    return Padding(
-      padding: EdgeInsetsGeometry.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
+    return Form(
+      key: _formKey,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
               CustomSectionCard('General Data', [
@@ -239,28 +250,28 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                       icon: Icons.person_rounded,
                       isNumeric: false,
                     ),
-
+          
                     CustomTextField(
                       controller: ffaController,
                       label: "FFA (%)",
                       icon: Icons.person_rounded,
                       isNumeric: true,
                     ),
-
+          
                     CustomTextField(
                       controller: miController,
                       label: "M&I (%)",
                       icon: Icons.person_rounded,
                       isNumeric: true,
                     ),
-
+          
                     CustomTextField(
                       controller: dobiController,
                       label: "Dobi (%)",
                       icon: Icons.person_rounded,
                       isNumeric: true,
                     ),
-
+          
                     CustomTextField(
                       controller: othersController,
                       label: "Others",
@@ -275,59 +286,77 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                     
                   ],
                 ),
-
+          
                 CustomTextField(
                   controller: hasilAnalisaFfaController,
                   label: "FFA",
                   icon: Icons.person_rounded,
                   isNumeric: true,
                 ),
-
+          
                 CustomTextField(
                   controller: hasilAnalisaIvController,
                   label: "IV",
                   icon: Icons.person_rounded,
                   isNumeric: true,
                 ),
-
+          
                 CustomTextField(
                   controller: hasilAnalisaMoistureController,
                   label: "Moisture",
                   icon: Icons.person_rounded,
                   isNumeric: true,
                 ),
-
+          
                 CustomTextField(
                   controller: hasilAnalisaDobiController,
                   label: "Dobi",
                   icon: Icons.person_rounded,
                   isNumeric: true,
                 ),
-
+          
                 CustomTextField(
                   controller: hasilAnalisaPvController,
                   label: "PV",
                   icon: Icons.person_rounded,
                   isNumeric: true,
                 ),
-
+          
                 CustomTextField(
                   controller: hasilAnalisaAnvController,
                   label: "AnV",
                   icon: Icons.person_rounded,
                   isNumeric: true,
                 ),
+                CustomTextField(
+                  controller: hasilAnalisaTotoxController,
+                  label: "Totox",
+                  icon: Icons.person_rounded,
+                  isNumeric: true,
+                ),
+                CustomTextField(
+                  controller: hasilAnalisaCarotexController,
+                  label: "Carotex",
+                  icon: Icons.person_rounded,
+                  isNumeric: true,
+                ),
+                CustomTextField(
+                  controller: hasilAnalisaMineralOilController,
+                  label: "Mineral oil",
+                  icon: Icons.person_rounded,
+                  isNumeric: true,
+                ),
               ]),
-
+          
               CustomSectionCard('Detail Data', [
                 _detailGeneratorSection(),
                 if (detailControllers.isNotEmpty) _detailFormList(),
               ]),
-
+          
               CustomSectionCard('Remarks', [
                 CustomRemarkField(controller: remarkController),
               ]),
-
+          
               Consumer<AnalyticalResultIncomingMaterialByVesselProvider>(
                 builder: (
                   BuildContext context,
@@ -343,26 +372,26 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                           //   showSnackBar("Mohon lengkapi semua field", context);
                           //   return;
                           // }
-
+          
                           if (selectedMaterial == null) {
                             showSnackBar("Oil Type wajib dipilih", context);
                             return;
                           }
-
+          
                           if (dateEntryController.text == "") {
                             showSnackBar("Tanggal Wajib dipilih", context);
                             return;
                           }
-
+          
                           // if (numberOfRows == 0 || numberOfRows == null) {
                           //   showSnackBar("Wajib Generate Details", context);
                           //   return;
                           // }
-
+          
                           // if (!_validateDetailRows(context)) return;
-
+          
                           final bool isSuccess = await _insertData();
-
+          
                           if (isSuccess) {
                             showSnackBar("Berhasil menyimpan data", context);
                             Navigator.of(context).pop();
@@ -510,12 +539,6 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
 
                       // --- FORM PALKA S ---
                       _buildSection("Palka S", [
-                        // CustomTextField(
-                        //   controller: row['palka_s_no']!,
-                        //   label: "Palka S No",
-                        //   icon: Icons.numbers,
-                        //   isRequired: true,
-                        // ),
                         CustomTextField(
                           controller: row['palka_s_ffa']!,
                           label: "Palka S FFA",
@@ -549,12 +572,6 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
 
                       // --- FORM PALKA C ---
                       _buildSection("Palka C", [
-                        // CustomTextField(
-                        //   controller: row['palka_c_no']!,
-                        //   label: "Palka C No",
-                        //   icon: Icons.numbers,
-                        //   isRequired: true,
-                        // ),
                         CustomTextField(
                           controller: row['palka_c_ffa']!,
                           label: "Palka C FFA",
@@ -586,14 +603,7 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
                       const SizedBox(height: 16),
                       const Divider(),
 
-                      // --- FORM PALKA P (Tambahkan jika diperlukan) ---
                       _buildSection("Palka P", [
-                        // CustomTextField(
-                        //   controller: row['palka_p_no']!,
-                        //   label: "Palka P No",
-                        //   icon: Icons.numbers,
-                        //   isRequired: true,
-                        // ),
                         CustomTextField(
                           controller: row['palka_p_ffa']!,
                           label: "Palka P FFA",
@@ -653,20 +663,20 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
               id: "",
               idHdr: "",
 
-              palkaSNo: index+1,
+              palkaSNo: index + 1,
               palkaSFfa: parseDouble(row['palka_s_ffa']!.text),
               palkaSIv: parseDouble(row['palka_s_iv']!.text),
               palkaSDobi: parseDouble(row['palka_s_dobi']!.text),
               palkaSMni: parseDouble(row['palka_s_mni']!.text),
 
-              palkaCNo: index+1,
+              palkaCNo: index + 1,
 
               palkaCFfa: parseDouble(row['palka_c_ffa']!.text),
               palkaCIv: parseDouble(row['palka_c_iv']!.text),
               palkaCDobi: parseDouble(row['palka_c_dobi']!.text),
               palkaCMni: parseDouble(row['palka_c_mni']!.text),
 
-              palkaPNo: index+1,
+              palkaPNo: index + 1,
               palkaPFfa: parseDouble(row['palka_p_ffa']!.text),
               palkaPIv: parseDouble(row['palka_p_iv']!.text),
               palkaPDobi: parseDouble(row['palka_p_dobi']!.text),
@@ -700,6 +710,11 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
         hasilAnalisaDobi: parseDouble(hasilAnalisaDobiController.text),
         hasilAnalisaPv: parseDouble(hasilAnalisaPvController.text),
         hasilAnalisaAnv: parseDouble(hasilAnalisaAnvController.text),
+        hasilAnalisaTotox: parseDouble(hasilAnalisaTotoxController.text),
+        hasilAnalisaCarotex: parseDouble(hasilAnalisaCarotexController.text),
+        hasilAnalisaMineralOil: parseDouble(
+          hasilAnalisaMineralOilController.text,
+        ),
         remarks: remarkController.text,
 
         flag: 'T',
@@ -742,8 +757,6 @@ class _AnalyticalResultIncomingMaterialByVesselInputPageState
   }
 
   bool _validateDetailRows(BuildContext context) {
-    // Tentukan key mana saja yang WAJIB diisi
-    // Sesuaikan string ini dengan key yang Anda buat di function generateDetailRows
     final List<String> mandatoryKeys = [
       'palka_s_ffa',
       'palka_s_mni',

@@ -71,8 +71,9 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
                 .fetchReport(
                   plantId,
                   formattedDate,
-                  purpose: "list",
+                  // purpose: "list",
                   role: userRole,
+                  isFilterBasedOnRole: true,
                 );
           });
         },
@@ -95,9 +96,11 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
                   "Analytical_Result_of_Incoming_Plant_Chemical_Ingredient",
             )
             .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
-        
-      ],
+    return AppBar(
+      title: Text(
+        "Analytical Result of Incoming Plant Chemical Ingredient List (${formData!.code})",
+      ),
+      actions: [],
     );
   }
 
@@ -178,8 +181,9 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
                     .fetchReport(
                       plantId,
                       formattedDate,
-                      purpose: "list",
+                      // purpose: "list",
                       role: role,
+                      isFilterBasedOnRole: true,
                     );
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
@@ -240,7 +244,12 @@ class _AnalyticalResultIncomingPlantChemicalIngredientListPageState
           );
           await context
               .read<AnalyticalResultIncomingPlantChemicalIngredientProvider>()
-              .fetchReport(plantId, formattedDate, purpose: "list");
+              .fetchReport(
+                plantId,
+                formattedDate,
+                role: role,
+                isFilterBasedOnRole: true,
+              );
         });
       },
       child: Card(

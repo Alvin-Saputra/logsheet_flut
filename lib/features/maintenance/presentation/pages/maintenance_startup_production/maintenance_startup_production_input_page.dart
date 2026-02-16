@@ -762,6 +762,7 @@ class _MaintenanceStartupProductionInputPageState
       dateIssued: form?.dateIssued,
       revisionNo: form?.revisionNo.toString(),
       revisionDate: form?.revisionDate,
+      // revisionDate: null,
     );
 
     context

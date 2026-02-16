@@ -25,6 +25,7 @@ class _DailyStorageTankAnalyticalApprovalListPageState
   @override
   initState() {
     super.initState();
+    context.read<DailyStorageTankAnalyticalProvider>().clearReports();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await context
           .read<DailyStorageTankAnalyticalProvider>()
@@ -74,10 +75,12 @@ class _DailyStorageTankAnalyticalApprovalListPageState
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
-            .where((form) => form.isMenu == "Change_Product_Checklist")
+            .where((form) => form.isMenu == "Daily_Storage_Tank_Analytical")
             .first;
     return AppBar(
-      title: Text("Approval (${formData!.code})"),
+      title: Text(
+        "Daily Storage Tank Analytical Approval List(${formData!.code})",
+      ),
       actions: [
         Consumer<DailyStorageTankAnalyticalProvider>(
           builder: (

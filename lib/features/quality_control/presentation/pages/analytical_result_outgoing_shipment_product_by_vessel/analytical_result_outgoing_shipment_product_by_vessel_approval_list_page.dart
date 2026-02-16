@@ -108,7 +108,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselApprovalListPageState
                   "Analytical_Result_of_Outgoing_Shipment_By_Vessel",
             )
             .first;
-    return AppBar(title: Text("Approval (${formData!.code})"));
+    return AppBar(title: Text("Analytical Result of OutGoing Shipment By Vessel Approval List (${formData!.code})"));
   }
 
   Widget _buildFilterSection(BuildContext context) {
@@ -143,8 +143,8 @@ class _AnalyticalResultOutgoingShipmentProductByVesselApprovalListPageState
                     >()
                     .fetchReport(
                       formattedDate,
-                      isFilterBasedOnRole: true,
-                      role: userRole,
+                      // isFilterBasedOnRole: true,
+                      // role: userRole,
                     );
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
@@ -236,8 +236,8 @@ class _AnalyticalResultOutgoingShipmentProductByVesselApprovalListPageState
                 .read<AnalyticalResultOutgoingShipmentProductByVesselProvider>()
                 .fetchReport(
                   formattedDate,
-                  isFilterBasedOnRole: true,
-                  role: role,
+                  // isFilterBasedOnRole: true,
+                  // role: role,
                 );
           });
         },

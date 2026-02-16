@@ -388,7 +388,7 @@ class _AnalyticalResultOutgoingShipmentProductByTruckApprovalDetailPageState
       backgroundColor: Colors.white,
       elevation: 1,
       title: const Text(
-        'Detail',
+        'Analytical Result of Out Going Shipment Product By Truck Detail',
         style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
       ),
       centerTitle: true,

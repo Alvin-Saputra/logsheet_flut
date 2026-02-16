@@ -27,7 +27,7 @@ abstract class AnalyticalResultOutgoingShipmentProductByTruckApiService {
   Future<FetchAnalyticalResultOutgoingShipmentProductByTruckResponse>
   fetchReports(
     @Header("Authorization") String token,
-    @Query("entry_date") String? date,
+    @Query("loading_date") String? date,
   );
 
   @DELETE("/arosptruck/{id}")

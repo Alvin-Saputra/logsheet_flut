@@ -36,6 +36,23 @@ class _AnalyticalResultIncomingMaterialByVesselReportListPageState
     context
         .read<AnalyticalResultIncomingMaterialByVesselProvider>()
         .clearReports();
+
+    final userRole = context.read<UserProvider>().currentUser?.role;
+    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => context
+          .read<AnalyticalResultIncomingMaterialByVesselProvider>()
+          .fetchReport(
+            plantCode,
+            changeStringDateFormat(
+              dateEntryController.text,
+              'dd-MM-yyyy',
+              'yyyy-MM-dd',
+            ),
+            role: userRole,
+          ),
+    );
   }
 
   @override
@@ -55,7 +72,7 @@ class _AnalyticalResultIncomingMaterialByVesselReportListPageState
                   "Analytical_Result_Of_Incoming_Material_By_Vessel",
             )
             .first;
-    return AppBar(title: Text("Report List (${formData!.code})"), actions: [
+    return AppBar(title: Text("Analytical Result Of Incoming Material By Vessel Report List (${formData!.code})"), actions: [
         
       ],
     );

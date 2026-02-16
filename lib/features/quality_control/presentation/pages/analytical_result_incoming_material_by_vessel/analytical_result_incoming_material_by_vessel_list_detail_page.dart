@@ -313,6 +313,18 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
                         "AnV",
                         _data.hasilAnalisaAnv?.toString() ?? '-',
                       ),
+                      _buildDataRow(
+                        "Totox",
+                        _data.hasilAnalisaTotox?.toString() ?? '-',
+                      ),
+                      _buildDataRow(
+                        "Carotex",
+                        _data.hasilAnalisaCarotex?.toString() ?? '-',
+                      ),
+                      _buildDataRow(
+                        "Mineral Oil",
+                        _data.hasilAnalisaMineralOil?.toString() ?? '-',
+                      ),
                     ]),
 
                     _buildSection('Remarks', [
@@ -550,7 +562,7 @@ class _AnalyticalResultIncomingMaterialByVesselListDetailPageState
       backgroundColor: Colors.white,
       elevation: 1,
       title: const Text(
-        'Detail',
+        'Analytical Result Of Incoming Material By Vessel Detail',
         style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
       ),
       centerTitle: true,

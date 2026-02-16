@@ -7,6 +7,7 @@ import 'package:logsheet_app/core/widgets/custom_date_field.dart';
 import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_approval_detail_page.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_provider.dart';
@@ -34,6 +35,23 @@ class _AnalyticalResultIncomingMaterialByVesselApprovalListPageState
     context
         .read<AnalyticalResultIncomingMaterialByVesselProvider>()
         .clearReports();
+
+    final userRole = context.read<UserProvider>().currentUser?.role;
+    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => context
+          .read<AnalyticalResultIncomingMaterialByVesselProvider>()
+          .fetchReport(
+            plantCode,
+            changeStringDateFormat(
+              dateEntryController.text,
+              'dd-MM-yyyy',
+              'yyyy-MM-dd',
+            ),
+            role: userRole,
+          ),
+    );
   }
 
   @override
@@ -97,7 +115,7 @@ class _AnalyticalResultIncomingMaterialByVesselApprovalListPageState
             )
             .first;
     return AppBar(
-      title: Text("Approval (${formData!.code})"),
+      title: Text("Analytical Result Of Incoming Material By Vessel Approval List (${formData!.code})"),
       actions: [
         Consumer<AnalyticalResultIncomingMaterialByVesselProvider>(
           builder: (

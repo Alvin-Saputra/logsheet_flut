@@ -1153,25 +1153,110 @@ class QualityReportQCMySQLService {
     }
   }
 
+  // Future<List<Map<String, dynamic>>> getDailyProductionRefineryByFilter({
+  //   required String plantCode,
+  //   DateTime? transactionDate,
+  //   String? workCenter,
+  //   int? shift,
+  // }) async {
+  //   MySQLConnection? connection;
+
+  //   try {
+  //     final connResult = await getMySQLConnection();
+  //     connection = connResult.connection;
+
+  //     if (connection == null) {
+  //       log('Failed to get MySQL connection.');
+  //       return [];
+  //     }
+
+  //     String query = """
+  //     SELECT 
+  //       a.id,
+  //       a.transaction_date,
+  //       a.work_center,
+  //       a.shift,
+  //       a.cpo_tank,
+  //       a.form_no,
+  //       a.flag,
+  //       a.be_ref_tank,
+  //       a.be_ref_qty,
+  //       a.be_total_bag,
+  //       a.be_total_jenis,
+  //       a.be_lot_batch_number,
+  //       a.be_yield_percent,
+  //       a.pa_ref_tank,
+  //       a.pa_ref_qty,
+  //       a.pa_total,
+  //       a.pa_lot_batch_number,
+  //       a.pa_yield_percent,
+  //       a.uu_item,
+  //       a.uu_budget_ref_tank,
+  //       a.uu_budget_qty,
+  //       a.uu_total_cpo,
+  //       a.uu_total_steam,
+  //       a.uu_steam_cpo,
+  //       a.uu_yield_percent
+  //     FROM t_daily_production_refinery a
+  //     LIMIT 1
+  //     WHERE a.plant = :plantCode
+  //       AND (a.flag IS NULL OR a.flag = 'T')
+  //   """;
+
+  //     final params = <String, dynamic>{"plantCode": plantCode};
+
+  //     if (transactionDate != null) {
+  //       query += " AND DATE (a.transaction_date) = :transactionDate";
+  //       params["transactionDate"] = transactionDate;
+  //     }
+
+  //     if (workCenter != null && workCenter.isNotEmpty) {
+  //       query += " AND a.work_center = :workCenter";
+  //       params["workCenter"] = workCenter;
+  //     }
+
+  //     if (shift != null) {
+  //       query += " AND a.shift = :shift";
+  //       params["shift"] = shift;
+  //     }
+
+  //     query += " ORDER BY a.transaction_date DESC";
+
+  //     final result = await connection.execute(query, params);
+
+  //     log('Fetched ${result.rows.length} production records.');
+
+  //     return result.rows.map((row) => row.assoc()).toList();
+  //   } catch (e) {
+  //     log('Error fetching production data: $e');
+  //     return [];
+  //   } finally {
+  //     await closeMySQLConnection(connection);
+  //   }
+  // }
+
+
   Future<List<Map<String, dynamic>>> getDailyProductionRefineryByFilter({
-    required String plantCode,
-    DateTime? transactionDate,
-    String? workCenter,
-    int? shift,
-  }) async {
-    MySQLConnection? connection;
+  required String plantCode,
+  DateTime? transactionDate,
+  String? workCenter,
+  // int? shift,
+}) async {
+  MySQLConnection? connection;
 
-    try {
-      final connResult = await getMySQLConnection();
-      connection = connResult.connection;
+  try {
+    final connResult = await getMySQLConnection();
+    connection = connResult.connection;
 
-      if (connection == null) {
-        log('Failed to get MySQL connection.');
-        return [];
-      }
+    if (connection == null) {
+      log('Failed to get MySQL connection.');
+      return [];
+    }
 
-      String query = """
-      SELECT
+    // 1. Query SQL Standar (TANPA GROUP BY)
+    // Kita biarkan SQL mengambil data duplikat dulu
+    String query = """
+      SELECT 
         a.id,
         a.transaction_date,
         a.work_center,
@@ -1202,37 +1287,59 @@ class QualityReportQCMySQLService {
         AND (a.flag IS NULL OR a.flag = 'T')
     """;
 
-      final params = <String, dynamic>{"plantCode": plantCode};
+    final params = <String, dynamic>{"plantCode": plantCode};
 
-      if (transactionDate != null) {
-        query += " AND DATE (a.transaction_date) = :transactionDate";
-        params["transactionDate"] = transactionDate;
-      }
-
-      if (workCenter != null && workCenter.isNotEmpty) {
-        query += " AND a.work_center = :workCenter";
-        params["workCenter"] = workCenter;
-      }
-
-      if (shift != null) {
-        query += " AND a.shift = :shift";
-        params["shift"] = shift;
-      }
-
-      query += " ORDER BY a.transaction_date DESC";
-
-      final result = await connection.execute(query, params);
-
-      log('Fetched ${result.rows.length} production records.');
-
-      return result.rows.map((row) => row.assoc()).toList();
-    } catch (e) {
-      log('Error fetching production data: $e');
-      return [];
-    } finally {
-      await closeMySQLConnection(connection);
+    if (transactionDate != null) {
+      query += " AND DATE(a.transaction_date) = :transactionDate";
+      params["transactionDate"] = transactionDate;
     }
+  log('DEBUG SERVICE: plantCode=$plantCode, workCenter="$workCenter"');
+    if (workCenter != null && workCenter.isNotEmpty) {
+      query += " AND a.work_center = :workCenter";
+      params["workCenter"] = workCenter;
+    }
+
+    // if (shift != null) {
+    //   query += " AND a.shift = :shift";
+    //   params["shift"] = shift;
+    // }
+
+    // PENTING: Order by DESC memastikan data terbaru muncul paling atas
+    query += " ORDER BY a.transaction_date DESC";
+
+    final result = await connection.execute(query, params);
+
+    log('Fetched ${result.rows.length} raw records (including duplicates).');
+
+    // 2. LOGIKA DISTINCT DI DART
+    // Kita gunakan Map untuk menyimpan data unik berdasarkan ID.
+    // Karena query sudah di-ORDER BY DESC, data pertama yang masuk ke map 
+    // adalah data terbaru.
+    
+    final Map<String, Map<String, dynamic>> uniqueDataMap = {};
+
+    for (var row in result.rows) {
+      final data = row.assoc();
+      final id = data['id'].toString(); // Pastikan ID dikonversi ke String untuk key map
+      
+      // putIfAbsent hanya akan memasukkan data jika ID belum ada di Map.
+      // Ini efektif membuang duplikat yang lebih lama.
+      uniqueDataMap.putIfAbsent(id, () => data);
+    }
+
+    final uniqueList = uniqueDataMap.values.toList();
+    
+    log('Returning ${uniqueList.length} unique records.');
+
+    return uniqueList;
+
+  } catch (e) {
+    log('Error fetching production data: $e');
+    return [];
+  } finally {
+    await closeMySQLConnection(connection);
   }
+}
 
   // Di dalam class QualityReportQCMySQLService
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
 import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_api_service.dart';
@@ -199,7 +200,8 @@ class AnalyticalResultIncomingPlantChemicalIngredientProvider
     String plantId,
     String? date, {
     String? role,
-    String? purpose,
+    // String? purpose,
+    bool isFilterBasedOnRole = false,
   }) async {
     _setLoading(true);
     _setErrorMessage(null);
@@ -220,15 +222,39 @@ class AnalyticalResultIncomingPlantChemicalIngredientProvider
 
       if (response != null && response.success == true) {
         final data = response.data;
-
-        // DEBUG LOG 3
-        print('DEBUG: Data raw length: ${data?.length}');
-
-        // PERBAIKAN: Gunakan List.from untuk keamanan tipe data
         _reportList = data ?? [];
 
-        // DEBUG LOG 4
-        print('DEBUG: _reportList updated. Length: ${_reportList.length}');
+        if (isFilterBasedOnRole && AppRoles.leadQC.contains(role)) {
+          _reportList =
+              _reportList
+                  .where(
+                    (item) =>
+                        item.analytical.flag == 'T' &&
+                        item.analytical.preparedStatus == null,
+                  )
+                  .toList();
+        } else if (isFilterBasedOnRole &&
+            AppRoles.qualityControlManagerApproval.contains(role)) {
+          _reportList =
+              _reportList
+                  .where(
+                    (item) =>
+                        item.analytical.flag == 'T' &&
+                        item.analytical.preparedStatus == "Approved",
+                  )
+                  .toList();
+        } else {
+          _reportList =
+              _reportList.where((item) => item.analytical.flag == 'T').toList();
+        }
+
+        // DEBUG LOG 3
+        // print('DEBUG: Data raw length: ${data?.length}');
+
+        // // PERBAIKAN: Gunakan List.from untuk keamanan tipe data
+
+        // // DEBUG LOG 4
+        // print('DEBUG: _reportList updated. Length: ${_reportList.length}');
 
         notifyListeners();
       } else {

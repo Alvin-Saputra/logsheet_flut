@@ -173,6 +173,7 @@ class _QualityApprovalListScreenPageState
               (r) => r.checkedStatus == 'Rejected',
             );
             
+             isReadyForApproval = true;
 
             // Determine card color, icon, and status text based on the group's state
             Color cardColor = Colors.white;

@@ -64,8 +64,9 @@ class _AnalyticalResultIncomingPlantFuelListPageState
                 .fetchReport(
                   plantId,
                   formattedDate,
-                  purpose: "list",
+                  // purpose: "list",
                   role: userRole,
+                  isFilterBasedOnRole: true,
                 );
           });
         },
@@ -85,12 +86,14 @@ class _AnalyticalResultIncomingPlantFuelListPageState
             .where(
               (form) =>
                   form.isMenu ==
-                  "Analytical_Result_of_Out_Going_Shipment_Product_By_Truck",
+                  "Analytical_Result_of_Incoming_Plant_Fuel_Solar_Coal",
             )
             .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
-        
-      ],
+    return AppBar(
+      title: Text(
+        "Analytical Result of Incoming Plant Fuel Solar List (${formData!.code})",
+      ),
+      actions: [],
     );
   }
 
@@ -166,8 +169,9 @@ class _AnalyticalResultIncomingPlantFuelListPageState
                     .fetchReport(
                       plantId,
                       formattedDate,
-                      purpose: "list",
+                      // purpose: "list",
                       role: role,
+                      isFilterBasedOnRole: true,
                     );
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
@@ -224,7 +228,12 @@ class _AnalyticalResultIncomingPlantFuelListPageState
           );
           await context
               .read<AnalyticalResultIncomingPlantFuelProvider>()
-              .fetchReport(plantId, formattedDate, purpose: "list", role: role);
+              .fetchReport(
+                plantId,
+                formattedDate,
+                role: role,
+                isFilterBasedOnRole: true,
+              );
         });
       },
       child: Card(

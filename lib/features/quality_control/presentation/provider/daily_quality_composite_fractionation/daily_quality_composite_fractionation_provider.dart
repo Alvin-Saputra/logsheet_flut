@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/widgets.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/daily_quality_composite_fractionation/daily_quality_composite_fractionation_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/daily_quality_composite_fractionation/daily_quality_composite_fractionation_repository.dart';
 
@@ -183,9 +184,10 @@ class DailyQualityCompositeFractionationProvider with ChangeNotifier {
   }
 
   Future<void> getAllDailyCompositeFractionationReport(
-    String? dateFilter,
+    String? dateFilter, {
     String? role,
-  ) async {
+    bool isFilterBasedOnRole = false,
+  }) async {
     _setLoading(true);
     _setErrorMessage(null);
     try {
@@ -196,6 +198,16 @@ class DailyQualityCompositeFractionationProvider with ChangeNotifier {
       );
       _reportsList = _reportsList.where((item) => item.flag == 'T').toList();
 
+      if (isFilterBasedOnRole && AppRoles.leadQC.contains(role)) {
+        _reportsList =
+            _reportsList.where((item) => item.preparedStatus == null).toList();
+      } else if (isFilterBasedOnRole &&
+          AppRoles.qualityControlManagerApproval.contains(role)) {
+        _reportsList =
+            _reportsList
+                .where((item) => item.preparedStatus == "Approved")
+                .toList();
+      }
       notifyListeners();
 
       // await Future.delayed(const Duration(seconds: 1));

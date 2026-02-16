@@ -21,7 +21,8 @@ class AnalyticalResultIncomingMaterialByVesselReportDetailPage
   final AnalyticalResultIncomingMaterialByVesselHeaderEntity data;
 
   @override
-  State<AnalyticalResultIncomingMaterialByVesselReportDetailPage> createState() =>
+  State<AnalyticalResultIncomingMaterialByVesselReportDetailPage>
+  createState() =>
       _AnalyticalResultIncomingMaterialByVesselReportDetailPageState();
 }
 
@@ -92,13 +93,17 @@ class _AnalyticalResultIncomingMaterialByVesselReportDetailPageState
                       ),
                     ),
 
-                   _buildSection('General Information', [
+                    _buildSection('General Information', [
                       _buildDataRow('ID', widget.data.id ?? ''),
                     ]),
 
                     _buildSection('Analytical Information', [
                       _buildDataRow('Material', widget.data.material ?? '-'),
-                      _buildDataRow('Arrival', formatDatetoString(widget.data.arrival, "yyyy-MM-dd") ?? '-'),
+                      _buildDataRow(
+                        'Arrival',
+                        formatDatetoString(widget.data.arrival, "yyyy-MM-dd") ??
+                            '-',
+                      ),
                       _buildDataRow(
                         'Quantity',
                         widget.data.quantity?.toString() ?? '-',
@@ -111,166 +116,172 @@ class _AnalyticalResultIncomingMaterialByVesselReportDetailPageState
                       ),
                       _buildDataRow('FFA', widget.data.ffa?.toString() ?? '-'),
                       _buildDataRow('M&I', widget.data.mni?.toString() ?? '-'),
-                      _buildDataRow('Dobi', widget.data.dobi?.toString() ?? '-'),
-                      _buildDataRow('Others', widget.data.others?.toString() ?? '-'),
+                      _buildDataRow(
+                        'Dobi',
+                        widget.data.dobi?.toString() ?? '-',
+                      ),
+                      _buildDataRow(
+                        'Others',
+                        widget.data.others?.toString() ?? '-',
+                      ),
                     ]),
 
                     SizedBox(height: 12.0),
                     if (widget.data.details.isNotEmpty) ...[
-                    _buildSection('Details', [
-                      Center(
-                        child: SmoothPageIndicator(
-                          controller:
-                              detailPageControllers, // Gunakan satu controller untuk semua
-                          count: widget.data.details.length,
-                          effect: const WormEffect(
-                            dotHeight: 8,
-                            dotWidth: 8,
-                            activeDotColor:
-                                Colors.blue, // Sesuaikan warna tema Anda
-                            dotColor: Colors.grey,
+                      _buildSection('Details', [
+                        Center(
+                          child: SmoothPageIndicator(
+                            controller:
+                                detailPageControllers, // Gunakan satu controller untuk semua
+                            count: widget.data.details.length,
+                            effect: const WormEffect(
+                              dotHeight: 8,
+                              dotWidth: 8,
+                              activeDotColor:
+                                  Colors.blue, // Sesuaikan warna tema Anda
+                              dotColor: Colors.grey,
+                            ),
+                            onDotClicked: (index) {
+                              detailPageControllers.animateToPage(
+                                index,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
                           ),
-                          onDotClicked: (index) {
-                            detailPageControllers.animateToPage(
-                              index,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
                         ),
-                      ),
 
-                      SizedBox(height: 12.0),
+                        SizedBox(height: 12.0),
 
-                      SizedBox(
-                        child: ExpandablePageView.builder(
-                          controller: detailPageControllers,
-                          itemCount: widget.data.details.length,
-                          itemBuilder: (context, pageIndex) {
-                            return Column(
-                              children: [
-                                Text(
-                                  "Detail Data Ke - ${pageIndex + 1}",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                        SizedBox(
+                          child: ExpandablePageView.builder(
+                            controller: detailPageControllers,
+                            itemCount: widget.data.details.length,
+                            itemBuilder: (context, pageIndex) {
+                              return Column(
+                                children: [
+                                  Text(
+                                    "Detail Data Ke - ${pageIndex + 1}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
                                   ),
-                                ),
 
-                                // --- Section PALKA S ---
-                                _buildSection("Palka S", [
-                                  _buildDataRow(
-                                    'Palka S No',
-                                    widget.data.details[pageIndex].palkaSNo
-                                            ?.toString() ??
-                                        '-',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka S FFA',
-                                    widget.data.details[pageIndex].palkaSFfa
-                                            ?.toString() ??
-                                        '-',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka S IV',
-                                    widget.data.details[pageIndex].palkaSIv
-                                            ?.toString() ??
-                                        '-',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka S M&I',
-                                    widget.data.details[pageIndex].palkaSMni
-                                            ?.toString() ??
-                                        '-',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka S Dobi',
-                                    widget.data.details[pageIndex].palkaSDobi
-                                            ?.toString() ??
-                                        '-',
-                                  ),
-                                ]),
+                                  // --- Section PALKA S ---
+                                  _buildSection("Palka S", [
+                                    _buildDataRow(
+                                      'Palka S No',
+                                      widget.data.details[pageIndex].palkaSNo
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka S FFA',
+                                      widget.data.details[pageIndex].palkaSFfa
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka S IV',
+                                      widget.data.details[pageIndex].palkaSIv
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka S M&I',
+                                      widget.data.details[pageIndex].palkaSMni
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka S Dobi',
+                                      widget.data.details[pageIndex].palkaSDobi
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                  ]),
 
-                                const SizedBox(height: 8),
-                                const Divider(),
+                                  const SizedBox(height: 8),
+                                  const Divider(),
 
-                                // --- Section PALKA S ---
-                                _buildSection("Palka C", [
-                                  _buildDataRow(
-                                    'Palka C No',
-                                    widget.data.details[pageIndex].palkaCNo
-                                            ?.toString() ??
-                                        '-',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka C FFA',
-                                    widget.data.details[pageIndex].palkaCFfa
-                                            ?.toString() ??
-                                        '-',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka C IV',
-                                    widget.data.details[pageIndex].palkaCIv
-                                            ?.toString() ??
-                                        '-',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka C M&I',
-                                    widget.data.details[pageIndex].palkaCMni
-                                            ?.toString() ??
-                                        '-',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka C Dobi',
-                                    widget.data.details[pageIndex].palkaCDobi
-                                            ?.toString() ??
-                                        '-',
-                                  ),
-                                ]),
+                                  // --- Section PALKA S ---
+                                  _buildSection("Palka C", [
+                                    _buildDataRow(
+                                      'Palka C No',
+                                      widget.data.details[pageIndex].palkaCNo
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka C FFA',
+                                      widget.data.details[pageIndex].palkaCFfa
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka C IV',
+                                      widget.data.details[pageIndex].palkaCIv
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka C M&I',
+                                      widget.data.details[pageIndex].palkaCMni
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka C Dobi',
+                                      widget.data.details[pageIndex].palkaCDobi
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                  ]),
 
-                                const SizedBox(height: 8),
-                                const Divider(),
+                                  const SizedBox(height: 8),
+                                  const Divider(),
 
-                                // --- FORM PALKA P ---
-                                _buildSection("Palka P", [
-                                  _buildDataRow(
-                                    'Palka P No',
-                                    widget.data.details[pageIndex].palkaPNo
-                                            ?.toString() ??
-                                        '-',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka P FFA',
-                                    widget.data.details[pageIndex].palkaPFfa
-                                            ?.toString() ??
-                                        '-',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka P IV',
-                                    widget.data.details[pageIndex].palkaPIv
-                                            ?.toString() ??
-                                        '-',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka P M&I',
-                                    widget.data.details[pageIndex].palkaPMni
-                                            ?.toString() ??
-                                        '-',
-                                  ),
-                                  _buildDataRow(
-                                    'Palka P Dobi',
-                                    widget.data.details[pageIndex].palkaPDobi
-                                            ?.toString() ??
-                                        '-',
-                                  ),
-                                ]),
-                              ],
-                            );
-                          },
+                                  // --- FORM PALKA P ---
+                                  _buildSection("Palka P", [
+                                    _buildDataRow(
+                                      'Palka P No',
+                                      widget.data.details[pageIndex].palkaPNo
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka P FFA',
+                                      widget.data.details[pageIndex].palkaPFfa
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka P IV',
+                                      widget.data.details[pageIndex].palkaPIv
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka P M&I',
+                                      widget.data.details[pageIndex].palkaPMni
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                    _buildDataRow(
+                                      'Palka P Dobi',
+                                      widget.data.details[pageIndex].palkaPDobi
+                                              ?.toString() ??
+                                          '-',
+                                    ),
+                                  ]),
+                                ],
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    ]),]
-                      else ...[
+                      ]),
+                    ] else ...[
                       // 2. Fallback if no data exists
                       const Padding(
                         padding: EdgeInsets.all(16.0),
@@ -303,6 +314,18 @@ class _AnalyticalResultIncomingMaterialByVesselReportDetailPageState
                       _buildDataRow(
                         "PV, meqO2/kg",
                         widget.data.hasilAnalisaAnv.toString() ?? '',
+                      ),
+                      _buildDataRow(
+                        "Totox",
+                        widget.data.hasilAnalisaTotox?.toString() ?? '-',
+                      ),
+                      _buildDataRow(
+                        "Carotex",
+                        widget.data.hasilAnalisaCarotex?.toString() ?? '-',
+                      ),
+                      _buildDataRow(
+                        "Mineral Oil",
+                        widget.data.hasilAnalisaMineralOil?.toString() ?? '-',
                       ),
                     ]),
 
@@ -407,12 +430,11 @@ class _AnalyticalResultIncomingMaterialByVesselReportDetailPageState
       backgroundColor: Colors.white,
       elevation: 1,
       title: const Text(
-        'Detail',
+        'Analytical Result Of Incoming Material By Vessel Detail',
         style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
       ),
       centerTitle: true,
       iconTheme: const IconThemeData(color: Colors.black),
-      
     );
   }
 

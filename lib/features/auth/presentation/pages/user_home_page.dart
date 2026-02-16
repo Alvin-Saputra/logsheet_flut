@@ -48,6 +48,7 @@ import 'package:logsheet_app/features/quality_control/presentation/pages/analyti
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_report_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_list_page.dart';
+import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_report_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_vessel/analytical_result_outgoing_shipment_product_by_vessel_approval_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_vessel/analytical_result_outgoing_shipment_product_by_vessel_list_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_outgoing_shipment_product_by_vessel/analytical_result_outgoing_shipment_product_by_vessel_report_list.dart';
@@ -426,7 +427,7 @@ class _UserHomePageState extends State<UserHomePage> {
             )
             .first;
 
-     formAnalyticalResultOutgoingShipmentByVessel =
+    formAnalyticalResultOutgoingShipmentByVessel =
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
@@ -1157,7 +1158,7 @@ class _UserHomePageState extends State<UserHomePage> {
                         builder:
                             (_) =>
                                 // ParentAnalyticalResultIncomingPlantChemicalIngredient()
-                                AnalyticalResultIncomingPlantFuelReportListPage(),
+                                AnalyticalResultOutgoingShipmentProductByTruckReportListPage(),
                       ),
                     );
                   },
@@ -1661,7 +1662,7 @@ class _UserHomePageState extends State<UserHomePage> {
                             (_) => DailyProductionRefineryReportListPage(
                               userName: user.username,
                               role: userRole,
-                              dataForm: formDailyProductionRefinery!
+                              dataForm: formDailyProductionRefinery!,
                             ),
                       ),
                     );
@@ -1728,8 +1729,8 @@ class _UserHomePageState extends State<UserHomePage> {
                         builder:
                             (_) => DailyProductionFractionationReportListPage(
                               userName: user.username,
-                            
-                              dataForm: formDailyProductionFractionation!
+
+                              dataForm: formDailyProductionFractionation!,
                             ),
                       ),
                     );

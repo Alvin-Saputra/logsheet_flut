@@ -710,6 +710,7 @@ class _DailyProductionRefineryDetailPageState
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (BuildContext context) {
         return Padding(
           padding: EdgeInsets.only(

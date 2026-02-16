@@ -179,6 +179,7 @@ class _FormTransferDetailPageState extends State<FormTransferDetailPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (BuildContext context) {
         return Padding(
           padding: EdgeInsets.only(

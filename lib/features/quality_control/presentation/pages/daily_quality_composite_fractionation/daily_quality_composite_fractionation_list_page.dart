@@ -45,7 +45,7 @@ class _DailyQualityCompositeFractionationListPageState
             final formatted = parseDateTimeForQuery(dateEntryController.text);
             context
                 .read<DailyQualityCompositeFractionationProvider>()
-                .getAllDailyCompositeFractionationReport(formatted, userRole);
+                .getAllDailyCompositeFractionationReport(formatted, role:userRole, isFilterBasedOnRole: true);
           });
           ;
         },
@@ -66,7 +66,7 @@ class _DailyQualityCompositeFractionationListPageState
               (form) => form.isMenu == "Daily_Quality_Composite_Fractionation",
             )
             .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
+    return AppBar(title: Text("Daily Quality Composite Fractionation List (${formData!.code})"), actions: [
         
       ],
     );
@@ -149,7 +149,8 @@ class _DailyQualityCompositeFractionationListPageState
                     .read<DailyQualityCompositeFractionationProvider>()
                     .getAllDailyCompositeFractionationReport(
                       formattedDate,
-                      role,
+                      role:role,
+                      isFilterBasedOnRole: true,
                     );
               }
             },
@@ -213,7 +214,8 @@ class _DailyQualityCompositeFractionationListPageState
               .read<DailyQualityCompositeFractionationProvider>()
               .getAllDailyCompositeFractionationReport(
                 formatted ?? '',
-                role ?? '',
+                role:role ?? '',
+                isFilterBasedOnRole: true,
               );
         });
       },

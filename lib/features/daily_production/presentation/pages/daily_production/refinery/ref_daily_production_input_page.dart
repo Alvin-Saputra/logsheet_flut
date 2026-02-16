@@ -527,10 +527,10 @@ class _DailyProductionPageState
               ),
             ),
             const SizedBox(height: 8),
-
+      
             // Oil Type Dropdown
             const SizedBox(height: 8),
-
+      
             DropdownButtonFormField<String>(
               value: selectedShiftValue,
               items:
@@ -573,16 +573,16 @@ class _DailyProductionPageState
                 ),
               ),
             ),
-
+      
             SizedBox(height: 8.0),
-
+      
             SizedBox(height: 8.0),
             Text(
               "Daily Refinery Data",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8.0),
-
+      
             if (selectedRefineryMachine == null) ...[
               const Center(
                 child: Text(
@@ -646,7 +646,7 @@ class _DailyProductionPageState
                                     onSelected: (val) {
                                       setState(() {
                                         inputItems[i].showRM = val;
-
+      
                                         // JIKA DI-UNCHECK (val == false), BERSIHKAN DATA
                                         if (!val) {
                                           // 1. Reset variable dropdown/picker
@@ -656,7 +656,7 @@ class _DailyProductionPageState
                                           inputItems[i].selectedOilRm = null;
                                           // inputItems[i].isUseLastTankRm =
                                           //     false; // Reset checkbox tank
-
+      
                                           // 2. Bersihkan Text Controllers
                                           inputItems[i].flowAwalRm.clear();
                                           inputItems[i].flowAkhirRm.clear();
@@ -668,7 +668,7 @@ class _DailyProductionPageState
                                     checkmarkColor: Colors.black,
                                     selectedColor: Colors.red.withOpacity(0.2),
                                   ),
-
+      
                                   // === CHIP FINISH GOODS ===
                                   FilterChip(
                                     label: const Text("Finish Goods"),
@@ -676,7 +676,7 @@ class _DailyProductionPageState
                                     onSelected: (val) {
                                       setState(() {
                                         inputItems[i].showFG = val;
-
+      
                                         // JIKA DI-UNCHECK, BERSIHKAN DATA FG
                                         if (!val) {
                                           // 1. Reset variable dropdown/picker
@@ -684,7 +684,7 @@ class _DailyProductionPageState
                                           inputItems[i].timeAkhirFg = null;
                                           inputItems[i].selectedTankFg = null;
                                           inputItems[i].selectedOilFg = null;
-
+      
                                           // 2. Bersihkan Text Controllers
                                           inputItems[i].flowAwalFg.clear();
                                           inputItems[i].flowAkhirFg.clear();
@@ -695,7 +695,7 @@ class _DailyProductionPageState
                                     checkmarkColor: Colors.black,
                                     selectedColor: Colors.red.withOpacity(0.2),
                                   ),
-
+      
                                   // === CHIP BY PRODUCT ===
                                   FilterChip(
                                     label: const Text("By Product"),
@@ -703,7 +703,7 @@ class _DailyProductionPageState
                                     onSelected: (val) {
                                       setState(() {
                                         inputItems[i].showBP = val;
-
+      
                                         // JIKA DI-UNCHECK, BERSIHKAN DATA BP
                                         if (!val) {
                                           // 1. Reset variable dropdown/picker
@@ -711,7 +711,7 @@ class _DailyProductionPageState
                                           inputItems[i].timeAkhirBp = null;
                                           inputItems[i].selectedTankBp = null;
                                           inputItems[i].selectedOilBp = null;
-
+      
                                           // 2. Bersihkan Text Controllers
                                           inputItems[i].flowAwalBp.clear();
                                           inputItems[i].flowAkhirBp.clear();
@@ -728,7 +728,7 @@ class _DailyProductionPageState
                             ],
                           ),
                         ),
-
+      
                       if (inputItems[i].showRM == true)
                         SectionCpoRpaRps(
                           // RM Time Awal
@@ -757,7 +757,7 @@ class _DailyProductionPageState
                           onTankChanged: (val) {
                             setState(() {
                               inputItems[i].selectedTankRm = val;
-
+      
                               // inputItems[i].isUseLastTankRm = false;
                             });
                           },
@@ -775,7 +775,7 @@ class _DailyProductionPageState
                             setState(() {
                               // Update status checkbox
                               // inputItems[i].isUseLastTankRm = value;
-
+      
                               if (value == true && widget.entity != null) {
                                 inputItems[i].selectedTankRm =
                                     widget.entity?.cpoTank;
@@ -790,10 +790,9 @@ class _DailyProductionPageState
                           showCheckboxUseTankFromLastShiftChangedRm:
                               (widget.isFromAddNewShift &&
                                   inputItems[i] == inputItems.first),
-
                           showCheckboxUseTankFromLastRowRm:
                               (inputItems[i] != inputItems.first),
-
+      
                           onUseTankFromLastRowRm: (bool? value) {
                             if (value == true &&
                                 inputItems[i - 1].selectedTankRm != null) {
@@ -809,7 +808,7 @@ class _DailyProductionPageState
                           },
                         ),
                       const SizedBox(height: 16),
-
+      
                       // === Section: RBDPO RRBDPO RPS (Finish Good) ===
                       if (inputItems[i].showFG == true)
                         SectionRbdpoRrbdpoRps(
@@ -846,14 +845,14 @@ class _DailyProductionPageState
                           flowRateTotalController: inputItems[i].flowTotalFg,
                           // FG Oil Selection
                           selectedOil: inputItems[i].selectedOilFg,
-
+      
                           onOilFgChanged:
                               (oilFg) => setState(() {
                                 inputItems[i].selectedOilFg = oilFg;
                               }),
                         ),
                       const SizedBox(height: 16),
-
+      
                       // === Section: RFAD (By Product) ===
                       if (inputItems[i].showBP == true)
                         SectionRfad(
@@ -898,13 +897,13 @@ class _DailyProductionPageState
                     ],
                   ),
                 ),
-
+      
                 const SizedBox(height: 16),
-
+      
                 // Optional: Add a button to remove this specific row if needed
                 // IconButton(icon: Icon(Icons.delete), onPressed: () => _removeRow(i)),
               },
-
+      
               Container(
                 width: double.infinity,
                 margin: const EdgeInsets.only(bottom: 24),
@@ -935,7 +934,7 @@ class _DailyProductionPageState
                 },
                 controlAffinity: ListTileControlAffinity.leading,
               ),
-
+      
               if (isBahanPenolongActive) ...[
                 // === Section: Auxiliary Material ===
                 SectionAuxiliaryMaterial(
@@ -966,7 +965,7 @@ class _DailyProductionPageState
                 ),
               ],
               const SizedBox(height: 16),
-
+      
               // CheckBox to activate the bahan penolong card
               CheckboxListTile(
                 value: isUtillityUsageActive,
@@ -978,7 +977,7 @@ class _DailyProductionPageState
                 },
                 controlAffinity: ListTileControlAffinity.leading,
               ),
-
+      
               if (isUtillityUsageActive) ...[
                 // === Section: Utillity Usage ===
                 Card(
@@ -1080,14 +1079,14 @@ class _DailyProductionPageState
                 ),
               ],
               const SizedBox(height: 16),
-
+      
               // === Section: Remark ===
               SectionCard(
                 title: 'Remark',
                 children: [CustomRemarkField(controller: remarksController)],
               ),
               const SizedBox(height: 24),
-
+      
               // === Submit Button ===
               CustomSaveButton(
                 onPressed:

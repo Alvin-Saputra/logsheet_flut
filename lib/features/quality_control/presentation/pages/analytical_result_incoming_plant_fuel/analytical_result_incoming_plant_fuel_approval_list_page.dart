@@ -18,13 +18,11 @@ import 'package:provider/provider.dart';
 
 // Dummy model class to simulate your report entity
 
-class AnalyticalResultIncomingPlantFuelApprovalListPage
-    extends StatefulWidget {
+class AnalyticalResultIncomingPlantFuelApprovalListPage extends StatefulWidget {
   const AnalyticalResultIncomingPlantFuelApprovalListPage({super.key});
 
   @override
-  State<AnalyticalResultIncomingPlantFuelApprovalListPage>
-  createState() =>
+  State<AnalyticalResultIncomingPlantFuelApprovalListPage> createState() =>
       _AnalyticalResultIncomingPlantFuelApprovalListPageState();
 }
 
@@ -35,9 +33,7 @@ class _AnalyticalResultIncomingPlantFuelApprovalListPageState
   @override
   initState() {
     super.initState();
-    context
-        .read<AnalyticalResultIncomingPlantFuelProvider>()
-        .clearReports();
+    context.read<AnalyticalResultIncomingPlantFuelProvider>().clearReports();
   }
 
   @override
@@ -74,8 +70,10 @@ class _AnalyticalResultIncomingPlantFuelApprovalListPageState
                           return _approvalCardItem(
                             id: item.analytical.id ?? '',
                             date: formattedDate,
-                            preparedStatus: item.analytical.preparedStatus ?? '',
-                            approvedStatus: item.analytical.approvedStatus ?? '',
+                            preparedStatus:
+                                item.analytical.preparedStatus ?? '',
+                            approvedStatus:
+                                item.analytical.approvedStatus ?? '',
                             material: item.analytical.material,
                           );
                         },
@@ -97,11 +95,13 @@ class _AnalyticalResultIncomingPlantFuelApprovalListPageState
             .where(
               (form) =>
                   form.isMenu ==
-                  "Analytical_Result_of_Out_Going_Shipment_Product_By_Truck",
+                  "Analytical_Result_of_Incoming_Plant_Fuel_Solar_Coal",
             )
             .first;
     return AppBar(
-      title: Text("Approval (${formData!.code})"),
+      title: Text(
+        "Analytical Result of Incoming Plant Fuel Solar Approval List (${formData!.code})",
+      ),
       actions: [
         Consumer<AnalyticalResultIncomingPlantFuelProvider>(
           builder: (
@@ -223,11 +223,11 @@ class _AnalyticalResultIncomingPlantFuelApprovalListPageState
                   (context) =>
                       AnalyticalResultIncomingPlantFuelApprovalDetailPage(
                         data: context
-                            .read<
-                              AnalyticalResultIncomingPlantFuelProvider
-                            >()
+                            .read<AnalyticalResultIncomingPlantFuelProvider>()
                             .reportList
-                            .firstWhere((element) => element.analytical.id == id),
+                            .firstWhere(
+                              (element) => element.analytical.id == id,
+                            ),
                       ),
             ),
           ).then((_) async {

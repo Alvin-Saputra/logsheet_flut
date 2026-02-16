@@ -53,7 +53,7 @@ class _AnalyticalResultIncomingMaterialByTruckReportListPageState
                   "Analytical_Result_Of_Incoming_Material_By_Truck",
             )
             .first;
-    return AppBar(title: Text("Report List (${formData!.code})"), actions: [
+    return AppBar(title: Text("Analytical Result Incoming Material By Truck Report List (${formData!.code})"), actions: [
         
       ],
     );

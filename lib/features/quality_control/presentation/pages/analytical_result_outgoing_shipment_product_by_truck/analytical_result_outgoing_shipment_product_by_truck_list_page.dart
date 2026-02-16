@@ -64,8 +64,9 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
                 .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
                 .fetchReport(
                   formattedDate,
-                  purpose: "list",
+                  // purpose: "list",
                   role: userRole,
+                  isFilterBasedOnRole: true
                 );
           });
         },
@@ -88,7 +89,7 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
                   "Analytical_Result_of_Out_Going_Shipment_Product_By_Truck",
             )
             .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
+    return AppBar(title: Text("Analytical Result of Out Going Shipment Product By Truck List (${formData!.code})"), actions: [
         
       ],
     );
@@ -166,8 +167,10 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
                     .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
                     .fetchReport(
                       formattedDate,
-                      purpose: "list",
+                      // purpose: "list",
+                     
                       role: role,
+                       isFilterBasedOnRole: true,
                     );
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
@@ -224,7 +227,7 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
           );
           await context
               .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
-              .fetchReport(formattedDate, purpose: "list", role: role);
+              .fetchReport(formattedDate, role: role,  isFilterBasedOnRole: true,);
         });
       },
       child: Card(

@@ -82,10 +82,10 @@ class _DailyStorageTankAnalyticalInputPageState
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
-            .where((form) => form.isMenu == "Change_Product_Checklist")
+            .where((form) => form.isMenu == "Daily_Storage_Tank_Analytical")
             .first;
     return AppBar(
-      title: Text("Daily Storage Tank Analytical List (${formData!.code})"),
+      title: Text("Daily Storage Tank Analytical Input (${formData!.code})"),
       actions: [],
     );
   }

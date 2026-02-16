@@ -1927,52 +1927,52 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
                                               icon: Icons.event,
                                             ),
                                             SizedBox(height: 12),
-                                            DropdownButtonFormField<String>(
-                                              value: selectedShift,
-                                              items:
-                                                  dummyShiftOptions.map((item) {
-                                                    return DropdownMenuItem<
-                                                      String
-                                                    >(
-                                                      value: item,
-                                                      child: Text(
-                                                        "${item}",
-                                                        style: const TextStyle(
-                                                          fontSize: 14,
-                                                        ),
-                                                      ),
-                                                    );
-                                                  }).toList(),
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  selectedShift = value;
-                                                });
-                                              },
-                                              decoration: InputDecoration(
-                                                filled: true,
-                                                fillColor: const Color(
-                                                  0xFFF0ECE9,
-                                                ),
-                                                border: OutlineInputBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                  borderSide: BorderSide.none,
-                                                ),
-                                                labelText: 'Pilih Shift',
-                                                floatingLabelBehavior:
-                                                    FloatingLabelBehavior.auto,
-                                                prefixIcon: Padding(
-                                                  padding: const EdgeInsets.all(
-                                                    12.0,
-                                                  ),
-                                                  child: SvgPicture.asset(
-                                                    'assets/icons/oil-refinery-tanks.svg',
-                                                    height: 24,
-                                                    width: 24,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
+                                            // DropdownButtonFormField<String>(
+                                            //   value: selectedShift,
+                                            //   items:
+                                            //       dummyShiftOptions.map((item) {
+                                            //         return DropdownMenuItem<
+                                            //           String
+                                            //         >(
+                                            //           value: item,
+                                            //           child: Text(
+                                            //             "${item}",
+                                            //             style: const TextStyle(
+                                            //               fontSize: 14,
+                                            //             ),
+                                            //           ),
+                                            //         );
+                                            //       }).toList(),
+                                            //   onChanged: (value) {
+                                            //     setState(() {
+                                            //       selectedShift = value;
+                                            //     });
+                                            //   },
+                                            //   decoration: InputDecoration(
+                                            //     filled: true,
+                                            //     fillColor: const Color(
+                                            //       0xFFF0ECE9,
+                                            //     ),
+                                            //     border: OutlineInputBorder(
+                                            //       borderRadius:
+                                            //           BorderRadius.circular(12),
+                                            //       borderSide: BorderSide.none,
+                                            //     ),
+                                            //     labelText: 'Pilih Shift',
+                                            //     floatingLabelBehavior:
+                                            //         FloatingLabelBehavior.auto,
+                                            //     prefixIcon: Padding(
+                                            //       padding: const EdgeInsets.all(
+                                            //         12.0,
+                                            //       ),
+                                            //       child: SvgPicture.asset(
+                                            //         'assets/icons/oil-refinery-tanks.svg',
+                                            //         height: 24,
+                                            //         width: 24,
+                                            //       ),
+                                            //     ),
+                                            //   ),
+                                            // ),
                                             SizedBox(height: 12),
                                             Row(
                                               mainAxisSize: MainAxisSize.max,
@@ -2031,9 +2031,9 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
                                                                       true,
                                                                 ),
                                                                 plantCode,
-                                                                parseInt(
-                                                                  selectedShift,
-                                                                ),
+                                                                // parseInt(
+                                                                //   selectedShift,
+                                                                // ),
                                                                 selectedWorkCenterDailyProductionRefinery,
                                                               );
                                                               log(

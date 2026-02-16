@@ -27,6 +27,13 @@ class _DailyStorageTankAnalyticalListPageState
   final TextEditingController dateEntryController = TextEditingController();
 
   @override
+  initState() {
+    super.initState();
+
+    context.read<DailyStorageTankAnalyticalProvider>().clearReports();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final userRole = context.read<UserProvider>().currentUser?.role;
     return Scaffold(
@@ -40,12 +47,17 @@ class _DailyStorageTankAnalyticalListPageState
               builder: (context) => DailyStorageTankAnalyticalInputPage(),
             ),
           ).then((_) {
-          if (!mounted) return;
-          final formatted = parseDateTimeForQuery(dateEntryController.text);
-          context
-              .read<DailyStorageTankAnalyticalProvider>()
-              .getAllDailyStorageTankReport(formatted, userRole);
-        });;
+            if (!mounted) return;
+            final formatted = parseDateTimeForQuery(dateEntryController.text);
+            context
+                .read<DailyStorageTankAnalyticalProvider>()
+                .getAllDailyStorageTankReport(
+                  formatted,
+                  role: userRole,
+                  isFilterBasedOnRole: true,
+                );
+          });
+          ;
         },
         label: const Text("Tambah Daily Tank Storage Report"),
         icon: Icon(Icons.add),
@@ -62,9 +74,9 @@ class _DailyStorageTankAnalyticalListPageState
             .dataFormNoList
             .where((form) => form.isMenu == "Daily_Storage_Tank_Analytical")
             .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
-        
-      ],
+    return AppBar(
+      title: Text("Daily Storage Tank Analytical (${formData!.code})"),
+      actions: [],
     );
   }
 
@@ -104,7 +116,7 @@ class _DailyStorageTankAnalyticalListPageState
                                 entryBy: item.entryBy ?? '',
                                 tank: item.tankNo,
                                 oilType: item.oilType,
-                                role: role
+                                role: role,
                               );
                             },
                           );
@@ -141,7 +153,11 @@ class _DailyStorageTankAnalyticalListPageState
               if (formattedDate != null) {
                 await context
                     .read<DailyStorageTankAnalyticalProvider>()
-                    .getAllDailyStorageTankReport(formattedDate, role);
+                    .getAllDailyStorageTankReport(
+                      formattedDate,
+                      role: role,
+                      isFilterBasedOnRole: true,
+                    );
               }
             },
             icon: const Icon(Icons.search),
@@ -166,21 +182,26 @@ class _DailyStorageTankAnalyticalListPageState
     required String? tank,
     required String? oilType,
     required String? entryBy,
-    required String? role
+    required String? role,
   }) {
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => DailyStorageTankAnalyticalListDetailPage(id: id,),
+            builder:
+                (context) => DailyStorageTankAnalyticalListDetailPage(id: id),
           ),
         ).then((_) {
           if (!mounted) return;
           final formatted = parseDateTimeForQuery(dateEntryController.text);
           context
               .read<DailyStorageTankAnalyticalProvider>()
-              .getAllDailyStorageTankReport(formatted, role);
+              .getAllDailyStorageTankReport(
+                formatted,
+                role: role,
+                isFilterBasedOnRole: true,
+              );
         });
       },
       child: Card(

@@ -144,7 +144,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
             .first;
     return AppBar(
       title: Text(
-        "Analytical Result Incoming Material By Truck Input (${formData!.code})",
+        "Analytical Result of Incoming Plant Chemical Ingredient Input (${formData!.code})",
       ),
       actions: [],
     );
@@ -860,10 +860,7 @@ class _AnalyticalResultIncomingPlantChemicalIngredientInputPageState
           );
 
           // 2. Tampilkan pesan
-          showSnackBar(
-            "Detail ke-${i + 1} Analytical belum lengkap.",
-            context,
-          );
+          showSnackBar("Detail ke-${i + 1} Analytical belum lengkap.", context);
 
           return false; // Validasi gagal
         }

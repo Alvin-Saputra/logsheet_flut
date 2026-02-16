@@ -300,23 +300,36 @@ class _AnalyticalResultIncomingMaterialByVesseApprovalDetailPageState
                     _buildSection('Palka Component Analysis Result', [
                       _buildDataRow(
                         'FFA (as Palmitic) %',
-                        widget.data.hasilAnalisaFfa.toString() ?? '',
+                        widget.data.hasilAnalisaFfa?.toString() ?? '-',
                       ),
                       _buildDataRow(
                         'IV (Wijs), grl2/100gr',
-                        widget.data.hasilAnalisaIv.toString() ?? '',
+                        widget.data.hasilAnalisaIv?.toString() ?? '-',
                       ),
                       _buildDataRow(
                         'Moisture %',
-                        widget.data.hasilAnalisaMoisture.toString() ?? '',
+                        widget.data.hasilAnalisaMoisture?.toString() ?? '-',
                       ),
                       _buildDataRow(
                         'DOBI',
-                        widget.data.hasilAnalisaDobi.toString() ?? '',
+                        widget.data.hasilAnalisaDobi?.toString() ?? '-',
                       ),
                       _buildDataRow(
                         "PV, meqO2/kg",
-                        widget.data.hasilAnalisaAnv.toString() ?? '',
+                        widget.data.hasilAnalisaAnv?.toString() ?? '-',
+                      ),
+
+                      _buildDataRow(
+                        "Totox",
+                        widget.data.hasilAnalisaTotox?.toString() ?? '-',
+                      ),
+                      _buildDataRow(
+                        "Carotex",
+                        widget.data.hasilAnalisaCarotex?.toString() ?? '-',
+                      ),
+                      _buildDataRow(
+                        "Mineral Oil",
+                        widget.data.hasilAnalisaMineralOil?.toString() ?? '-',
                       ),
                     ]),
 
@@ -542,7 +555,7 @@ class _AnalyticalResultIncomingMaterialByVesseApprovalDetailPageState
       backgroundColor: Colors.white,
       elevation: 1,
       title: const Text(
-        'Detail',
+        'Analytical Result Of Incoming Material By Vessel Detail Detail',
         style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
       ),
       centerTitle: true,

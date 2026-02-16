@@ -3,12 +3,8 @@ import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
 import 'package:logsheet_app/features/quality_control/data/datasources/remote/analytical_result_incoming_plant_fuel/analytical_result_incoming_plant_fuel_api_service.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_chemical_ingredient/analytical_result/analytical_result_incoming_plant_chemical_ingredient_header_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_chemical_ingredient/analytical_with_certificate_of_analysis_header_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_chemical_ingredient/certificate_of_analysis/certificate_of_analysis_incoming_plant_chemical_ingredient_header_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_fuel/analytical_result/analytical_result_incoming_plant_fuel_header_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_fuel/analytical_with_report_of_analysis_header_entity.dart';
-import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_fuel/report_of_analysis/report_of_analysis_incoming_plant_fuel_detail_entity.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_plant_fuel/report_of_analysis/report_of_analysis_incoming_plant_fuel_header_entity.dart';
 
 class AnalyticalResultIncomingPlantFuelProvider with ChangeNotifier {
@@ -196,7 +192,8 @@ class AnalyticalResultIncomingPlantFuelProvider with ChangeNotifier {
     String plantId,
     String? date, {
     String? role,
-    String? purpose,
+    // String? purpose,
+    bool isFilterBasedOnRole = true,
   }) async {
     _setLoading(true);
     _setErrorMessage(null);
@@ -217,18 +214,23 @@ class AnalyticalResultIncomingPlantFuelProvider with ChangeNotifier {
 
       if (response != null && response.success == true) {
         final data = response.data;
+        _reportList = data ?? [];
 
         // DEBUG LOG 3
         print('DEBUG: Data raw length: ${data?.length}');
 
         // PERBAIKAN: Gunakan List.from untuk keamanan tipe data
-        if (purpose == "list" && AppRoles.leadQC.contains(role)) {
+        if (isFilterBasedOnRole && AppRoles.leadQC.contains(role)) {
           _reportList =
-              (data ?? [])
-                  .where((report) => report.analytical.preparedStatus == null)
+              _reportList
+                  .where((item) => item.analytical.preparedStatus == null)
                   .toList();
-        } else {
-          _reportList = data ?? [];
+        } else if (isFilterBasedOnRole &&
+            AppRoles.qualityControlManagerApproval.contains(role)) {
+          _reportList =
+              _reportList
+                  .where((item) => item.analytical.preparedStatus == "Approved")
+                  .toList();
         }
 
         // DEBUG LOG 4

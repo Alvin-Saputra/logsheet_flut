@@ -27,6 +27,13 @@ class _DailyStorageTankAnalyticalReportListPageState
   final TextEditingController dateEntryController = TextEditingController();
 
   @override
+  initState() {
+    super.initState();
+
+    context.read<DailyStorageTankAnalyticalProvider>().clearReports();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final userRole = context.read<UserProvider>().currentUser?.role;
     return Scaffold(appBar: _buildAppBar(), body: _buildBody(userRole ?? ''));
@@ -37,11 +44,11 @@ class _DailyStorageTankAnalyticalReportListPageState
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
-            .where((form) => form.isMenu == "Change_Product_Checklist")
+            .where((form) => form.isMenu == "Daily_Storage_Tank_Analytical")
             .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
-        
-      ],
+    return AppBar(
+      title: Text("Daily Storage Tank Analytical (${formData!.code})"),
+      actions: [],
     );
   }
 
@@ -81,8 +88,9 @@ class _DailyStorageTankAnalyticalReportListPageState
                                 entryBy: item.entryBy ?? '',
                                 oilType: item.oilType ?? '',
                                 tank: item.tankNo ?? '',
-                                role: role, 
-                                approvedStatus: item.approvedStatus??'', preparedStatus: item.preparedStatus??'',
+                                role: role,
+                                approvedStatus: item.approvedStatus ?? '',
+                                preparedStatus: item.preparedStatus ?? '',
                               );
                             },
                           );
@@ -119,7 +127,7 @@ class _DailyStorageTankAnalyticalReportListPageState
               if (formattedDate != null) {
                 await context
                     .read<DailyStorageTankAnalyticalProvider>()
-                    .getAllDailyStorageTankReport(formattedDate, role);
+                    .getAllDailyStorageTankReport(formattedDate);
               }
             },
             icon: const Icon(Icons.search),

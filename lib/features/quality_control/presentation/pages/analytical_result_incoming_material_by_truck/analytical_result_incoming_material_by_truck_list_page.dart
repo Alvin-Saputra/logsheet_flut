@@ -8,13 +8,10 @@ import 'package:logsheet_app/features/master_data/data/model/master/data_form_no
 import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_input_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_list_detail_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_list_detail_page.dart';
-import 'package:logsheet_app/features/quality_control/presentation/pages/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_input_page.dart';
 import 'package:logsheet_app/core/widgets/custom_date_field.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/user_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_truck/analytical_result_incoming_material_by_truck_provider.dart';
-import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_provider.dart';
 import 'package:provider/provider.dart';
 
 class AnalyticalResultIncomingMaterialByTruckListPage extends StatefulWidget {
@@ -68,8 +65,9 @@ class _AnalyticalResultIncomingMaterialByTruckListPageState
                 .fetchReport(
                   plantId,
                   formattedDate,
-                  purpose: "list",
+                  // purpose: "list",
                   role: userRole,
+                  isFilterBasedOnRole: true,
                 );
           });
         },
@@ -92,9 +90,11 @@ class _AnalyticalResultIncomingMaterialByTruckListPageState
                   "Analytical_Result_Of_Incoming_Material_By_Truck",
             )
             .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
-        
-      ],
+    return AppBar(
+      title: Text(
+        "Analytical Result Incoming Material By Truck List (${formData!.code})",
+      ),
+      actions: [],
     );
   }
 
@@ -173,8 +173,9 @@ class _AnalyticalResultIncomingMaterialByTruckListPageState
                     .fetchReport(
                       plantId,
                       formattedDate,
-                      purpose: "list",
+                      // purpose: "list",
                       role: role,
+                      isFilterBasedOnRole: true,
                     );
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
@@ -232,7 +233,12 @@ class _AnalyticalResultIncomingMaterialByTruckListPageState
           );
           await context
               .read<AnalyticalResultIncomingMaterialByTruckProvider>()
-              .fetchReport(plantId, formattedDate, purpose: "list", role: role);
+              .fetchReport(
+                plantId,
+                formattedDate,
+                role: role,
+                isFilterBasedOnRole: true,
+              );
         });
       },
       child: Card(

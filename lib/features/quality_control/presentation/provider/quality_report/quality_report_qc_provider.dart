@@ -425,7 +425,7 @@ class QualityReportQCProvider with ChangeNotifier {
   Future<void> getDailyProductionRefineryByFilter(
     DateTime? transactionDate,
     String plantCode,
-    int? shift,
+    // int? shift,
     String? workCenter,
   ) async {
     _setLoadingFetchDailyProductionRefinery(true);
@@ -436,7 +436,7 @@ class QualityReportQCProvider with ChangeNotifier {
           .getDailyProductionRefineryByFilter(
             transactionDate: transactionDate,
             plantCode: plantCode,
-            shift: shift,
+            // shift: shift,
             workCenter: workCenter,
           );
       notifyListeners();

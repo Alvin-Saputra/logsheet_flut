@@ -5,10 +5,8 @@ import 'analytical_result_incoming_material_by_vessel_detail_model.dart';
 part 'analytical_result_incoming_material_by_vessel_header_model.g.dart';
 
 @JsonSerializable(explicitToJson: true)
-class AnalyticalResultIncomingMaterialByVesselHeaderModel 
+class AnalyticalResultIncomingMaterialByVesselHeaderModel
     extends AnalyticalResultIncomingMaterialByVesselHeaderEntity {
-
-
   @JsonKey(name: 'id')
   final String jsonId;
 
@@ -69,9 +67,18 @@ class AnalyticalResultIncomingMaterialByVesselHeaderModel
   @JsonKey(name: 'hasil_analisa_anv')
   final String? jsonHasilAnalisaAnv;
 
+  @JsonKey(name: 'hasil_analisa_totox')
+  final String? jsonHasilAnalisaTotox;
+
+  @JsonKey(name: 'hasil_analisa_carotex')
+  final String? jsonHasilAnalisaCarotex;
+
+  @JsonKey(name: 'hasil_analisa_mineral_oil')
+  final String? jsonHasilAnalisaMineralOil;
+
   @JsonKey(name: 'remarks')
   final String? jsonRemarks;
-  
+
   @JsonKey(name: 'flag')
   final String? jsonFlag;
 
@@ -148,6 +155,9 @@ class AnalyticalResultIncomingMaterialByVesselHeaderModel
     this.jsonHasilAnalisaDobi,
     this.jsonHasilAnalisaPv,
     this.jsonHasilAnalisaAnv,
+    this.jsonHasilAnalisaTotox,
+    this.jsonHasilAnalisaCarotex,
+    this.jsonHasilAnalisaMineralOil,
     this.jsonRemarks,
     this.jsonFlag,
     this.jsonEntryBy,
@@ -168,55 +178,75 @@ class AnalyticalResultIncomingMaterialByVesselHeaderModel
     this.jsonRevisionDate,
     this.jsonDetail,
   }) : super(
-          
-          id: jsonId,
-          company: jsonCompany,
-          plant: jsonPlant,
-          
-          // String -> DateTime
-          transactionDate: jsonTransactionDate != null ? DateTime.tryParse(jsonTransactionDate) : null,
-          arrival: jsonArrival != null ? DateTime.tryParse(jsonArrival) : null,
-          entryDate: jsonEntryDate != null ? DateTime.tryParse(jsonEntryDate) : null,
-          preparedDate: jsonPreparedDate != null ? DateTime.tryParse(jsonPreparedDate) : null,
-          approvedDate: jsonApprovedDate != null ? DateTime.tryParse(jsonApprovedDate) : null,
-          updatedDate: jsonUpdatedDate != null ? DateTime.tryParse(jsonUpdatedDate) : null,
-          dateIssued: jsonDateIssued != null ? DateTime.tryParse(jsonDateIssued) : null,
-          revisionDate: jsonRevisionDate != null ? DateTime.tryParse(jsonRevisionDate) : null,
+         id: jsonId,
+         company: jsonCompany,
+         plant: jsonPlant,
 
-          // String -> Double
-          quantity: double.tryParse(jsonQuantity ?? ''),
-          ffa: double.tryParse(jsonFfa ?? ''),
-          mni: double.tryParse(jsonMni ?? ''),
-          dobi: double.tryParse(jsonDobi ?? ''),
-          hasilAnalisaFfa: double.tryParse(jsonHasilAnalisaFfa ?? ''),
-          hasilAnalisaIv: double.tryParse(jsonHasilAnalisaIv ?? ''),
-          hasilAnalisaMoisture: double.tryParse(jsonHasilAnalisaMoisture ?? ''),
-          hasilAnalisaDobi: double.tryParse(jsonHasilAnalisaDobi ?? ''),
-          hasilAnalisaPv: double.tryParse(jsonHasilAnalisaPv ?? ''),
-          hasilAnalisaAnv: double.tryParse(jsonHasilAnalisaAnv ?? ''),
+         // String -> DateTime
+         transactionDate:
+             jsonTransactionDate != null
+                 ? DateTime.tryParse(jsonTransactionDate)
+                 : null,
+         arrival: jsonArrival != null ? DateTime.tryParse(jsonArrival) : null,
+         entryDate:
+             jsonEntryDate != null ? DateTime.tryParse(jsonEntryDate) : null,
+         preparedDate:
+             jsonPreparedDate != null
+                 ? DateTime.tryParse(jsonPreparedDate)
+                 : null,
+         approvedDate:
+             jsonApprovedDate != null
+                 ? DateTime.tryParse(jsonApprovedDate)
+                 : null,
+         updatedDate:
+             jsonUpdatedDate != null
+                 ? DateTime.tryParse(jsonUpdatedDate)
+                 : null,
+         dateIssued:
+             jsonDateIssued != null ? DateTime.tryParse(jsonDateIssued) : null,
+         revisionDate:
+             jsonRevisionDate != null
+                 ? DateTime.tryParse(jsonRevisionDate)
+                 : null,
 
-          // String langsung
-          material: jsonMaterial,
-          supplier: jsonSupplier,
-          shipName: jsonShipName,
-          contractDoNomor: jsonContractDoNomor,
-          others: jsonOthers,
-          remarks: jsonRemarks,
-          flag: jsonFlag,
-          entryBy: jsonEntryBy,
-          preparedBy: jsonPreparedBy,
-          preparedStatus: jsonPreparedStatus,
-          preparedStatusRemarks: jsonPreparedStatusRemarks,
-          approvedBy: jsonApprovedBy,
-          approvedStatus: jsonApprovedStatus,
-          approvedStatusRemarks: jsonApprovedStatusRemarks,
-          updatedBy: jsonUpdatedBy,
-          formNo: jsonFormNo,
-          
-          revisionNo: jsonRevisionNo?.toString(),
+         // String -> Double
+         quantity: double.tryParse(jsonQuantity ?? ''),
+         ffa: double.tryParse(jsonFfa ?? ''),
+         mni: double.tryParse(jsonMni ?? ''),
+         dobi: double.tryParse(jsonDobi ?? ''),
+         hasilAnalisaFfa: double.tryParse(jsonHasilAnalisaFfa ?? ''),
+         hasilAnalisaIv: double.tryParse(jsonHasilAnalisaIv ?? ''),
+         hasilAnalisaMoisture: double.tryParse(jsonHasilAnalisaMoisture ?? ''),
+         hasilAnalisaDobi: double.tryParse(jsonHasilAnalisaDobi ?? ''),
+         hasilAnalisaPv: double.tryParse(jsonHasilAnalisaPv ?? ''),
+         hasilAnalisaAnv: double.tryParse(jsonHasilAnalisaAnv ?? ''),
+         hasilAnalisaTotox: double.tryParse(jsonHasilAnalisaTotox ?? ''),
+         hasilAnalisaCarotex: double.tryParse(jsonHasilAnalisaCarotex ?? ''),
+         hasilAnalisaMineralOil: double.tryParse(
+           jsonHasilAnalisaMineralOil ?? '',
+         ),
+         // String langsung
+         material: jsonMaterial,
+         supplier: jsonSupplier,
+         shipName: jsonShipName,
+         contractDoNomor: jsonContractDoNomor,
+         others: jsonOthers,
+         remarks: jsonRemarks,
+         flag: jsonFlag,
+         entryBy: jsonEntryBy,
+         preparedBy: jsonPreparedBy,
+         preparedStatus: jsonPreparedStatus,
+         preparedStatusRemarks: jsonPreparedStatusRemarks,
+         approvedBy: jsonApprovedBy,
+         approvedStatus: jsonApprovedStatus,
+         approvedStatusRemarks: jsonApprovedStatusRemarks,
+         updatedBy: jsonUpdatedBy,
+         formNo: jsonFormNo,
 
-          details: jsonDetail ?? [], 
-        );
+         revisionNo: jsonRevisionNo?.toString(),
+
+         details: jsonDetail ?? [],
+       );
 
   factory AnalyticalResultIncomingMaterialByVesselHeaderModel.fromJson(
     Map<String, dynamic> json,
