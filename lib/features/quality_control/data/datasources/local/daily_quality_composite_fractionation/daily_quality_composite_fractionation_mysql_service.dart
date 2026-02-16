@@ -204,40 +204,7 @@ class DailyQualityCompositeFractionationMysqlService {
       params['startDateTimeStr'] = dbFormatter.format(startDateTime);
       params['endDateTimeStr'] = dbFormatter.format(endDateTime);
       
-      if (AppRoles.leadQC.contains(role)) {
-        // --- LEAD QC QUERY (Shift Based: 08:00 - 08:00) ---
-
-        // Add time-specific parameters to the map
-
-        baseQuery = """
-          SELECT 
-           * FROM t_daily_quality_composite_fractionation AS a
-          WHERE
-            STR_TO_DATE(
-              CONCAT(
-                DATE_FORMAT(a.transaction_date, '%Y-%m-%d'),
-                ' ',
-                DATE_FORMAT(a.time, '%H:%i:%s') 
-              ),
-              '%Y-%m-%d %H:%i:%s'
-            ) >= STR_TO_DATE(:startDateTimeStr, '%Y-%m-%d %H:%i:%s')
-          AND
-            STR_TO_DATE(
-              CONCAT(
-                DATE_FORMAT(a.transaction_date, '%Y-%m-%d'),
-                ' ',
-                DATE_FORMAT(a.time, '%H:%i:%s')
-              ),
-              '%Y-%m-%d %H:%i:%s'
-            ) <= STR_TO_DATE(:endDateTimeStr, '%Y-%m-%d %H:%i:%s')
-          AND a.flag = 'T'
-          AND a.work_center = 'FRAC-02'
-        """;
-      } else {
-        // --- STANDARD QUERY (Date Based) ---
-
-        // Add standard parameter
-
+      
         baseQuery = """
           SELECT *
           FROM t_daily_quality_composite_fractionation AS a
@@ -260,9 +227,8 @@ class DailyQualityCompositeFractionationMysqlService {
               '%Y-%m-%d %H:%i:%s'
             ) <= STR_TO_DATE(:endDateTimeStr, '%Y-%m-%d %H:%i:%s')
           AND a.flag = 'T'
-          AND a.work_center = 'FRAC-02'
         """;
-      }
+      
 
       // 4. Pass the dynamic 'params' map instead of the hardcoded map
       final IResultSet result = await connection!.execute(baseQuery, params);

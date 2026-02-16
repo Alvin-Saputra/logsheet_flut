@@ -62,7 +62,7 @@ class _AnalyticalResultOutgoingShipmentProductByTruckReportListPageState
             );
             await context
                 .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
-                .fetchReport(formattedDate, purpose: "list", role: userRole);
+                .fetchReport(formattedDate, role: userRole);
           });
         },
         label: const Text("Tambah Report"),
@@ -166,7 +166,7 @@ class _AnalyticalResultOutgoingShipmentProductByTruckReportListPageState
                     .read<
                       AnalyticalResultOutgoingShipmentProductByTruckProvider
                     >()
-                    .fetchReport(formattedDate, purpose: "list", role: role);
+                    .fetchReport(formattedDate, role: role);
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
               }
@@ -237,7 +237,7 @@ class _AnalyticalResultOutgoingShipmentProductByTruckReportListPageState
           );
           await context
               .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
-              .fetchReport(formattedDate, purpose: "list", role: role);
+              .fetchReport(formattedDate,role: role);
         });
       },
       child: Card(

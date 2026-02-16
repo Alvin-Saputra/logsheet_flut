@@ -95,7 +95,7 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
     String plantId,
     String? date, {
     String? role,
-    String? purpose,
+    bool isFilterBasedOnRole = false,
   }) async {
     _setLoading(true);
     _setErrorMessage(null);
@@ -108,18 +108,27 @@ class AnalyticalResultIncomingMaterialByVesselProvider with ChangeNotifier {
         date ?? '',
       );
 
+      response;
       if (response != null && response.success == true) {
         final data = response.data;
         _reportListFromApi = data;
 
-        if (purpose == "list" && AppRoles.leadQC.contains(role)) {
+        if (isFilterBasedOnRole && AppRoles.leadQC.contains(role)) {
           _reportListFromApi =
               _reportListFromApi
                   .where(
                     (item) => item.flag == 'T' && item.preparedStatus == null,
                   )
                   .toList();
-        } else {
+        } else if (isFilterBasedOnRole && AppRoles.qualityControlManagerApproval.contains(role)) {
+          _reportListFromApi =
+              _reportListFromApi
+                  .where(
+                    (item) => item.flag == 'T' && item.preparedStatus == "Approved",
+                  )
+                  .toList();
+        } 
+        else {
           _reportListFromApi =
               _reportListFromApi.where((item) => item.flag == 'T').toList();
         }

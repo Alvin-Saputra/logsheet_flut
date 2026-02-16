@@ -64,8 +64,9 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
                 .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
                 .fetchReport(
                   formattedDate,
-                  purpose: "list",
+                  // purpose: "list",
                   role: userRole,
+                  isFilterBasedOnRole: true
                 );
           });
         },
@@ -166,8 +167,10 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
                     .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
                     .fetchReport(
                       formattedDate,
-                      purpose: "list",
+                      // purpose: "list",
+                     
                       role: role,
+                       isFilterBasedOnRole: true,
                     );
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
@@ -224,7 +227,7 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
           );
           await context
               .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
-              .fetchReport(formattedDate, purpose: "list", role: role);
+              .fetchReport(formattedDate, role: role,  isFilterBasedOnRole: true,);
         });
       },
       child: Card(

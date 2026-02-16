@@ -143,8 +143,8 @@ class _AnalyticalResultOutgoingShipmentProductByVesselApprovalListPageState
                     >()
                     .fetchReport(
                       formattedDate,
-                      isFilterBasedOnRole: true,
-                      role: userRole,
+                      // isFilterBasedOnRole: true,
+                      // role: userRole,
                     );
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
@@ -236,8 +236,8 @@ class _AnalyticalResultOutgoingShipmentProductByVesselApprovalListPageState
                 .read<AnalyticalResultOutgoingShipmentProductByVesselProvider>()
                 .fetchReport(
                   formattedDate,
-                  isFilterBasedOnRole: true,
-                  role: role,
+                  // isFilterBasedOnRole: true,
+                  // role: role,
                 );
           });
         },

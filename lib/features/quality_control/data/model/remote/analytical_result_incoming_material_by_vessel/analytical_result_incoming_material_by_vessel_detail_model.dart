@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/quality_control/data/model/local/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_detail_entity.dart';
 part 'analytical_result_incoming_material_by_vessel_detail_model.g.dart';
 
@@ -13,41 +14,41 @@ class AnalyticalResultIncomingMaterialByVesselDetailModel
 
   // Case 1: JSON berupa String (perlu diparse ke double)
   @JsonKey(name: 'palka_s_no')
-  final num? jsonPalkaSNo;
+  final int? jsonPalkaSNo;
 
   @JsonKey(name: 'palka_c_no')
-  final num? jsonPalkaCNo;
+  final int? jsonPalkaCNo;
 
   @JsonKey(name: 'palka_p_no')
-  final num? jsonPalkaPNo;
+  final int? jsonPalkaPNo;
 
-  // Case 2: JSON berupa num/angka (perlu di-cast ke double)
+  // Case 2: JSON berupa String/angka (perlu di-cast ke double)
   @JsonKey(name: 'palka_s_ffa')
-  final num? jsonPalkaSFfa;
+  final String? jsonPalkaSFfa;
   @JsonKey(name: 'palka_s_iv')
-  final num? jsonPalkaSIv;
+  final String? jsonPalkaSIv;
   @JsonKey(name: 'palka_s_dobi')
-  final num? jsonPalkaSDobi;
+  final String? jsonPalkaSDobi;
   @JsonKey(name: 'palka_s_mni')
-  final num? jsonPalkaSMni;
+  final String? jsonPalkaSMni;
 
   @JsonKey(name: 'palka_c_ffa')
-  final num? jsonPalkaCFfa;
+  final String? jsonPalkaCFfa;
   @JsonKey(name: 'palka_c_iv')
-  final num? jsonPalkaCIv;
+  final String? jsonPalkaCIv;
   @JsonKey(name: 'palka_c_dobi')
-  final num? jsonPalkaCDobi;
+  final String? jsonPalkaCDobi;
   @JsonKey(name: 'palka_c_mni')
-  final num? jsonPalkaCMni;
+  final String? jsonPalkaCMni;
 
   @JsonKey(name: 'palka_p_ffa')
-  final num? jsonPalkaPFfa;
+  final String? jsonPalkaPFfa;
   @JsonKey(name: 'palka_p_iv')
-  final num? jsonPalkaPIv;
+  final String? jsonPalkaPIv;
   @JsonKey(name: 'palka_p_dobi')
-  final num? jsonPalkaPDobi;
+  final String? jsonPalkaPDobi;
   @JsonKey(name: 'palka_p_mni')
-  final num? jsonPalkaPMni;
+  final String? jsonPalkaPMni;
 
   AnalyticalResultIncomingMaterialByVesselDetailModel({
     required this.jsonId,
@@ -68,32 +69,32 @@ class AnalyticalResultIncomingMaterialByVesselDetailModel
     this.jsonPalkaPDobi,
     this.jsonPalkaPMni,
   }) : super(
-          // --- MAPPING KE ENTITY ---
-          id: jsonId,
-          idHdr: jsonIdHdr,
-          
-          // 1. Konversi String -> Double
-          palkaSNo: jsonPalkaSNo?.toInt(),
-          palkaCNo: jsonPalkaCNo?.toInt(),
-          palkaPNo: jsonPalkaPNo?.toInt(),
+         // --- MAPPING KE ENTITY ---
+         id: jsonId,
+         idHdr: jsonIdHdr,
 
-          // 2. Konversi Num -> Double
-          // .toDouble() aman digunakan pada tipe 'num'
-          palkaSFfa: jsonPalkaSFfa?.toDouble(),
-          palkaSIv: jsonPalkaSIv?.toDouble(),
-          palkaSDobi: jsonPalkaSDobi?.toDouble(),
-          palkaSMni: jsonPalkaSMni?.toDouble(),
-          
-          palkaCFfa: jsonPalkaCFfa?.toDouble(),
-          palkaCIv: jsonPalkaCIv?.toDouble(),
-          palkaCDobi: jsonPalkaCDobi?.toDouble(),
-          palkaCMni: jsonPalkaCMni?.toDouble(),
+         // 1. Konversi String -> Double
+         palkaSNo: jsonPalkaSNo,
+         palkaCNo: jsonPalkaCNo,
+         palkaPNo: jsonPalkaPNo,
 
-          palkaPFfa: jsonPalkaPFfa?.toDouble(),
-          palkaPIv: jsonPalkaPIv?.toDouble(),
-          palkaPDobi: jsonPalkaPDobi?.toDouble(),
-          palkaPMni: jsonPalkaPMni?.toDouble(),
-        );
+         // 2. Konversi Num -> Double
+         // .toDouble() aman digunakan pada tipe 'num'
+         palkaSFfa: parseDouble(jsonPalkaSFfa),
+         palkaSIv: parseDouble(jsonPalkaSIv),
+         palkaSDobi: parseDouble(jsonPalkaSDobi),
+         palkaSMni: parseDouble(jsonPalkaSMni),
+
+         palkaCFfa: parseDouble(jsonPalkaCFfa),
+         palkaCIv: parseDouble(jsonPalkaCIv),
+         palkaCDobi: parseDouble(jsonPalkaCDobi),
+         palkaCMni: parseDouble(jsonPalkaCMni),
+
+         palkaPFfa: parseDouble(jsonPalkaPFfa),
+         palkaPIv: parseDouble(jsonPalkaPIv),
+         palkaPDobi: parseDouble(jsonPalkaPDobi),
+         palkaPMni: parseDouble(jsonPalkaPMni),
+       );
 
   factory AnalyticalResultIncomingMaterialByVesselDetailModel.fromJson(
     Map<String, dynamic> json,

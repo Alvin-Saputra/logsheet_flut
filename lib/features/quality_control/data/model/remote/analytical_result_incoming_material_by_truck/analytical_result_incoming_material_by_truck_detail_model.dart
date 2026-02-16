@@ -22,27 +22,27 @@ class AnalyticalResultIncomingMaterialByTruckDetailModel
   @JsonKey(name: 'police_no')
   final String? jsonPoliceNo;
 
-  // Case 2: JSON berupa num/angka (perlu di-cast ke double)
+  // Case 2: JSON berupa String/angka (perlu di-cast ke double)
   @JsonKey(name: 'p_ffa')
-  final num? jsonPFfa;
+  final String? jsonPFfa;
 
   @JsonKey(name: 'p_moisture')
-  final num? jsonPMoisture;
+  final String? jsonPMoisture;
 
   @JsonKey(name: 'p_iv')
-  final num? jsonPIv;
+  final String? jsonPIv;
 
   @JsonKey(name: 'p_dobi')
-  final num? jsonPDobi;
+  final String? jsonPDobi;
 
   @JsonKey(name: 'p_pv')
-  final num? jsonPPv;
+  final String? jsonPPv;
 
   @JsonKey(name: 'p_color_r')
-  final num? jsonPColorR;
+  final String? jsonPColorR;
 
   @JsonKey(name: 'p_color_y')
-  final num? jsonPColorY;
+  final String? jsonPColorY;
 
   @JsonKey(name: 'analis')
   final String? jsonAnalis;

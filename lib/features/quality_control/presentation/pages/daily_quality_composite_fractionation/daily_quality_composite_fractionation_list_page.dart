@@ -45,7 +45,7 @@ class _DailyQualityCompositeFractionationListPageState
             final formatted = parseDateTimeForQuery(dateEntryController.text);
             context
                 .read<DailyQualityCompositeFractionationProvider>()
-                .getAllDailyCompositeFractionationReport(formatted, userRole);
+                .getAllDailyCompositeFractionationReport(formatted, role:userRole, isFilterBasedOnRole: true);
           });
           ;
         },
@@ -149,7 +149,8 @@ class _DailyQualityCompositeFractionationListPageState
                     .read<DailyQualityCompositeFractionationProvider>()
                     .getAllDailyCompositeFractionationReport(
                       formattedDate,
-                      role,
+                      role:role,
+                      isFilterBasedOnRole: true,
                     );
               }
             },
@@ -213,7 +214,8 @@ class _DailyQualityCompositeFractionationListPageState
               .read<DailyQualityCompositeFractionationProvider>()
               .getAllDailyCompositeFractionationReport(
                 formatted ?? '',
-                role ?? '',
+                role:role ?? '',
+                isFilterBasedOnRole: true,
               );
         });
       },

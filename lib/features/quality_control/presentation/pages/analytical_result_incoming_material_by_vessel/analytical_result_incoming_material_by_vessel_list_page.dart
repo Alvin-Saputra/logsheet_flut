@@ -48,8 +48,8 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
               'dd-MM-yyyy',
               'yyyy-MM-dd',
             ),
-            purpose: "list",
             role: userRole,
+            isFilterBasedOnRole: true,
           ),
     );
   }
@@ -84,8 +84,8 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
                 .fetchReport(
                   plantId,
                   formattedDate,
-                  purpose: "list",
                   role: userRole,
+                  isFilterBasedOnRole: true,
                 );
           });
         },
@@ -108,9 +108,11 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
                   "Analytical_Result_Of_Incoming_Material_By_Vessel",
             )
             .first;
-    return AppBar(title: Text("Analytical Result Of Incoming Material By Vessel List (${formData!.code})"), actions: [
-        
-      ],
+    return AppBar(
+      title: Text(
+        "Analytical Result Of Incoming Material By Vessel List (${formData!.code})",
+      ),
+      actions: [],
     );
   }
 
@@ -190,8 +192,8 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
                     .fetchReport(
                       plantId,
                       formattedDate,
-                      purpose: "list",
                       role: role,
+                      isFilterBasedOnRole: true,
                     );
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
@@ -249,7 +251,12 @@ class _AnalyticalResultIncomingMaterialByVesselListPageState
           );
           await context
               .read<AnalyticalResultIncomingMaterialByVesselProvider>()
-              .fetchReport(plantId, formattedDate, purpose: "list", role: role);
+              .fetchReport(
+                plantId,
+                formattedDate,
+                role: role,
+                isFilterBasedOnRole: true,
+              );
         });
       },
       child: Card(

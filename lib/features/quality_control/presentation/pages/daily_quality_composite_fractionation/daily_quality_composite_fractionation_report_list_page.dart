@@ -41,13 +41,14 @@ class _DailyQualityCompositeFractionationReportListPageState
             .read<DataFormNoProvider>()
             .dataFormNoList
             .where(
-              (form) =>
-                  form.isMenu == "Daily_Quality_Composite_Fractionation",
+              (form) => form.isMenu == "Daily_Quality_Composite_Fractionation",
             )
             .first;
-    return AppBar(title: Text("Daily Quality Composite Fractionation Report List (${formData!.code})"), actions: [
-        
-      ],
+    return AppBar(
+      title: Text(
+        "Daily Quality Composite Fractionation Report List (${formData!.code})",
+      ),
+      actions: [],
     );
   }
 
@@ -127,7 +128,7 @@ class _DailyQualityCompositeFractionationReportListPageState
                     .read<DailyQualityCompositeFractionationProvider>()
                     .getAllDailyCompositeFractionationReport(
                       formattedDate,
-                      role,
+                      role: role,
                     );
               }
             },
@@ -191,7 +192,10 @@ class _DailyQualityCompositeFractionationReportListPageState
           final formatted = parseDateTimeForQuery(dateEntryController.text);
           context
               .read<DailyQualityCompositeFractionationProvider>()
-              .getAllDailyCompositeFractionationReport(formatted ?? '', role ?? '');
+              .getAllDailyCompositeFractionationReport(
+                formatted ?? '',
+                role: role ?? '',
+              );
         });
       },
       child: Card(

@@ -149,7 +149,8 @@ class AnalyticalResultIncomingMaterialByTruckProvider with ChangeNotifier {
     String plantId,
     String? date, {
     String? role,
-    String? purpose,
+    // String? purpose,
+    bool isFilterBasedOnRole = false,
   }) async {
     _setLoading(true);
     _setErrorMessage(null);
@@ -166,14 +167,21 @@ class AnalyticalResultIncomingMaterialByTruckProvider with ChangeNotifier {
         final data = response.data;
         _reportList = data;
 
-        if (purpose == "list" && AppRoles.leadQC.contains(role)) {
+        if (isFilterBasedOnRole && AppRoles.leadQC.contains(role)) {
           _reportList =
               _reportList
                   .where(
                     (item) => item.flag == 'T' && item.preparedStatus == null,
                   )
                   .toList();
-        } else {
+        } else if (isFilterBasedOnRole && AppRoles.qualityControlManagerApproval.contains(role)) {
+          _reportList =
+              _reportList
+                  .where(
+                    (item) => item.flag == 'T' && item.preparedStatus == "Approved",
+                  )
+                  .toList();
+        }  else {
           _reportList = _reportList.where((item) => item.flag == 'T').toList();
         }
 

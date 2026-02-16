@@ -179,7 +179,7 @@ class AnalyticalResultOutgoingShipmentProductByVesselProvider
         } else if (isFilterBasedOnRole == true &&
             AppRoles.qualityControlManagerApproval.contains(role)) {
           _reportList =
-              _reportList.where((item) => item.preparedStatus != null).toList();
+              _reportList.where((item) => item.preparedStatus == "Approved").toList();
         }
         log("report List Length: ${_reportList.length}");
 

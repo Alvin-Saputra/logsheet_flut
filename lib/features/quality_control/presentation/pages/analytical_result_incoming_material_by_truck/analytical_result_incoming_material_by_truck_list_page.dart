@@ -65,8 +65,9 @@ class _AnalyticalResultIncomingMaterialByTruckListPageState
                 .fetchReport(
                   plantId,
                   formattedDate,
-                  purpose: "list",
+                  // purpose: "list",
                   role: userRole,
+                  isFilterBasedOnRole: true,
                 );
           });
         },
@@ -172,8 +173,9 @@ class _AnalyticalResultIncomingMaterialByTruckListPageState
                     .fetchReport(
                       plantId,
                       formattedDate,
-                      purpose: "list",
+                      // purpose: "list",
                       role: role,
+                      isFilterBasedOnRole: true,
                     );
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
@@ -231,7 +233,12 @@ class _AnalyticalResultIncomingMaterialByTruckListPageState
           );
           await context
               .read<AnalyticalResultIncomingMaterialByTruckProvider>()
-              .fetchReport(plantId, formattedDate, purpose: "list", role: role);
+              .fetchReport(
+                plantId,
+                formattedDate,
+                role: role,
+                isFilterBasedOnRole: true,
+              );
         });
       },
       child: Card(

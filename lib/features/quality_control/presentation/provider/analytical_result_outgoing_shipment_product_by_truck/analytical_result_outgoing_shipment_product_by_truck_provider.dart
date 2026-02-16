@@ -144,7 +144,8 @@ class AnalyticalResultOutgoingShipmentProductByTruckProvider
   Future<void> fetchReport(
     String? date, {
     String? role,
-    String? purpose,
+    // String? purpose,
+    bool isFilterBasedOnRole = false,
   }) async {
     _setLoading(true);
     _setErrorMessage(null);
@@ -161,12 +162,16 @@ class AnalyticalResultOutgoingShipmentProductByTruckProvider
         _reportList = data;
 
         log("report List Length: ${_reportList.length}");
-        if (purpose == "list" && AppRoles.leadQC.contains(role)) {
+       if (isFilterBasedOnRole && AppRoles.leadQC.contains(role)) {
           _reportList =
               _reportList
-                  .where(
-                    (item) => item.correctedStatus == null,
-                  )
+                  .where((item) => item.correctedStatus == null)
+                  .toList();
+        } else if (isFilterBasedOnRole &&
+            AppRoles.qualityControlManagerApproval.contains(role)) {
+          _reportList =
+              _reportList
+                  .where((item) => item.correctedStatus == "Approved")
                   .toList();
         }
         log("report List Length: ${_reportList.length}");
