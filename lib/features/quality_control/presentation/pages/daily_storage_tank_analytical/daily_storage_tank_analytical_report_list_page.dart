@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_input_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_report_detail_page.dart';
 import 'package:logsheet_app/core/widgets/custom_date_field.dart';
@@ -125,9 +126,11 @@ class _DailyStorageTankAnalyticalReportListPageState
               );
               log('Searching for date: $formattedDate');
               if (formattedDate != null) {
+                final plant = context.read<PlantProvider>().currentPlant;
+                final plantId = plant?.code ?? '';
                 await context
                     .read<DailyStorageTankAnalyticalProvider>()
-                    .getAllDailyStorageTankReport(formattedDate);
+                    .getAllDailyStorageTankReport(formattedDate, plantId);
               }
             },
             icon: const Icon(Icons.search),

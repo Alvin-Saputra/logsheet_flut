@@ -22,11 +22,13 @@ class _FormTransferApiService implements FormTransferApiService {
   @override
   Future<FetchFormTransferResponse> getFormTransfers(
     String token,
+    String? plantId,
     String? transactionDate,
     String? status,
   ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
+      r'plant': plantId,
       r'transaction_date': transactionDate,
       r'status': status,
     };

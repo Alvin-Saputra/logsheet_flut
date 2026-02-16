@@ -108,6 +108,8 @@ class _DailyQualityCompositeFractionationReportListDetailPageState
 
                     _buildSection('General Information', [
                       _buildDataRow('ID', reportItem?.id ?? ''),
+                       _buildDataRow('Company', reportItem?.company ?? ''),
+                        _buildDataRow('Plant', reportItem?.plant ?? ''),
                     ]),
 
                     _buildSection('Raw Material', [

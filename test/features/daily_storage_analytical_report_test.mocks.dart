@@ -83,9 +83,13 @@ class MockDailyStorageTankAnalyticalRepository extends _i1.Mock
 
   @override
   _i5.Future<List<_i3.DailyStorageTankAnalyticalFromDbEntity>>
-  getAllDailyStorageTankReport(String? date, String? role) =>
+  getAllDailyStorageTankReport(String? date, String? role, String? plantcode) =>
       (super.noSuchMethod(
-            Invocation.method(#getAllDailyStorageTankReport, [date, role]),
+            Invocation.method(#getAllDailyStorageTankReport, [
+              date,
+              role,
+              plantcode,
+            ]),
             returnValue: _i5.Future<
               List<_i3.DailyStorageTankAnalyticalFromDbEntity>
             >.value(<_i3.DailyStorageTankAnalyticalFromDbEntity>[]),
@@ -136,9 +140,9 @@ class MockDailyStorageTankAnalyticalRepository extends _i1.Mock
 
   @override
   _i5.Future<List<_i3.DailyStorageTankAnalyticalFromDbEntity>>
-  getAllDailyStorageTankApproval() =>
+  getAllDailyStorageTankApproval(String? plantCode) =>
       (super.noSuchMethod(
-            Invocation.method(#getAllDailyStorageTankApproval, []),
+            Invocation.method(#getAllDailyStorageTankApproval, [plantCode]),
             returnValue: _i5.Future<
               List<_i3.DailyStorageTankAnalyticalFromDbEntity>
             >.value(<_i3.DailyStorageTankAnalyticalFromDbEntity>[]),

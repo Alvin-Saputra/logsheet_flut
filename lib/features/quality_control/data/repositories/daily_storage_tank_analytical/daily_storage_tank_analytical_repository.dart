@@ -26,9 +26,10 @@ class DailyStorageTankAnalyticalRepository {
   Future<List<DailyStorageTankAnalyticalFromDbEntity>> getAllDailyStorageTankReport(
     String date,
     String role,
+    String plantcode,
   ) async {
     final List<Map<String, dynamic>> reportsData = await _mySQLService
-        .getAllDailyStorageTankReport(date, role);
+        .getAllDailyStorageTankReport(date, role, plantcode);
 
     log('converting to list...');
 
@@ -75,9 +76,9 @@ class DailyStorageTankAnalyticalRepository {
 
 
   Future<List<DailyStorageTankAnalyticalFromDbEntity>> getAllDailyStorageTankApproval(
-  ) async {
+  String? plantCode) async {
     final List<Map<String, dynamic>> reportsData = await _mySQLService
-        .getAllDailyStorageTankApproval();
+        .getAllDailyStorageTankApproval(plantCode);
 
     log('converting to list...');
 

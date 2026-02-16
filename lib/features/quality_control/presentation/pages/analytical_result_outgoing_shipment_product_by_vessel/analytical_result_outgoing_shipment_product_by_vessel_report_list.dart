@@ -39,11 +39,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselReportListState
   @override
   Widget build(BuildContext context) {
     final userRole = context.read<UserProvider>().currentUser?.role;
-    return Scaffold(
-      appBar: _buildAppBar(),
-      body: _buildBody(userRole ?? ''),
-     
-    );
+    return Scaffold(appBar: _buildAppBar(), body: _buildBody(userRole ?? ''));
   }
 
   AppBar _buildAppBar() {
@@ -57,9 +53,11 @@ class _AnalyticalResultOutgoingShipmentProductByVesselReportListState
                   "Analytical_Result_of_Outgoing_Shipment_By_Vessel",
             )
             .first;
-    return AppBar(title: Text("Analytical Result of OutGoing Shipment By Vessel Report List (${formData!.code})"), actions: [
-        
-      ],
+    return AppBar(
+      title: Text(
+        "Analytical Result of OutGoing Shipment By Vessel Report List (${formData!.code})",
+      ),
+      actions: [],
     );
   }
 
@@ -141,6 +139,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselReportListState
                     >()
                     .fetchReport(
                       formattedDate,
+                      plantId,
                       isFilterBasedOnRole: false,
                       role: role,
                     );
@@ -205,7 +204,8 @@ class _AnalyticalResultOutgoingShipmentProductByVesselReportListState
                         AnalyticalResultOutgoingShipmentProductByVesselProvider
                       >()
                       .reportList
-                      .firstWhere((element) => element.id == id), isShowApprovalAction: false,
+                      .firstWhere((element) => element.id == id),
+                  isShowApprovalAction: false,
                 ),
           ),
         ).then((_) async {
@@ -222,6 +222,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselReportListState
               .read<AnalyticalResultOutgoingShipmentProductByVesselProvider>()
               .fetchReport(
                 formattedDate,
+                plantId,
                 isFilterBasedOnRole: false,
                 role: role,
               );

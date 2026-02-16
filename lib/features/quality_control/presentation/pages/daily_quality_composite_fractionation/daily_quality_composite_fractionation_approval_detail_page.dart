@@ -111,6 +111,8 @@ class _DailyQualityCompositeFractionationApprovalDetailPageState
 
                     _buildSection('General Information', [
                       _buildDataRow('ID', approvalItem?.id ?? ''),
+                      _buildDataRow('Company', approvalItem?.company ?? ''),
+                      _buildDataRow('Plant', approvalItem?.plant ?? ''),
                     ]),
 
                     _buildSection('Raw Material', [

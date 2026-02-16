@@ -130,6 +130,10 @@ class _DailyProductionRefineryListPageState
 
               Map<String, List<DailyProductionRefineryEntity>> shiftMap = {};
 
+              final ticketClosedStatus = thisTicketRows.every(
+                (item) => item.isCompleted == true,
+              );
+
               for (var item in thisTicketRows) {
                 String shiftKey = item.shift ?? "Unknown";
                 if (!shiftMap.containsKey(shiftKey)) {
@@ -164,6 +168,12 @@ class _DailyProductionRefineryListPageState
                   ),
                   subtitle: Text("$titleDate • WC: $titleWC"),
                   childrenPadding: const EdgeInsets.all(8),
+                  trailing: Text(
+                    (ticketClosedStatus == true) ? "Close" : "Open",
+                    style: TextStyle(
+                      color: (ticketClosedStatus == true) ? Colors.red : Colors.green,
+                    ),
+                  ),
 
                   children: [
                     ...sortedShiftKeys.map((shiftKey) {

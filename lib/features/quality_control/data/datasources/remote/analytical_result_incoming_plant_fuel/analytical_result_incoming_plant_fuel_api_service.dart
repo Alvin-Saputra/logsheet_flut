@@ -24,6 +24,7 @@ abstract class AnalyticalResultIncomingPlantFuelApiService {
   @GET("/aroipfuel")
   Future<FetchAnalyticalResultIncomingPlantFuelResponse> fetchReports(
     @Header("Authorization") String token,
+     @Query("plant") String? plantId,
     @Query("entry_date") String? date,
   );
 

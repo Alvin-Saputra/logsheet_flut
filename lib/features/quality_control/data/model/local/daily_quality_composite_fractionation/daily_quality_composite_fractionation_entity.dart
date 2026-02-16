@@ -4,6 +4,8 @@ import 'package:logsheet_app/core/utils/parser_utils.dart';
 class DailyQualityCompositeFractionationEntity {
   // General Information
   final String id;
+  final String company;
+  final String plant;
   final String? workCenter;
   final TimeOfDay? time;
   final DateTime? transactionDate;
@@ -62,6 +64,8 @@ class DailyQualityCompositeFractionationEntity {
   DailyQualityCompositeFractionationEntity({
     required this.id,
     required this.transactionDate,
+    required this.company,
+    required this.plant,
     required this.workCenter,
     required this.time,
     required this.crystalizer,
@@ -154,6 +158,8 @@ class DailyQualityCompositeFractionationEntity {
       time: parseTimeOfDay(map['time']),
       crystalizer: map['crystalizer'],
       workCenter: map['work_center'],
+      company: map['company'],
+      plant: map['plant'],
 
       // Raw Material
       rmMni: parseDouble(map['rm_mni']),
@@ -219,6 +225,8 @@ class DailyQualityCompositeFractionationEntity {
       'time': formatTimeOfDay(time),
       'crystalizer': crystalizer,
       'work_center': workCenter,
+      'company': company,
+      'plant': plant,
 
       // RM (Raw Material)
       'rm_mni': rmMni,

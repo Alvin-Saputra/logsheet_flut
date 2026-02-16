@@ -206,6 +206,7 @@ class AnalyticalResultIncomingPlantFuelProvider with ChangeNotifier {
 
       final response = await _apiService.fetchReports(
         'Bearer $token',
+        plantId,
         date ?? '',
       );
 

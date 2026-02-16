@@ -133,53 +133,53 @@ class DailyStorageTankAnalyticalMySQLService {
   //     }
 
   //     connection = connResult.connection;
-      
+
   //     // Base query
 
   //    const String baseQuery = """
-  //     SELECT 
-  //       a.id, 
-  //       a.company, 
-  //       a.plant, 
-  //       a.transaction_date, 
-  //       a.posting_date, 
-  //       a.tank_no, 
-  //       a.oil_type, 
-  //       a.kapasitas_tanki, 
-  //       a.quantity, 
-  //       a.empty_space, 
-  //       a.suhu, 
-  //       a.qp_ffa, 
-  //       a.qp_moisture, 
-  //       a.qp_lovibond_color_r, 
-  //       a.qp_lovibond_color_y, 
-  //       a.qp_iv, 
-  //       a.qp_pv, 
-  //       a.qp_slip_melting_point, 
-  //       a.qp_cloud_point, 
-  //       a.qp_anv, 
-  //       a.qp_beta_carotene, 
-  //       a.qp_p, 
-  //       a.qp_dobi, 
-  //       a.qp_totox, 
-  //       a.qp_odor, 
-  //       a.remarks, 
-  //       a.flag, 
-  //       a.entry_by, 
-  //       a.entry_date, 
-  //       a.prepared_by, 
-  //       a.prepared_date, 
-  //       a.prepared_status, 
-  //       a.prepared_status_remarks, 
-  //       a.approved_by, 
-  //       a.approved_date, 
-  //       a.approved_status, 
-  //       a.approved_status_remarks, 
-  //       a.updated_by, 
-  //       a.updated_date, 
-  //       a.form_no, 
-  //       a.date_issued, 
-  //       a.revision_no, 
+  //     SELECT
+  //       a.id,
+  //       a.company,
+  //       a.plant,
+  //       a.transaction_date,
+  //       a.posting_date,
+  //       a.tank_no,
+  //       a.oil_type,
+  //       a.kapasitas_tanki,
+  //       a.quantity,
+  //       a.empty_space,
+  //       a.suhu,
+  //       a.qp_ffa,
+  //       a.qp_moisture,
+  //       a.qp_lovibond_color_r,
+  //       a.qp_lovibond_color_y,
+  //       a.qp_iv,
+  //       a.qp_pv,
+  //       a.qp_slip_melting_point,
+  //       a.qp_cloud_point,
+  //       a.qp_anv,
+  //       a.qp_beta_carotene,
+  //       a.qp_p,
+  //       a.qp_dobi,
+  //       a.qp_totox,
+  //       a.qp_odor,
+  //       a.remarks,
+  //       a.flag,
+  //       a.entry_by,
+  //       a.entry_date,
+  //       a.prepared_by,
+  //       a.prepared_date,
+  //       a.prepared_status,
+  //       a.prepared_status_remarks,
+  //       a.approved_by,
+  //       a.approved_date,
+  //       a.approved_status,
+  //       a.approved_status_remarks,
+  //       a.updated_by,
+  //       a.updated_date,
+  //       a.form_no,
+  //       a.date_issued,
+  //       a.revision_no,
   //       a.revision_date
   //     FROM t_daily_storage_tank_analytical_report AS a
   //     ORDER BY a.id ASC;
@@ -205,25 +205,26 @@ class DailyStorageTankAnalyticalMySQLService {
   //   }
   // }
 
-
   Future<List<Map<String, dynamic>>> getAllDailyStorageTankReport(
-  String? dateFilter,
-  String? role, // kalau belum dipakai, boleh dihapus
-) async {
-  MySQLConnection? connection;
+    String? dateFilter,
+    String? role,
+    String plantCode,
+  ) async {
+    MySQLConnection? connection;
 
-  try {
-    final connResult = await getMySQLConnection();
-    final conn = connResult.connection;
+    try {
+      final connResult = await getMySQLConnection();
+      final conn = connResult.connection;
 
-    if (conn == null) {
-      log('Failed to get MySQL connection for getAllDailyStorageTankReport');
-      return [];
-    }
+      if (conn == null) {
+        log('Failed to get MySQL connection for getAllDailyStorageTankReport');
+        return [];
+      }
 
-    connection = conn;
+      connection = conn;
 
-    String query = """
+      // 1. Definisikan Base Query (Tanpa WHERE)
+      String query = """
       SELECT 
         a.id, 
         a.company, 
@@ -271,53 +272,60 @@ class DailyStorageTankAnalyticalMySQLService {
       FROM t_daily_storage_tank_analytical_report AS a
     """;
 
-    final Map<String, dynamic> params = {};
+      // 2. Siapkan List Kondisi dan Params
+      List<String> whereClauses = [];
+      final Map<String, dynamic> params = {};
 
-    // Filter tanggal (opsional)
-    if (dateFilter != null && dateFilter.isNotEmpty) {
-      query += " WHERE DATE(a.transaction_date) = :date";
-      params["date"] = dateFilter; // format: yyyy-MM-dd
-    }
+      // --- Filter: Plant (Wajib) ---
+      whereClauses.add("a.plant = :plant");
+      params["plant"] = plantCode;
 
-    // Contoh kalau suatu hari mau pakai role
-    // if (role != null && role.isNotEmpty) {
-    //   query += params.isEmpty ? " WHERE " : " AND ";
-    //   query += " a.prepared_by_role = :role";
-    //   params["role"] = role;
-    // }
+      // --- Filter: Tanggal (Opsional) ---
+      if (dateFilter != null && dateFilter.isNotEmpty) {
+        // Menggunakan DATE() untuk memastikan hanya membandingkan tanggal (mengabaikan jam)
+        whereClauses.add("DATE(a.transaction_date) = :date");
+        params["date"] = dateFilter;
+      }
 
-    query += " ORDER BY a.id ASC";
+      // 3. Gabungkan WHERE Clause
+      if (whereClauses.isNotEmpty) {
+        query += " WHERE " + whereClauses.join(" AND ");
+      }
 
-    log("Query: $query");
-    log("Params: $params");
+      // 4. Tambahkan Order By
+      query += " ORDER BY a.id ASC";
 
-    final IResultSet result = await connection.execute(query, params);
+      log("Query: $query");
+      log("Params: $params");
 
-    log('Fetched ${result.rows.length} Daily Storage Tank reports');
+      final IResultSet result = await connection.execute(query, params);
 
-    return result.rows.map((row) => row.assoc()).toList();
-  } catch (e, st) {
-    log('Error fetching Daily Storage Tank reports: $e\n$st');
-    return [];
-  } finally {
-    if (connection != null) {
-      try {
-        await closeMySQLConnection(connection);
-        log("MySQL connection closed");
-      } catch (e) {
-        log('Error closing MySQL connection: $e');
+      log('Fetched ${result.rows.length} Daily Storage Tank reports');
+
+      return result.rows.map((row) => row.assoc()).toList();
+    } catch (e, st) {
+      log('Error fetching Daily Storage Tank reports: $e\n$st');
+      return [];
+    } finally {
+      if (connection != null) {
+        try {
+          await closeMySQLConnection(connection);
+          log("MySQL connection closed");
+        } catch (e) {
+          log('Error closing MySQL connection: $e');
+        }
       }
     }
   }
-}
-
 
   Future<bool> deleteDailyStorageTankAnalyticalReport(String id) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for DailyStorageTankAnalyticalReport.');
+        log(
+          'Failed to get MySQL connection for DailyStorageTankAnalyticalReport.',
+        );
         return false;
       }
       connection = connResult.connection!;
@@ -333,7 +341,9 @@ class DailyStorageTankAnalyticalMySQLService {
       );
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
-      log('Error deleting DailyStorageTankAnalyticalReport (updating flag): $e');
+      log(
+        'Error deleting DailyStorageTankAnalyticalReport (updating flag): $e',
+      );
       return false;
     } finally {
       try {
@@ -454,7 +464,9 @@ class DailyStorageTankAnalyticalMySQLService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getAllDailyStorageTankApproval() async {
+  Future<List<Map<String, dynamic>>> getAllDailyStorageTankApproval(
+    String? plantCode,
+  ) async {
     MySQLConnection? connection;
 
     try {
@@ -513,10 +525,13 @@ class DailyStorageTankAnalyticalMySQLService {
         a.revision_no, 
         a.revision_date
       FROM t_daily_storage_tank_analytical_report AS a
+       WHERE a.plant = plant
       ORDER BY a.id ASC;
+     
     """;
-
-      final IResultSet result = await connection!.execute(baseQuery);
+      final Map<String, dynamic> params = {};
+      params["plant"] = plantCode;
+      final IResultSet result = await connection!.execute(baseQuery, params);
 
       log('Fetched ${result.rows.length} Daily Storage Tank Approval reports');
 

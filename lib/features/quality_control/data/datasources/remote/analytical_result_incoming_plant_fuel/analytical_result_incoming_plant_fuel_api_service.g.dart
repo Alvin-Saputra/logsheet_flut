@@ -64,10 +64,14 @@ class _AnalyticalResultIncomingPlantFuelApiService
   @override
   Future<FetchAnalyticalResultIncomingPlantFuelResponse> fetchReports(
     String token,
+    String? plantId,
     String? date,
   ) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'entry_date': date};
+    final queryParameters = <String, dynamic>{
+      r'plant': plantId,
+      r'entry_date': date,
+    };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{r'Authorization': token};
     _headers.removeWhere((k, v) => v == null);

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_input_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_list_detail_page.dart';
 import 'package:logsheet_app/core/widgets/custom_date_field.dart';
@@ -42,10 +43,17 @@ class _DailyQualityCompositeFractionationListPageState
             ),
           ).then((_) {
             if (!mounted) return;
+            final plant = context.read<PlantProvider>().currentPlant;
+            final plantId = plant?.code ?? '';
             final formatted = parseDateTimeForQuery(dateEntryController.text);
             context
                 .read<DailyQualityCompositeFractionationProvider>()
-                .getAllDailyCompositeFractionationReport(formatted, role:userRole, isFilterBasedOnRole: true);
+                .getAllDailyCompositeFractionationReport(
+                  formatted,
+                  plantId,
+                  role: userRole,
+                  isFilterBasedOnRole: true,
+                );
           });
           ;
         },
@@ -66,9 +74,11 @@ class _DailyQualityCompositeFractionationListPageState
               (form) => form.isMenu == "Daily_Quality_Composite_Fractionation",
             )
             .first;
-    return AppBar(title: Text("Daily Quality Composite Fractionation List (${formData!.code})"), actions: [
-        
-      ],
+    return AppBar(
+      title: Text(
+        "Daily Quality Composite Fractionation List (${formData!.code})",
+      ),
+      actions: [],
     );
   }
 
@@ -145,11 +155,14 @@ class _DailyQualityCompositeFractionationListPageState
               );
               log('Searching for date: $formattedDate');
               if (formattedDate != null) {
+                final plant = context.read<PlantProvider>().currentPlant;
+                final plantId = plant?.code ?? '';
                 await context
                     .read<DailyQualityCompositeFractionationProvider>()
                     .getAllDailyCompositeFractionationReport(
                       formattedDate,
-                      role:role,
+                      plantId,
+                      role: role,
                       isFilterBasedOnRole: true,
                     );
               }
@@ -209,12 +222,15 @@ class _DailyQualityCompositeFractionationListPageState
         ).then((_) {
           // Refresh the list when returning from the detail page
           if (!mounted) return;
+          final plant = context.read<PlantProvider>().currentPlant;
+          final plantId = plant?.code ?? '';
           final formatted = parseDateTimeForQuery(dateEntryController.text);
           context
               .read<DailyQualityCompositeFractionationProvider>()
               .getAllDailyCompositeFractionationReport(
                 formatted ?? '',
-                role:role ?? '',
+                plantId,
+                role: role ?? '',
                 isFilterBasedOnRole: true,
               );
         });

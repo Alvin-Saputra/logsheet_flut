@@ -130,6 +130,8 @@ class _AnalyticalResultIncomingMaterialByTruckListPageState
                               tank: item.material,
                               role: role,
                               vesselVehicle: item.vesselVehicle,
+                              approvedStatus: item.approvedStatus ?? '',
+                              preparedStatus: item.preparedStatus ?? '',
                             );
                           },
                         );
@@ -206,7 +208,24 @@ class _AnalyticalResultIncomingMaterialByTruckListPageState
     required String? entryBy,
     required String? role,
     required String? vesselVehicle,
+    required String approvedStatus,
+    required String preparedStatus,
+    Color? badgeColor,
+    String? showedStatus,
   }) {
+    if (preparedStatus == "Approved" && approvedStatus == "Approved") {
+      badgeColor = Colors.green;
+      showedStatus = "Approved";
+    } else if (preparedStatus == "Rejected" || approvedStatus == "Rejected") {
+      badgeColor = Colors.red;
+      showedStatus = "Rejected";
+    } else if (preparedStatus != '') {
+      badgeColor = Colors.orange;
+      showedStatus = "Prepared";
+    } else if (preparedStatus == '') {
+      badgeColor = Colors.blue;
+      showedStatus = "Submitted";
+    }
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -263,6 +282,23 @@ class _AnalyticalResultIncomingMaterialByTruckListPageState
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
                       vertical: 4,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: badgeColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '$showedStatus',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],

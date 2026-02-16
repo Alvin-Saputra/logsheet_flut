@@ -26,6 +26,7 @@ abstract class AnalyticalResultIncomingPlantChemicalIngredientApiService {
   Future<FetchAnalyticalResultIncomingPlantChemicalIngredientResponse>
   fetchReports(
     @Header("Authorization") String token,
+     @Query("plant") String? plantId,
     @Query("entry_date") String? date,
   );
 

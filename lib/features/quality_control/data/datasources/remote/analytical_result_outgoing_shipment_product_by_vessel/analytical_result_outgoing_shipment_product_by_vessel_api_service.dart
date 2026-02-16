@@ -27,6 +27,7 @@ abstract class AnalyticalResultOutgoingShipmentProductByVesselApiService {
   Future<FetchAnalyticalResultOutgoingShipmentProductByVesselResponse>
   fetchReports(
     @Header("Authorization") String token,
+    @Query("plant") String? plantId,
     @Query("sampling_date") String? date,
   );
 

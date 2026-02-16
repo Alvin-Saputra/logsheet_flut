@@ -4,6 +4,7 @@ import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/core/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/core/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_detail_model.dart';
 import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_header_model.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/form_transfer/form_transfer_provider.dart';
@@ -486,11 +487,13 @@ class _FormTransferApprovalDetailPageState
     final transferProvider = context.read<FormTransferProvider>();
     final storageService = context.read<StorageService>();
     final token = await storageService.readSessionToken() ?? '';
-
+    final plant = context.read<PlantProvider>().currentPlant;
+    final plantId = plant?.code ?? '';
     try {
       await transferProvider.approveTransfer(
         widget.id,
         'Bearer $token',
+        plantId,
         level: widget.approvalLevel,
       );
 
@@ -511,11 +514,14 @@ class _FormTransferApprovalDetailPageState
     final transferProvider = context.read<FormTransferProvider>();
     final storageService = context.read<StorageService>();
     final token = await storageService.readSessionToken() ?? '';
+    final plant = context.read<PlantProvider>().currentPlant;
+    final plantId = plant?.code ?? '';
 
     try {
       await transferProvider.rejectTransfer(
         widget.id,
         'Bearer $token',
+        plantId,
         level: widget.approvalLevel,
         remarks:
             remarkController.text.isNotEmpty ? remarkController.text : null,

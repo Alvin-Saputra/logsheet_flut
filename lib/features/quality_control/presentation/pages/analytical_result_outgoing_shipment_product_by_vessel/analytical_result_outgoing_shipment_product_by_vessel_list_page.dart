@@ -65,6 +65,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselListPageState
                 .read<AnalyticalResultOutgoingShipmentProductByVesselProvider>()
                 .fetchReport(
                   formattedDate,
+                  plantId,
                   isFilterBasedOnRole: true,
                   role: userRole,
                 );
@@ -173,6 +174,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselListPageState
                     >()
                     .fetchReport(
                       formattedDate,
+                      plantId,
                       isFilterBasedOnRole: true,
                       role: role,
                     );
@@ -254,6 +256,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselListPageState
               .read<AnalyticalResultOutgoingShipmentProductByVesselProvider>()
               .fetchReport(
                 formattedDate,
+                plantId,
                 isFilterBasedOnRole: true,
                 role: role,
               );

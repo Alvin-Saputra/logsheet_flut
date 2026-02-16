@@ -16,15 +16,19 @@ import 'package:provider/provider.dart';
 
 class AnalyticalResultOutgoingShipmentProductByTruckReportListPage
     extends StatefulWidget {
-  const AnalyticalResultOutgoingShipmentProductByTruckReportListPage({super.key});
+  const AnalyticalResultOutgoingShipmentProductByTruckReportListPage({
+    super.key,
+  });
 
   @override
-  State<AnalyticalResultOutgoingShipmentProductByTruckReportListPage> createState() =>
+  State<AnalyticalResultOutgoingShipmentProductByTruckReportListPage>
+  createState() =>
       _AnalyticalResultOutgoingShipmentProductByTruckReportListPageState();
 }
 
 class _AnalyticalResultOutgoingShipmentProductByTruckReportListPageState
-    extends State<AnalyticalResultOutgoingShipmentProductByTruckReportListPage> {
+    extends
+        State<AnalyticalResultOutgoingShipmentProductByTruckReportListPage> {
   DataFormNoEntity? formData;
 
   final TextEditingController dateEntryController = TextEditingController();
@@ -54,7 +58,8 @@ class _AnalyticalResultOutgoingShipmentProductByTruckReportListPageState
             ),
           ).then((_) async {
             if (!mounted) return;
-
+            final plant = context.read<PlantProvider>().currentPlant;
+            final plantId = plant?.code ?? '';
             final formattedDate = changeStringDateFormat(
               dateEntryController.text,
               'dd-MM-yyyy',
@@ -62,7 +67,7 @@ class _AnalyticalResultOutgoingShipmentProductByTruckReportListPageState
             );
             await context
                 .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
-                .fetchReport(formattedDate, role: userRole);
+                .fetchReport(formattedDate, plantId, role: userRole);
           });
         },
         label: const Text("Tambah Report"),
@@ -161,12 +166,13 @@ class _AnalyticalResultOutgoingShipmentProductByTruckReportListPageState
                   'yyyy-MM-dd',
                 );
                 log('Searching for date: $formattedDate');
-
+                final plant = context.read<PlantProvider>().currentPlant;
+                final plantId = plant?.code ?? '';
                 await context
                     .read<
                       AnalyticalResultOutgoingShipmentProductByTruckProvider
                     >()
-                    .fetchReport(formattedDate, role: role);
+                    .fetchReport(formattedDate, plantId, role: role);
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
               }
@@ -217,19 +223,21 @@ class _AnalyticalResultOutgoingShipmentProductByTruckReportListPageState
           context,
           MaterialPageRoute(
             builder:
-                (context) =>
-                    AnalyticalResultOutgoingShipmentProductByTruckReportDetailPage(
-                      data: context
-                          .read<
-                            AnalyticalResultOutgoingShipmentProductByTruckProvider
-                          >()
-                          .reportList
-                          .firstWhere((element) => element.id == id),
-                    ),
+                (
+                  context,
+                ) => AnalyticalResultOutgoingShipmentProductByTruckReportDetailPage(
+                  data: context
+                      .read<
+                        AnalyticalResultOutgoingShipmentProductByTruckProvider
+                      >()
+                      .reportList
+                      .firstWhere((element) => element.id == id),
+                ),
           ),
         ).then((_) async {
           if (!mounted) return;
-
+          final plant = context.read<PlantProvider>().currentPlant;
+          final plantId = plant?.code ?? '';
           final formattedDate = changeStringDateFormat(
             dateEntryController.text,
             'dd-MM-yyyy',
@@ -237,7 +245,7 @@ class _AnalyticalResultOutgoingShipmentProductByTruckReportListPageState
           );
           await context
               .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
-              .fetchReport(formattedDate,role: role);
+              .fetchReport(formattedDate, plantId, role: role);
         });
       },
       child: Card(

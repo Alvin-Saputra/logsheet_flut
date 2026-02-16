@@ -31,9 +31,13 @@ class DailyQualityCompositeFractionationRepository {
   }
 
   Future<List<DailyQualityCompositeFractionationEntity>>
-  getAllDailyQualityCompositeReport(String date, String role) async {
+  getAllDailyQualityCompositeReport(
+    String date,
+    String role,
+    String? plantCode,
+  ) async {
     final List<Map<String, dynamic>> reportsData = await _mySQLService
-        .getAllDailyQualityCompositeReport(date, role);
+        .getAllDailyQualityCompositeReport(date, role, plantCode);
 
     log('converting to list...');
 
@@ -67,10 +71,10 @@ class DailyQualityCompositeFractionationRepository {
     );
   }
 
-  Future<List<DailyQualityCompositeFractionationEntity>> getAllDailyQualityCompositeApprovalReport(
-  ) async {
+  Future<List<DailyQualityCompositeFractionationEntity>>
+  getAllDailyQualityCompositeApprovalReport(String? plantCode) async {
     final List<Map<String, dynamic>> reportsData = await _mySQLService
-        .getAllDailyQualityCompositeApprovalReport();
+        .getAllDailyQualityCompositeApprovalReport(plantCode);
 
     log('converting to list...');
 

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_change_product/maintenance_change_product_input_page.dart';
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_change_product/maintenance_change_product_list_detail_page.dart';
@@ -105,11 +106,16 @@ class _MaintenanceChangeProductListPageState
   Widget _buildBody(String role) {
     final changeProductChecklistProvider =
         context.watch<ChangeProductChecklistProvider>();
-
+    //  final userRole = context.read<UserProvider>().currentUser?.role;
     final isLoading = changeProductChecklistProvider.isLoading;
-    final reportList = changeProductChecklistProvider.uniqueReportList
-    .where((item) => item.preparedStatus == null)
-    .toList();
+    var reportList = changeProductChecklistProvider.uniqueReportList;
+
+    if ((AppRoles.leadProd.contains(role))) {
+      reportList =
+          changeProductChecklistProvider.uniqueReportList
+              .where((item) => item.preparedStatus == null)
+              .toList();
+    }
 
     return Column(
       children: [
@@ -139,6 +145,8 @@ class _MaintenanceChangeProductListPageState
                           workCenter: item.workCenter ?? '',
                           entryBy: item.entryBy ?? '',
                           role: role,
+                          approvedStatus: item.checkedStatus ?? '',
+                          preparedStatus: item.preparedStatus ?? '',
                         );
                       },
                     );
@@ -200,7 +208,24 @@ class _MaintenanceChangeProductListPageState
     required String workCenter,
     required String entryBy,
     String? role,
+    required String approvedStatus,
+    required String preparedStatus,
+    Color? badgeColor,
+    String? showedStatus,
   }) {
+    if (preparedStatus == "Approved" && approvedStatus == "Approved") {
+      badgeColor = Colors.green;
+      showedStatus = "Approved";
+    } else if (preparedStatus == "Rejected" || approvedStatus == "Rejected") {
+      badgeColor = Colors.red;
+      showedStatus = "Rejected";
+    } else if (preparedStatus != '') {
+      badgeColor = Colors.orange;
+      showedStatus = "Prepared";
+    } else if (preparedStatus == '') {
+      badgeColor = Colors.blue;
+      showedStatus = "Submitted";
+    }
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -240,6 +265,23 @@ class _MaintenanceChangeProductListPageState
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
                       vertical: 4,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: badgeColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '$showedStatus',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],

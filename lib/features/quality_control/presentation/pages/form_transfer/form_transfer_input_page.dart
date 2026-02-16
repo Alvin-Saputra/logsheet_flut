@@ -534,7 +534,7 @@ class _FormTransferInputPageState extends State<FormTransferInputPage> {
 
       if (!mounted) return false;
 
-      await provider.createTransfer(header, 'Bearer $token');
+      await provider.createTransfer(header, 'Bearer $token', plant?.code??'');
 
       return true;
     } catch (e) {

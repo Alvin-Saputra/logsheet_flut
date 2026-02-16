@@ -86,53 +86,8 @@ class StartUpProduksiChecklistMySQLService {
       }
       connection = connResult.connection;
       String query = "";
-      if (AppRoles.leadProd.contains(role)) {
-        query = """
-          SELECT 
-          h.id, 
-          h.company, 
-          h.plant, 
-          h.transaction_date, 
-          h.transaction_time,
-          h.product AS product_id,
-          p1.raw_material AS product,
-          h.work_center, 
-          h.remarks, 
-          h.flag,
-          h.entry_by,
-          h.entry_date,
-          h.prepared_by,
-          h.prepared_date,
-          h.prepared_status,
-          h.prepared_status_remarks,
-          h.checked_by,
-          h.checked_date,
-          h.checked_status,
-          h.checked_status_remarks,
-          h.updated_by,
-          h.updated_date,
-          h.form_no,
-          h.date_issued,
-          h.revision_no,
-          h.revision_date,
-          d.id AS detail_id, 
-          d.check_item, 
-          d.status_item 
-      FROM 
-          t_startup_produksi_checklist h
-      INNER JOIN 
-          t_startup_produksi_checklist_detail d 
-          ON h.id = d.id_hdr
-      LEFT JOIN 
-          m_product p1 
-          ON h.product = p1.id
-      WHERE 
-          DATE(h.transaction_date) = :date AND  h.prepared_status IS NULL
-      ORDER BY 
-          h.id ASC;
-        """;
-      } else {
-        query = """
+
+      query = """
           SELECT 
           h.id, 
           h.company, 
@@ -176,7 +131,7 @@ class StartUpProduksiChecklistMySQLService {
       ORDER BY 
           h.id ASC;
         """;
-      }
+
       final result = await connection!.execute(query, {"date": date});
       log(
         'Fetched ${result.rows.length} Start Up Produksi Checklists for date $date.',

@@ -177,7 +177,8 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
   }
 
   Future<void> getAllDailyStorageTankReport(
-    String? dateFilter, {
+    String? dateFilter,
+    String plantCode, {
     String? role,
     bool isFilterBasedOnRole = false,
   }) async {
@@ -188,6 +189,7 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
       _reportsList = await _repository.getAllDailyStorageTankReport(
         dateFilter ?? '',
         role ?? '',
+        plantCode,
       );
       _reportsList = _reportsList.where((item) => item.flag == 'T').toList();
 
@@ -289,13 +291,15 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
     }
   }
 
-  Future<void> getAllDailyStorageTankApproval() async {
+  Future<void> getAllDailyStorageTankApproval(String? plantCode) async {
     _setLoadingApproval(true);
     _setErrorMessage(null);
     try {
       log('Fetching reports...');
-      _approvalList = await _repository.getAllDailyStorageTankApproval();
-
+      _approvalList = await _repository.getAllDailyStorageTankApproval(
+        plantCode,
+      );
+      _approvalList = _approvalList.where((item) => item.flag == 'T').toList();
       notifyListeners();
 
       // await Future.delayed(const Duration(seconds: 1));

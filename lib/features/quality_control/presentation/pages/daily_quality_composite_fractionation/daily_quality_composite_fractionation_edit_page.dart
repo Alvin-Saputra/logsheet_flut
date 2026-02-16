@@ -359,7 +359,7 @@ class _DailyQualityCompositeFractionationEditPageState
     );
   }
 
-void _showHourPicker(BuildContext context) {
+  void _showHourPicker(BuildContext context) {
     // showModalBottomSheet(
     //   context: context,
     //   backgroundColor: Colors.white,
@@ -876,7 +876,6 @@ void _showHourPicker(BuildContext context) {
   Future<bool> _updateDailyQualityCompositeFractionationReport() async {
     final plant = context.read<PlantProvider>().currentPlant;
     final user = context.read<UserProvider>();
-
     final businessUnit =
         context.read<BusinessUnitProvider>().currentBusinessUnit;
 
@@ -888,6 +887,8 @@ void _showHourPicker(BuildContext context) {
             selectedHour != null
                 ? TimeOfDay(hour: selectedHour!, minute: 0)
                 : null,
+        company: businessUnit?.buCode ?? "",
+        plant: plant?.code ?? '',
         crystalizer: selectedTankSource,
         workCenter: selectedWorkCenter,
         rmMni: parseDouble(rmMniController.text),

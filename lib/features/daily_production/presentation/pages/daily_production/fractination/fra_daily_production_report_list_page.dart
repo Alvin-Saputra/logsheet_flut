@@ -135,12 +135,9 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
         children: [
-       
           _buildFilterSection(context),
 
-          
           Expanded(
-         
             child: Consumer3<
               DailyProductionFractionationProvider,
               PlantProvider,
@@ -191,6 +188,10 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
                     Map<String, List<DailyProductionFractionationEntity>>
                     shiftMap = {};
 
+                    final ticketClosedStatus = thisTicketRows.every(
+                      (item) => item.isCompleted == true,
+                    );
+
                     for (var item in thisTicketRows) {
                       String shiftKey = item.shift ?? "Unknown";
                       if (!shiftMap.containsKey(shiftKey)) {
@@ -218,6 +219,17 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
                           Icons.description,
                           color: Colors.blueGrey,
                         ),
+
+                        trailing: Text(
+                          (ticketClosedStatus == true) ? "Close" : "Open",
+                          style: TextStyle(
+                            color:
+                                (ticketClosedStatus == true)
+                                    ? Colors.red
+                                    : Colors.green,
+                          ),
+                        ),
+
                         title: Text(
                           "${headerData.id}",
                           style: const TextStyle(fontWeight: FontWeight.bold),
@@ -388,7 +400,7 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
             await context
                 .read<DailyProductionFractionationProvider>()
                 .fetchFilteredTickets(
-                 formatStringtoDate(_dateController.text, "yyyy-MM-dd"),
+                  formatStringtoDate(_dateController.text, "yyyy-MM-dd"),
                   plantCode,
                 );
           },

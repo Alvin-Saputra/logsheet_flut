@@ -17,7 +17,8 @@ import 'package:logsheet_app/features/quality_control/presentation/provider/anal
 import 'package:logsheet_app/features/quality_control/presentation/provider/analytical_result_outgoing_shipment_product_by_truck/analytical_result_outgoing_shipment_product_by_truck_provider.dart';
 import 'package:provider/provider.dart';
 
-class AnalyticalResultOutgoingShipmentProductByTruckListPage extends StatefulWidget {
+class AnalyticalResultOutgoingShipmentProductByTruckListPage
+    extends StatefulWidget {
   const AnalyticalResultOutgoingShipmentProductByTruckListPage({super.key});
 
   @override
@@ -33,7 +34,9 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
   @override
   initState() {
     super.initState();
-    context.read<AnalyticalResultOutgoingShipmentProductByTruckProvider>().clearReports();
+    context
+        .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
+        .clearReports();
   }
 
   @override
@@ -48,7 +51,8 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
             context,
             MaterialPageRoute(
               builder:
-                  (context) =>  AnalyticalResultOutgoingShipmentProductByTruckInputPage(),
+                  (context) =>
+                      AnalyticalResultOutgoingShipmentProductByTruckInputPage(),
             ),
           ).then((_) async {
             if (!mounted) return;
@@ -64,9 +68,10 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
                 .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
                 .fetchReport(
                   formattedDate,
+                  plantId,
                   // purpose: "list",
                   role: userRole,
-                  isFilterBasedOnRole: true
+                  isFilterBasedOnRole: true,
                 );
           });
         },
@@ -89,12 +94,13 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
                   "Analytical_Result_of_Out_Going_Shipment_Product_By_Truck",
             )
             .first;
-    return AppBar(title: Text("Analytical Result of Out Going Shipment Product By Truck List (${formData!.code})"), actions: [
-        
-      ],
+    return AppBar(
+      title: Text(
+        "Analytical Result of Out Going Shipment Product By Truck List (${formData!.code})",
+      ),
+      actions: [],
     );
   }
-  
 
   Widget _buildBody(String role) {
     return Column(
@@ -105,10 +111,13 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
             padding: const EdgeInsets.all(8.0),
             child: Builder(
               builder: (context) {
-                return Consumer<AnalyticalResultOutgoingShipmentProductByTruckProvider>(
+                return Consumer<
+                  AnalyticalResultOutgoingShipmentProductByTruckProvider
+                >(
                   builder: (
                     BuildContext context,
-                    AnalyticalResultOutgoingShipmentProductByTruckProvider provider,
+                    AnalyticalResultOutgoingShipmentProductByTruckProvider
+                    provider,
                     Widget? child,
                   ) {
                     return (provider.isLoading)
@@ -125,6 +134,8 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
                               entryBy: item.entryBy ?? '',
                               productName: item.productName,
                               role: role,
+                              approvedStatus: item.approvedStatus ?? '',
+                              preparedStatus: item.correctedStatus ?? '',
                             );
                           },
                         );
@@ -164,13 +175,16 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
                 final plant = context.read<PlantProvider>().currentPlant;
                 final plantId = plant?.code ?? '';
                 await context
-                    .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
+                    .read<
+                      AnalyticalResultOutgoingShipmentProductByTruckProvider
+                    >()
                     .fetchReport(
                       formattedDate,
+                      plantId,
+
                       // purpose: "list",
-                     
                       role: role,
-                       isFilterBasedOnRole: true,
+                      isFilterBasedOnRole: true,
                     );
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
@@ -200,7 +214,24 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
     required String? productName,
     required String? entryBy,
     required String? role,
+    required String approvedStatus,
+    required String preparedStatus,
+    Color? badgeColor,
+    String? showedStatus,
   }) {
+    if (preparedStatus == "Approved" && approvedStatus == "Approved") {
+      badgeColor = Colors.green;
+      showedStatus = "Approved";
+    } else if (preparedStatus == "Rejected" || approvedStatus == "Rejected") {
+      badgeColor = Colors.red;
+      showedStatus = "Rejected";
+    } else if (preparedStatus != '') {
+      badgeColor = Colors.orange;
+      showedStatus = "Prepared";
+    } else if (preparedStatus == '') {
+      badgeColor = Colors.blue;
+      showedStatus = "Submitted";
+    }
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: () {
@@ -208,9 +239,13 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
           context,
           MaterialPageRoute(
             builder:
-                (context) => AnalyticalResultOutgoingShipmentProductByTruckListDetailPage(
+                (
+                  context,
+                ) => AnalyticalResultOutgoingShipmentProductByTruckListDetailPage(
                   data: context
-                      .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
+                      .read<
+                        AnalyticalResultOutgoingShipmentProductByTruckProvider
+                      >()
                       .reportList
                       .firstWhere((element) => element.id == id),
                 ),
@@ -227,7 +262,12 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
           );
           await context
               .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
-              .fetchReport(formattedDate, role: role,  isFilterBasedOnRole: true,);
+              .fetchReport(
+                formattedDate,
+                plantId,
+                role: role,
+                isFilterBasedOnRole: true,
+              );
         });
       },
       child: Card(
@@ -252,6 +292,23 @@ class _AnalyticalResultOutgoingShipmentProductByTruckListPageState
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
                       vertical: 4,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: badgeColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '$showedStatus',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],

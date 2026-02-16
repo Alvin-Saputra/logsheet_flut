@@ -143,6 +143,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselApprovalListPageState
                     >()
                     .fetchReport(
                       formattedDate,
+                      plantId
                       // isFilterBasedOnRole: true,
                       // role: userRole,
                     );
@@ -227,6 +228,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselApprovalListPageState
           ).then((_) async {
             if (!mounted) return;
             final plant = await context.read<PlantProvider>().currentPlant;
+          final plantId = plant?.code ?? '';
             final formattedDate = changeStringDateFormat(
               dateEntryController.text,
               'dd-MM-yyyy',
@@ -236,6 +238,7 @@ class _AnalyticalResultOutgoingShipmentProductByVesselApprovalListPageState
                 .read<AnalyticalResultOutgoingShipmentProductByVesselProvider>()
                 .fetchReport(
                   formattedDate,
+                  plantId
                   // isFilterBasedOnRole: true,
                   // role: role,
                 );

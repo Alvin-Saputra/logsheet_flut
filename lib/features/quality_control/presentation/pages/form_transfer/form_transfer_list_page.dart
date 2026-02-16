@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/features/auth/data/datasources/local/storage_service/storage_service.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_header_model.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/form_transfer/form_transfer_input_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/form_transfer/form_transfer_detail_page.dart';
@@ -38,15 +39,23 @@ class _FormTransferListPageState extends State<FormTransferListPage> {
   Future<void> _loadInitialData() async {
     final token = await _storageService.readSessionToken();
     if (token != null && mounted) {
-      await context.read<FormTransferProvider>().loadTransfers('Bearer $token');
+      final plant = context.read<PlantProvider>().currentPlant;
+      final plantId = plant?.code ?? '';
+      await context.read<FormTransferProvider>().loadTransfers(
+        'Bearer $token',
+        plantId,
+      );
     }
   }
 
   Future<void> _onRefresh() async {
     final token = await _storageService.readSessionToken();
+    final plant = context.read<PlantProvider>().currentPlant;
+    final plantId = plant?.code ?? '';
     if (token != null && mounted) {
       await context.read<FormTransferProvider>().loadTransfers(
         'Bearer $token',
+        plantId,
         transactionDate: _getTransactionDateQuery(),
         status: _getStatusQuery(),
       );
@@ -279,7 +288,21 @@ class _FormTransferListPageState extends State<FormTransferListPage> {
     );
   }
 
-  Widget _buildTransferCard(FormTransferHeaderModel transfer) {
+  Widget _buildTransferCard(
+    FormTransferHeaderModel transfer, ) {
+    //  if (transfer.jsonPreparedStatus== "Approved" && transfer.js == "Approved") {
+    //   badgeColor = Colors.green;
+    //   showedStatus = "Approved";
+    // } else if (preparedStatus == "Rejected" || approvedStatus == "Rejected") {
+    //   badgeColor = Colors.red;
+    //   showedStatus = "Rejected";
+    // } else if (preparedStatus != '') {
+    //   badgeColor = Colors.orange;
+    //   showedStatus = "Prepared";
+    // } else if (preparedStatus == '') {
+    //   badgeColor = Colors.blue;
+    //   showedStatus = "Submitted";
+    // }
     return InkWell(
       onTap: () => _navigateToDetail(transfer),
       child: Card(
@@ -475,10 +498,13 @@ class _FormTransferListPageState extends State<FormTransferListPage> {
   }
 
   Future<void> _fetchTransfers() async {
+    final plant = context.read<PlantProvider>().currentPlant;
+    final plantId = plant?.code ?? '';
     final token = await _storageService.readSessionToken();
     if (token != null && mounted) {
       await context.read<FormTransferProvider>().loadTransfers(
         'Bearer $token',
+        plantId,
         transactionDate: _getTransactionDateQuery(),
         status: _getStatusQuery(),
       );

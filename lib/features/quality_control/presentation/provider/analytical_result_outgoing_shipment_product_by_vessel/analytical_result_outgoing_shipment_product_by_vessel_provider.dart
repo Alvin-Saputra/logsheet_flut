@@ -154,7 +154,8 @@ class AnalyticalResultOutgoingShipmentProductByVesselProvider
   }
 
   Future<void> fetchReport(
-    String? date, {
+    String? date,
+    String? plantId, {
     String? role,
     bool isFilterBasedOnRole = false,
   }) async {
@@ -165,6 +166,7 @@ class AnalyticalResultOutgoingShipmentProductByVesselProvider
       String token = await _storageService.readSessionToken() ?? '';
       final response = await _apiService.fetchReports(
         'Bearer $token',
+        plantId,
         date ?? '',
       );
 
@@ -179,7 +181,9 @@ class AnalyticalResultOutgoingShipmentProductByVesselProvider
         } else if (isFilterBasedOnRole == true &&
             AppRoles.qualityControlManagerApproval.contains(role)) {
           _reportList =
-              _reportList.where((item) => item.preparedStatus == "Approved").toList();
+              _reportList
+                  .where((item) => item.preparedStatus == "Approved")
+                  .toList();
         }
         log("report List Length: ${_reportList.length}");
 

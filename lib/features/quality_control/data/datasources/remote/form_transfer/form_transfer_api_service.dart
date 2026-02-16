@@ -16,6 +16,7 @@ abstract class FormTransferApiService {
   @GET("/form-transfer")
   Future<FetchFormTransferResponse> getFormTransfers(
     @Header("Authorization") String token,
+    @Query("plant") String? plantId,
     @Query("transaction_date") String? transactionDate,
     @Query("status") String? status,
   );

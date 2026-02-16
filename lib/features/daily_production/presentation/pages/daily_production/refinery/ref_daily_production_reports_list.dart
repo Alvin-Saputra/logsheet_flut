@@ -195,6 +195,10 @@ class _DailyProductionRefineryReportListsPageState
                     Map<String, List<DailyProductionRefineryEntity>> shiftMap =
                         {};
 
+                    final ticketClosedStatus = thisTicketRows.every(
+                      (item) => item.isCompleted == true,
+                    );
+
                     for (var item in thisTicketRows) {
                       String shiftKey = item.shift ?? "Unknown";
                       if (!shiftMap.containsKey(shiftKey)) {
@@ -221,6 +225,16 @@ class _DailyProductionRefineryReportListsPageState
                         leading: const Icon(
                           Icons.description,
                           color: Colors.blueGrey,
+                        ),
+
+                        trailing: Text(
+                          (ticketClosedStatus == true) ? "Close" : "Open",
+                          style: TextStyle(
+                            color:
+                                (ticketClosedStatus == true)
+                                    ? Colors.red
+                                    : Colors.green,
+                          ),
                         ),
                         title: Text(
                           "${headerData.id}",

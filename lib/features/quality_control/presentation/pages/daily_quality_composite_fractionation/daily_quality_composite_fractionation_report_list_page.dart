@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_report_list_detail_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_input_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_report_detail_page.dart';
@@ -124,10 +125,13 @@ class _DailyQualityCompositeFractionationReportListPageState
               );
               log('Searching for date: $formattedDate');
               if (formattedDate != null) {
+                final plant = context.read<PlantProvider>().currentPlant;
+                final plantId = plant?.code ?? '';
                 await context
                     .read<DailyQualityCompositeFractionationProvider>()
                     .getAllDailyCompositeFractionationReport(
                       formattedDate,
+                      plantId,
                       role: role,
                     );
               }
@@ -189,11 +193,14 @@ class _DailyQualityCompositeFractionationReportListPageState
         ).then((_) {
           // Refresh the list when returning from the detail page
           if (!mounted) return;
+          final plant = context.read<PlantProvider>().currentPlant;
+          final plantId = plant?.code ?? '';
           final formatted = parseDateTimeForQuery(dateEntryController.text);
           context
               .read<DailyQualityCompositeFractionationProvider>()
               .getAllDailyCompositeFractionationReport(
                 formatted ?? '',
+                plantId,
                 role: role ?? '',
               );
         });

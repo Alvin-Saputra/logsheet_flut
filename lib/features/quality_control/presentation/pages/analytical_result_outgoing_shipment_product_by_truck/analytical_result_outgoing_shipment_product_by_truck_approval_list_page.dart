@@ -103,7 +103,9 @@ class _AnalyticalResultOutgoingShipmentProductByTruckApprovalListPageState
             )
             .first;
     return AppBar(
-      title: Text("Analytical Result of Out Going Shipment Product By Truck Approval List(${formData!.code})"),
+      title: Text(
+        "Analytical Result of Out Going Shipment Product By Truck Approval List(${formData!.code})",
+      ),
       actions: [
         Consumer<AnalyticalResultOutgoingShipmentProductByTruckProvider>(
           builder: (
@@ -122,7 +124,10 @@ class _AnalyticalResultOutgoingShipmentProductByTruckApprovalListPageState
                       'dd-MM-yyyy',
                       'yyyy-MM-dd',
                     );
-                    await provider.fetchReport(formattedDate);
+                    await provider.fetchReport(
+                      formattedDate,
+                      plant?.code ?? '',
+                    );
                   },
                   icon: Icon(Icons.replay),
                 );
@@ -161,7 +166,7 @@ class _AnalyticalResultOutgoingShipmentProductByTruckApprovalListPageState
                     .read<
                       AnalyticalResultOutgoingShipmentProductByTruckProvider
                     >()
-                    .fetchReport(formattedDate);
+                    .fetchReport(formattedDate, plantId);
               } else if (dateEntryController.text == "") {
                 showSnackBar("Silahkan Pilih Tanggal", this.context);
               }
@@ -250,7 +255,7 @@ class _AnalyticalResultOutgoingShipmentProductByTruckApprovalListPageState
             );
             await context
                 .read<AnalyticalResultOutgoingShipmentProductByTruckProvider>()
-                .fetchReport(formattedDate);
+                .fetchReport(formattedDate, plant?.code ?? '');
           });
         },
         child: Padding(

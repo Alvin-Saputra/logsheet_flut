@@ -184,7 +184,8 @@ class DailyQualityCompositeFractionationProvider with ChangeNotifier {
   }
 
   Future<void> getAllDailyCompositeFractionationReport(
-    String? dateFilter, {
+    String? dateFilter,
+    String plantCode, {
     String? role,
     bool isFilterBasedOnRole = false,
   }) async {
@@ -195,6 +196,7 @@ class DailyQualityCompositeFractionationProvider with ChangeNotifier {
       _reportsList = await _repository.getAllDailyQualityCompositeReport(
         dateFilter ?? '',
         role ?? '',
+        plantCode,
       );
       _reportsList = _reportsList.where((item) => item.flag == 'T').toList();
 
@@ -266,13 +268,13 @@ class DailyQualityCompositeFractionationProvider with ChangeNotifier {
     }
   }
 
-  Future<void> getAllDailyQualityCompositeApprovalReport() async {
+  Future<void> getAllDailyQualityCompositeApprovalReport(String? plantCode) async {
     _setLoadingApproval(true);
     _setErrorMessage(null);
     try {
       log('Fetching reports...');
       _approvalList =
-          await _repository.getAllDailyQualityCompositeApprovalReport();
+          await _repository.getAllDailyQualityCompositeApprovalReport(plantCode);
 
       notifyListeners();
 

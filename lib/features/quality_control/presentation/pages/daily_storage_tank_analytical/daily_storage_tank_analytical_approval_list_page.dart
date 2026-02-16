@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/maintenance/presentation/pages/maintenance_change_product/maintenance_change_product_approval_detail_page.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_approval_detail_page.dart';
 import 'package:logsheet_app/features/maintenance/presentation/provider/change_product_checklist/maintenance_change_product_checklist_provider.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
@@ -26,10 +27,12 @@ class _DailyStorageTankAnalyticalApprovalListPageState
   initState() {
     super.initState();
     context.read<DailyStorageTankAnalyticalProvider>().clearReports();
+    final plant = context.read<PlantProvider>().currentPlant;
+    final plantId = plant?.code ?? '';
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await context
           .read<DailyStorageTankAnalyticalProvider>()
-          .getAllDailyStorageTankApproval();
+          .getAllDailyStorageTankApproval(plantId);
     });
   }
 
@@ -92,7 +95,9 @@ class _DailyStorageTankAnalyticalApprovalListPageState
                 ? CircularProgressIndicator()
                 : IconButton(
                   onPressed: () async {
-                    await provider.getAllDailyStorageTankApproval();
+                    final plant = context.read<PlantProvider>().currentPlant;
+                    final plantId = plant?.code ?? '';
+                    await provider.getAllDailyStorageTankApproval(plantId);
                   },
                   icon: Icon(Icons.replay),
                 );
@@ -156,9 +161,11 @@ class _DailyStorageTankAnalyticalApprovalListPageState
           ).then((_) async {
             // Refresh the list when returning from the detail page
             if (!mounted) return;
+            final plant = context.read<PlantProvider>().currentPlant;
+            final plantId = plant?.code ?? '';
             await context
                 .read<DailyStorageTankAnalyticalProvider>()
-                .getAllDailyStorageTankApproval();
+                .getAllDailyStorageTankApproval(plantId);
           });
         },
         child: Padding(

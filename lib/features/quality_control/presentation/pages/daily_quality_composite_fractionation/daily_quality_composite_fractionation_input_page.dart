@@ -949,6 +949,8 @@ class _DailyQualityCompositeFractionationInputPageState
             selectedHour != null
                 ? TimeOfDay(hour: selectedHour!, minute: 0)
                 : null,
+        company: businessUnit?.buCode ?? "",
+        plant: plant?.code ?? '',
         crystalizer: selectedTankSource,
         workCenter: selectedWorkCenter,
         rmMni: parseDouble(rmMniController.text),

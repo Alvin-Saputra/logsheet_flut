@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_input_page.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_storage_tank_analytical/daily_storage_tank_analytical_list_detail_page.dart';
 import 'package:logsheet_app/core/widgets/custom_date_field.dart';
@@ -48,11 +49,14 @@ class _DailyStorageTankAnalyticalListPageState
             ),
           ).then((_) {
             if (!mounted) return;
+            final plant = context.read<PlantProvider>().currentPlant;
+            final plantId = plant?.code ?? '';
             final formatted = parseDateTimeForQuery(dateEntryController.text);
             context
                 .read<DailyStorageTankAnalyticalProvider>()
                 .getAllDailyStorageTankReport(
                   formatted,
+                  plantId,
                   role: userRole,
                   isFilterBasedOnRole: true,
                 );
@@ -149,12 +153,15 @@ class _DailyStorageTankAnalyticalListPageState
               final formattedDate = parseDateTimeForQuery(
                 dateEntryController.text,
               );
+              final plant = context.read<PlantProvider>().currentPlant;
+              final plantId = plant?.code ?? '';
               log('Searching for date: $formattedDate');
               if (formattedDate != null) {
                 await context
                     .read<DailyStorageTankAnalyticalProvider>()
                     .getAllDailyStorageTankReport(
                       formattedDate,
+                      plantId,
                       role: role,
                       isFilterBasedOnRole: true,
                     );
@@ -194,11 +201,14 @@ class _DailyStorageTankAnalyticalListPageState
           ),
         ).then((_) {
           if (!mounted) return;
+          final plant = context.read<PlantProvider>().currentPlant;
+          final plantId = plant?.code ?? '';
           final formatted = parseDateTimeForQuery(dateEntryController.text);
           context
               .read<DailyStorageTankAnalyticalProvider>()
               .getAllDailyStorageTankReport(
                 formatted,
+                plantId,
                 role: role,
                 isFilterBasedOnRole: true,
               );

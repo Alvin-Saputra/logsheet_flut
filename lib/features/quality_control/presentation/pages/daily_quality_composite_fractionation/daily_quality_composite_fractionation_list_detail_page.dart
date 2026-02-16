@@ -111,6 +111,8 @@ class _DailyQualityCompositeFractionationListDetailPageState
 
                     _buildSection('General Information', [
                       _buildDataRow('ID', reportItem?.id ?? ''),
+                      _buildDataRow('Company', reportItem?.company ?? ''),
+                      _buildDataRow('Plant', reportItem?.plant ?? ''),
                     ]),
 
                     _buildSection('Raw Material', [
@@ -642,7 +644,8 @@ class _DailyQualityCompositeFractionationListDetailPageState
 
     // FINAL LOCK: sudah disetujui manager
     if (report.preparedStatus == "Rejected" ||
-        report.checkedStatus == "Rejected" || report.preparedStatus == null) {
+        report.checkedStatus == "Rejected" ||
+        report.preparedStatus == null) {
       return true;
     }
 

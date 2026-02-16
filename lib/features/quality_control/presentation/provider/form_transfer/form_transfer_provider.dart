@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_detail_model.dart';
 import 'package:logsheet_app/features/quality_control/data/model/remote/form_transfer/form_transfer_header_model.dart';
 import 'package:logsheet_app/features/quality_control/data/repositories/form_transfer/form_transfer_repository.dart';
@@ -39,7 +40,8 @@ class FormTransferProvider extends ChangeNotifier {
 
   /// Load all form transfers from the API
   Future<void> loadTransfers(
-    String token, {
+    String token,
+    String plantId, {
     String? transactionDate,
     String? status,
   }) async {
@@ -50,6 +52,7 @@ class FormTransferProvider extends ChangeNotifier {
     try {
       transfers = await repository.getFormTransfers(
         token,
+        plantId,
         transactionDate: transactionDate,
         status: status,
       );
@@ -66,6 +69,7 @@ class FormTransferProvider extends ChangeNotifier {
   Future<void> createTransfer(
     FormTransferHeaderModel transfer,
     String token,
+    String plantCode,
   ) async {
     log('Creating form transfer...');
     _setLoading(true);
@@ -77,7 +81,7 @@ class FormTransferProvider extends ChangeNotifier {
       log('Form transfer created with ID: ${response.idHeader}');
 
       // Refresh the list after creation
-      await loadTransfers(token);
+      await loadTransfers(token, plantCode);
       _setLoading(false);
     } catch (e) {
       log('Error creating form transfer: $e');
@@ -91,6 +95,7 @@ class FormTransferProvider extends ChangeNotifier {
     String id,
     FormTransferHeaderModel transfer,
     String token,
+    String plantCode,
   ) async {
     log('Updating form transfer: $id');
     _setLoading(true);
@@ -102,7 +107,7 @@ class FormTransferProvider extends ChangeNotifier {
       log('Form transfer updated: ${response.message}');
 
       // Refresh the list after update
-      await loadTransfers(token);
+      await loadTransfers(token, plantCode);
       _setLoading(false);
     } catch (e) {
       log('Error updating form transfer: $e');
@@ -139,7 +144,12 @@ class FormTransferProvider extends ChangeNotifier {
 
   /// Approve a form transfer
   /// [level] - 'prepared', 'approved' (2-step approval: Lead -> Manager)
-  Future<void> approveTransfer(String id, String token, {String? level}) async {
+  Future<void> approveTransfer(
+    String id,
+    String token,
+    String plantCode, {
+    String? level,
+  }) async {
     log('Approving form transfer: $id, level: $level');
     _setLoading(true);
     _clearError();
@@ -153,7 +163,7 @@ class FormTransferProvider extends ChangeNotifier {
       log('Form transfer approved: ${response.message}');
 
       // Refresh the list after approval
-      await loadTransfers(token);
+      await loadTransfers(token, plantCode);
       _setLoading(false);
     } catch (e) {
       log('Error approving form transfer: $e');
@@ -167,7 +177,8 @@ class FormTransferProvider extends ChangeNotifier {
   /// [remarks] - Required remarks for rejection
   Future<void> rejectTransfer(
     String id,
-    String token, {
+    String token,
+    String plantCode, {
     String? level,
     String? remarks,
   }) async {
@@ -185,7 +196,7 @@ class FormTransferProvider extends ChangeNotifier {
       log('Form transfer rejected: ${response.message}');
 
       // Refresh the list after rejection
-      await loadTransfers(token);
+      await loadTransfers(token, plantCode);
       _setLoading(false);
     } catch (e) {
       log('Error rejecting form transfer: $e');

@@ -168,6 +168,7 @@ class DailyQualityCompositeFractionationMysqlService {
   Future<List<Map<String, dynamic>>> getAllDailyQualityCompositeReport(
     String? dateFilter,
     String? role,
+    String? plantCode,
   ) async {
     // 1. Separate formatters: One for parsing the input, one for the DB query including time
     final inputFormatter = DateFormat('yyyy-MM-dd');
@@ -203,9 +204,8 @@ class DailyQualityCompositeFractionationMysqlService {
       Map<String, dynamic> params = {};
       params['startDateTimeStr'] = dbFormatter.format(startDateTime);
       params['endDateTimeStr'] = dbFormatter.format(endDateTime);
-      
-      
-        baseQuery = """
+
+      baseQuery = """
           SELECT *
           FROM t_daily_quality_composite_fractionation AS a
           WHERE
@@ -226,9 +226,10 @@ class DailyQualityCompositeFractionationMysqlService {
               ),
               '%Y-%m-%d %H:%i:%s'
             ) <= STR_TO_DATE(:endDateTimeStr, '%Y-%m-%d %H:%i:%s')
-          AND a.flag = 'T'
+          AND  a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T');
+          
         """;
-      
+      params["plantCode"] = plantCode;
 
       // 4. Pass the dynamic 'params' map instead of the hardcoded map
       final IResultSet result = await connection!.execute(baseQuery, params);
@@ -334,8 +335,9 @@ class DailyQualityCompositeFractionationMysqlService {
     }
   }
 
-  Future<List<Map<String, dynamic>>>
-  getAllDailyQualityCompositeApprovalReport() async {
+  Future<List<Map<String, dynamic>>> getAllDailyQualityCompositeApprovalReport(
+    String? plantCode,
+  ) async {
     MySQLConnection? connection;
 
     try {
@@ -352,10 +354,14 @@ class DailyQualityCompositeFractionationMysqlService {
       SELECT 
       *
       FROM t_daily_quality_composite_fractionation AS a
+      Where a.plant = plant
       ORDER BY a.id ASC;
     """;
 
-      final IResultSet result = await connection!.execute(baseQuery);
+      final Map<String, dynamic> params = {};
+      params["plant"] = plantCode;
+
+      final IResultSet result = await connection!.execute(baseQuery, params);
 
       log(
         'Fetched ${result.rows.length} Daily Quality Composite Fractionation Approval reports',

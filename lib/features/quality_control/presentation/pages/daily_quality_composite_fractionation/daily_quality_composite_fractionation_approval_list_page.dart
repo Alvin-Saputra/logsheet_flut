@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/features/master_data/data/model/master/data_form_no_entity.dart';
+import 'package:logsheet_app/features/master_data/presentation/provider/master/plant_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/pages/daily_quality_composite_fractionation/daily_quality_composite_fractionation_approval_detail_page.dart';
 import 'package:logsheet_app/features/master_data/presentation/provider/master/data_form_no_provider.dart';
 import 'package:logsheet_app/features/quality_control/presentation/provider/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
@@ -26,10 +27,12 @@ class _DailyQualityCompositeFractionationApprovalListPageState
   @override
   initState() {
     super.initState();
+    final plant = context.read<PlantProvider>().currentPlant;
+    final plantId = plant?.code ?? '';
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await context
           .read<DailyQualityCompositeFractionationProvider>()
-          .getAllDailyQualityCompositeApprovalReport();
+          .getAllDailyQualityCompositeApprovalReport(plantId);
     });
   }
 
@@ -80,12 +83,13 @@ class _DailyQualityCompositeFractionationApprovalListPageState
             .read<DataFormNoProvider>()
             .dataFormNoList
             .where(
-              (form) =>
-                  form.isMenu == "Daily_Quality_Composite_Fractionation",
+              (form) => form.isMenu == "Daily_Quality_Composite_Fractionation",
             )
             .first;
     return AppBar(
-      title: Text("Daily Quality Composite Fractionation Approval List Page(${formData!.code})"),
+      title: Text(
+        "Daily Quality Composite Fractionation Approval List Page(${formData!.code})",
+      ),
       actions: [
         Consumer<DailyQualityCompositeFractionationProvider>(
           builder: (
@@ -97,7 +101,11 @@ class _DailyQualityCompositeFractionationApprovalListPageState
                 ? CircularProgressIndicator()
                 : IconButton(
                   onPressed: () async {
-                    await provider.getAllDailyQualityCompositeApprovalReport();
+                    final plant = context.read<PlantProvider>().currentPlant;
+                    final plantId = plant?.code ?? '';
+                    await provider.getAllDailyQualityCompositeApprovalReport(
+                      plantId,
+                    );
                   },
                   icon: Icon(Icons.replay),
                 );
@@ -163,9 +171,11 @@ class _DailyQualityCompositeFractionationApprovalListPageState
             ),
           ).then((_) async {
             if (!mounted) return;
+            final plant = context.read<PlantProvider>().currentPlant;
+            final plantId = plant?.code ?? '';
             await context
                 .read<DailyQualityCompositeFractionationProvider>()
-                .getAllDailyQualityCompositeApprovalReport();
+                .getAllDailyQualityCompositeApprovalReport(plantId);
           });
         },
         child: Padding(
@@ -192,8 +202,11 @@ class _DailyQualityCompositeFractionationApprovalListPageState
                     Text('Time: $time', style: const TextStyle(fontSize: 14)),
                     const SizedBox(height: 4),
                     Text('Tank: $tankNo', style: const TextStyle(fontSize: 14)),
-                     const SizedBox(height: 4),
-                    Text('Work Center: $workCenter', style: const TextStyle(fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Work Center: $workCenter',
+                      style: const TextStyle(fontSize: 14),
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       'Status: $showedStatus',

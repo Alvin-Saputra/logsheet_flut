@@ -15,14 +15,15 @@ class FormTransferRepository {
   FormTransferRepository({required this.apiService});
 
   Future<List<FormTransferHeaderModel>> getFormTransfers(
-    String token, {
+    String token,
+    String plantId, {
     String? transactionDate,
     String? status,
   }) async {
     try {
       log('Fetching form transfers...');
       final FetchFormTransferResponse response = await apiService
-          .getFormTransfers(token, transactionDate, status);
+          .getFormTransfers(token, plantId, transactionDate, status);
       log('Fetched ${response.data.length} form transfers');
       return response.data;
     } on DioException catch (e) {

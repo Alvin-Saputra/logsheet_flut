@@ -142,7 +142,8 @@ class AnalyticalResultOutgoingShipmentProductByTruckProvider
   }
 
   Future<void> fetchReport(
-    String? date, {
+    String? date, 
+    String? plantId,{
     String? role,
     // String? purpose,
     bool isFilterBasedOnRole = false,
@@ -154,6 +155,7 @@ class AnalyticalResultOutgoingShipmentProductByTruckProvider
       String token = await _storageService.readSessionToken() ?? '';
       final response = await _apiService.fetchReports(
         'Bearer $token',
+        plantId,
         date ?? '',
       );
 

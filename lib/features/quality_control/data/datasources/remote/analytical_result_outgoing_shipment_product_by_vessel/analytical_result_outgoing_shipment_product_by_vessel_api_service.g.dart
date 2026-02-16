@@ -61,9 +61,12 @@ class _AnalyticalResultOutgoingShipmentProductByVesselApiService
 
   @override
   Future<FetchAnalyticalResultOutgoingShipmentProductByVesselResponse>
-  fetchReports(String token, String? date) async {
+  fetchReports(String token, String? plantId, String? date) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'sampling_date': date};
+    final queryParameters = <String, dynamic>{
+      r'plant': plantId,
+      r'sampling_date': date,
+    };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{r'Authorization': token};
     _headers.removeWhere((k, v) => v == null);

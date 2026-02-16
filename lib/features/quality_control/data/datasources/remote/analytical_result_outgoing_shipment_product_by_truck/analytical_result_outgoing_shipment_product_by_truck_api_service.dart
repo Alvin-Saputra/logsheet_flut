@@ -27,6 +27,7 @@ abstract class AnalyticalResultOutgoingShipmentProductByTruckApiService {
   Future<FetchAnalyticalResultOutgoingShipmentProductByTruckResponse>
   fetchReports(
     @Header("Authorization") String token,
+     @Query("plant") String? plantId,
     @Query("loading_date") String? date,
   );
 
