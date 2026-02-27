@@ -145,6 +145,10 @@ class _DailyProductionFractionationApprovalDetailPageState
                   ),
                   const Divider(height: 24),
 
+                  _buildDetailRow('Company', report.company ?? '-'),
+
+                  _buildDetailRow('Plant', report.plant ?? '-'),
+
                   // --- General Information ---
                   _buildDetailRow(
                     'Transaction Date',
@@ -290,8 +294,8 @@ class _DailyProductionFractionationApprovalDetailPageState
                     '${report.preparedBy ?? '-'} on ${formatDate(report.preparedDate)}',
                   ),
                   _buildDetailRow(
-                    'Prepared Status',
-                    report.preparedStatus ?? '-',
+                    'Prepared Remarks',
+                    report.preparedStatusRemarks ?? '-',
                   ),
                   _buildDetailRow(
                     'Verified By',

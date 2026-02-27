@@ -148,6 +148,10 @@ class _DailyProductionRefineryApprovalDetailPageState
                   const Divider(height: 24),
 
                   // --- General Information ---
+                  _buildDetailRow('Company', report.company ?? '-'),
+
+                  _buildDetailRow('Plant', report.plant ?? '-'),
+
                   _buildDetailRow(
                     'Transaction Date',
                     formatDate(report.transactionDate),
@@ -216,7 +220,10 @@ class _DailyProductionRefineryApprovalDetailPageState
                     'Budget Ref Tank',
                     report.uuBudgetRefTank ?? '-',
                   ),
-                  _buildDetailRow('Budget Qty', report.uuBudgetQty.toString() ?? '-'),
+                  _buildDetailRow(
+                    'Budget Qty',
+                    report.uuBudgetQty.toString() ?? '-',
+                  ),
                   _buildDetailRow(
                     'Total',
                     report.uuTotalCpo?.toString() ?? '-',
@@ -225,7 +232,10 @@ class _DailyProductionRefineryApprovalDetailPageState
                     'Total Steam',
                     report.uuTotalSteam?.toString() ?? '-',
                   ),
-                  _buildDetailRow('Steam/CPO', report.uuSteamCpo.toString() ?? '-'),
+                  _buildDetailRow(
+                    'Steam/CPO',
+                    report.uuSteamCpo?.toString() ?? '-',
+                  ),
                   _buildDetailRow(
                     'Yield (%)',
                     report.uuYieldPercent != null
@@ -291,6 +301,11 @@ class _DailyProductionRefineryApprovalDetailPageState
                   _buildDetailRow(
                     'Prepared Status',
                     report.preparedStatus ?? '-',
+                  ),
+
+                  _buildDetailRow(
+                    'Prepared Remarks',
+                    report.preparedStatusRemarks ?? '-',
                   ),
                   _buildDetailRow(
                     'Verified By',

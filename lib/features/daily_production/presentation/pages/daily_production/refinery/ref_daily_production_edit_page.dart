@@ -32,6 +32,7 @@ import 'ref_section_rfad.dart';
 class RefDailyProductionEditPage extends StatefulWidget {
   final List<DailyProductionRefineryEntity> listReport;
   final DataFormNoEntity dataForm;
+
   const RefDailyProductionEditPage({
     super.key,
     required this.listReport,
@@ -113,6 +114,7 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
   List<RefineryInputItem> inputItems = [];
   List<int> deletedTicketId = [];
   bool? isTicketComplete = false;
+  List<DailyProductionRefineryEntity>? listUpdatedReport;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -410,7 +412,8 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
                           ? null
                           : () async {
                             await onConfirm();
-                            if (context.mounted) Navigator.of(context).pop();
+                            if (context.mounted)
+                              Navigator.of(context).pop(listUpdatedReport);
                           },
                   child:
                       isLoading
@@ -453,7 +456,7 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
 
   @override
   Widget build(BuildContext context) {
-    steamItem = 'Steam (Ton/Ton))';
+    steamItem = 'Steam (Ton/Ton CPO)';
     budgetValue =
         selectedRefineryMachine != null &&
                 utilityBudget.containsKey(selectedRefineryMachine)
@@ -681,117 +684,111 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
                           Colors.white, // backgroundColor: Colors.blue,
                       children: [
                         // if (i > 0)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  "Pilih section yang ingin diinput:",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Pilih section yang ingin diinput:",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Wrap(
+                                spacing: 8.0,
+                                children: [
+                                  // === CHIP RAW MATERIAL ===
+                                  FilterChip(
+                                    label: const Text("Raw Material"),
+                                    selected: inputItems[i].showRM!,
+                                    onSelected: (val) {
+                                      setState(() {
+                                        inputItems[i].showRM = val;
+
+                                        // JIKA DI-UNCHECK (val == false), BERSIHKAN DATA
+                                        if (!val) {
+                                          // 1. Reset variable dropdown/picker
+                                          inputItems[i].timeAwalRm = null;
+                                          inputItems[i].timeAkhirRm = null;
+                                          inputItems[i].selectedTankRm = null;
+                                          inputItems[i].selectedOilRm = null;
+                                          // inputItems[i].isUseLastTankRm =
+                                          //     false; // Reset checkbox tank
+
+                                          // 2. Bersihkan Text Controllers
+                                          inputItems[i].flowAwalRm.clear();
+                                          inputItems[i].flowAkhirRm.clear();
+                                          inputItems[i].flowTotalRm.clear();
+                                          inputItems[i].oipRm.clear();
+                                        }
+                                      });
+                                    },
+                                    checkmarkColor: Colors.black,
+                                    selectedColor: Colors.red.withOpacity(0.2),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Wrap(
-                                  spacing: 8.0,
-                                  children: [
-                                    // === CHIP RAW MATERIAL ===
-                                    FilterChip(
-                                      label: const Text("Raw Material"),
-                                      selected: inputItems[i].showRM!,
-                                      onSelected: (val) {
-                                        setState(() {
-                                          inputItems[i].showRM = val;
 
-                                          // JIKA DI-UNCHECK (val == false), BERSIHKAN DATA
-                                          if (!val) {
-                                            // 1. Reset variable dropdown/picker
-                                            inputItems[i].timeAwalRm = null;
-                                            inputItems[i].timeAkhirRm = null;
-                                            inputItems[i].selectedTankRm = null;
-                                            inputItems[i].selectedOilRm = null;
-                                            // inputItems[i].isUseLastTankRm =
-                                            //     false; // Reset checkbox tank
+                                  // === CHIP FINISH GOODS ===
+                                  FilterChip(
+                                    label: const Text("Finish Goods"),
+                                    selected: inputItems[i].showFG!,
+                                    onSelected: (val) {
+                                      setState(() {
+                                        inputItems[i].showFG = val;
 
-                                            // 2. Bersihkan Text Controllers
-                                            inputItems[i].flowAwalRm.clear();
-                                            inputItems[i].flowAkhirRm.clear();
-                                            inputItems[i].flowTotalRm.clear();
-                                            inputItems[i].oipRm.clear();
-                                          }
-                                        });
-                                      },
-                                      checkmarkColor: Colors.black,
-                                      selectedColor: Colors.red.withOpacity(
-                                        0.2,
-                                      ),
-                                    ),
+                                        // JIKA DI-UNCHECK, BERSIHKAN DATA FG
+                                        if (!val) {
+                                          // 1. Reset variable dropdown/picker
+                                          inputItems[i].timeAwalFg = null;
+                                          inputItems[i].timeAkhirFg = null;
+                                          inputItems[i].selectedTankFg = null;
+                                          inputItems[i].selectedOilFg = null;
 
-                                    // === CHIP FINISH GOODS ===
-                                    FilterChip(
-                                      label: const Text("Finish Goods"),
-                                      selected: inputItems[i].showFG!,
-                                      onSelected: (val) {
-                                        setState(() {
-                                          inputItems[i].showFG = val;
+                                          // 2. Bersihkan Text Controllers
+                                          inputItems[i].flowAwalFg.clear();
+                                          inputItems[i].flowAkhirFg.clear();
+                                          inputItems[i].flowTotalFg.clear();
+                                        }
+                                      });
+                                    },
+                                    checkmarkColor: Colors.black,
+                                    selectedColor: Colors.red.withOpacity(0.2),
+                                  ),
 
-                                          // JIKA DI-UNCHECK, BERSIHKAN DATA FG
-                                          if (!val) {
-                                            // 1. Reset variable dropdown/picker
-                                            inputItems[i].timeAwalFg = null;
-                                            inputItems[i].timeAkhirFg = null;
-                                            inputItems[i].selectedTankFg = null;
-                                            inputItems[i].selectedOilFg = null;
+                                  // === CHIP BY PRODUCT ===
+                                  FilterChip(
+                                    label: const Text("By Product"),
+                                    selected: inputItems[i].showBP!,
+                                    onSelected: (val) {
+                                      setState(() {
+                                        inputItems[i].showBP = val;
 
-                                            // 2. Bersihkan Text Controllers
-                                            inputItems[i].flowAwalFg.clear();
-                                            inputItems[i].flowAkhirFg.clear();
-                                            inputItems[i].flowTotalFg.clear();
-                                          }
-                                        });
-                                      },
-                                      checkmarkColor: Colors.black,
-                                      selectedColor: Colors.red.withOpacity(
-                                        0.2,
-                                      ),
-                                    ),
+                                        // JIKA DI-UNCHECK, BERSIHKAN DATA BP
+                                        if (!val) {
+                                          // 1. Reset variable dropdown/picker
+                                          inputItems[i].timeAwalBp = null;
+                                          inputItems[i].timeAkhirBp = null;
+                                          inputItems[i].selectedTankBp = null;
+                                          inputItems[i].selectedOilBp = null;
 
-                                    // === CHIP BY PRODUCT ===
-                                    FilterChip(
-                                      label: const Text("By Product"),
-                                      selected: inputItems[i].showBP!,
-                                      onSelected: (val) {
-                                        setState(() {
-                                          inputItems[i].showBP = val;
-
-                                          // JIKA DI-UNCHECK, BERSIHKAN DATA BP
-                                          if (!val) {
-                                            // 1. Reset variable dropdown/picker
-                                            inputItems[i].timeAwalBp = null;
-                                            inputItems[i].timeAkhirBp = null;
-                                            inputItems[i].selectedTankBp = null;
-                                            inputItems[i].selectedOilBp = null;
-
-                                            // 2. Bersihkan Text Controllers
-                                            inputItems[i].flowAwalBp.clear();
-                                            inputItems[i].flowAkhirBp.clear();
-                                            inputItems[i].flowTotalBp.clear();
-                                          }
-                                        });
-                                      },
-                                      checkmarkColor: Colors.black,
-                                      selectedColor: Colors.red.withOpacity(
-                                        0.2,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Divider(),
-                              ],
-                            ),
+                                          // 2. Bersihkan Text Controllers
+                                          inputItems[i].flowAwalBp.clear();
+                                          inputItems[i].flowAkhirBp.clear();
+                                          inputItems[i].flowTotalBp.clear();
+                                        }
+                                      });
+                                    },
+                                    checkmarkColor: Colors.black,
+                                    selectedColor: Colors.red.withOpacity(0.2),
+                                  ),
+                                ],
+                              ),
+                              const Divider(),
+                            ],
                           ),
+                        ),
 
                         if (inputItems[i].showRM == true)
                           SectionCpoRpaRps(
@@ -947,8 +944,6 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
                   ),
 
                   const SizedBox(height: 16),
-
-                 
                 },
 
                 Container(
@@ -1102,7 +1097,7 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
                           // Row(children: [Text("Shift: "), Text("I")]),
                           CustomTextField(
                             controller: totalOilController,
-                            label: 'Total',
+                            label: 'Total CPO',
                             icon: Icons.functions,
                             isNumeric: true,
                             isRequired: true,
@@ -1116,7 +1111,7 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
                           ),
                           CustomTextField(
                             controller: steamOilTypeController,
-                            label: 'Steam',
+                            label: 'Steam CPO',
                             icon: Icons.functions,
                             isNumeric: true,
                             isRequired: true,
@@ -1304,20 +1299,39 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
               ticketId: item.ticketId,
               company: companyName,
               plant: currentPlant.code,
-              transactionDate: getTransactionDate(),
-              postingDate: getPostingDate(),
+              transactionDate: widget.listReport[index].transactionDate, 
+              postingDate:  widget.listReport[index].postingDate,
               workCenter: selectedRefineryMachine,
               shift: selectedShift,
               no: index + 1,
               cpoTank: item.selectedTankRm,
               oilTypeRmId: item.selectedOilRm,
+              oilTypeRm:
+                  (item.selectedOilRm != null)
+                      ? context
+                          .read<ProductProvider>()
+                          .productRefineryList
+                          .firstWhere(
+                            (element) => element.id == item.selectedOilRm,
+                          )
+                          .rawMaterial
+                      : null,
               oilTypeRmAwalJam: item.timeAwalRm,
               oilTypeRmAwalFlowmeter: parseDouble(item.flowAwalRm),
               oilTypeRmAkhirJam: item.timeAkhirRm,
               oilTypeRmAkhirFlowmeter: parseDouble(item.flowAkhirRm),
               oilTypeRmTotal: parseDouble(item.flowTotalRm),
               oilTypeRmOip: parseDouble(item.oipRm),
-
+              oilTypeFg:
+                  (item.selectedOilFg != null)
+                      ? context
+                          .read<ProductProvider>()
+                          .productRefineryList
+                          .firstWhere(
+                            (element) => element.id == item.selectedOilFg,
+                          )
+                          .finishGood
+                      : null,
               oilTypeFgId: item.selectedOilFg,
               oilTypeFgAwalJam: item.timeAwalFg,
               oilTypeFgAwalFlowmeter: parseDouble(item.flowAwalFg),
@@ -1325,7 +1339,16 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
               oilTypeFgAkhirFlowmeter: parseDouble(item.flowAkhirFg),
               oilTypeFgTotal: parseDouble(item.flowTotalFg),
               oilTypeFgToTank: item.selectedTankFg,
-
+              oilTypeBp:
+                  (item.selectedOilBp != null)
+                      ? context
+                          .read<ProductProvider>()
+                          .productRefineryList
+                          .firstWhere(
+                            (element) => element.id == item.selectedOilBp,
+                          )
+                          .byProduct
+                      : null,
               oilTypeBpId: item.selectedOilBp,
               bpAwalJam: item.timeAwalBp,
               bpAwalFlowmeter: parseDouble(item.flowAwalBp),
@@ -1364,16 +1387,17 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
               uuYieldPercent: parseDouble(yieldPercentController),
               entryBy: currentUser?.username,
               entryDate: DateTime.now(),
-              preparedBy: null,
-              preparedDate: null,
-              preparedStatus: null,
-              verifiedBy: null,
-              verifiedDate: null,
-              verifiedStatus: null,
-              checkedBy: null,
-              checkedDate: null,
-              checkedStatus: null,
-              checkedStatusRemarks: null,
+              preparedBy: widget.listReport[index].preparedBy,
+              preparedDate: widget.listReport[index].preparedDate,
+              preparedStatus: widget.listReport[index].preparedStatus,
+              preparedStatusRemarks: widget.listReport[index].preparedStatusRemarks,
+              verifiedBy: widget.listReport[index].verifiedBy,
+              verifiedDate: widget.listReport[index].verifiedDate,
+              verifiedStatus: widget.listReport[index].verifiedStatus,
+              checkedBy: widget.listReport[index].checkedBy,
+              checkedDate: widget.listReport[index].checkedDate,
+              checkedStatus: widget.listReport[index].checkedStatus,
+              checkedStatusRemarks: widget.listReport[index].checkedStatusRemarks,
               formNo: dataForm.code,
               dateIssued: dataForm.dateIssued,
               revisionNo: dataForm.revisionNo,
@@ -1394,6 +1418,7 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
 
       log("is success? $success");
       if (success) {
+        listUpdatedReport = entities;
         // if (!mounted) return;
         context.read<DailyProductionRefineryProvider>().fetchAllTickets(
           null,

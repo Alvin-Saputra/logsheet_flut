@@ -94,6 +94,7 @@ class _DailyProductionFractionPageState
   List<FractionationInputItem> inputItems = [];
   bool? isTicketComplete = false;
   List<int> deletedTicketId = [];
+  List<DailyProductionFractionationEntity>? listUpdatedReport;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -371,7 +372,8 @@ class _DailyProductionFractionPageState
                           ? null
                           : () async {
                             await onConfirm();
-                            if (context.mounted) Navigator.of(context).pop();
+                            if (context.mounted)
+                              Navigator.of(context).pop(listUpdatedReport);
                           },
                   child:
                       isLoading
@@ -389,7 +391,6 @@ class _DailyProductionFractionPageState
       },
     );
   }
-
 
   String? _validateNonFormFields() {
     for (int i = 0; i < inputItems.length; i++) {
@@ -622,116 +623,110 @@ class _DailyProductionFractionPageState
                           Colors.white, // backgroundColor: Colors.blue,
                       children: [
                         // if (i > 0)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  "Pilih section yang ingin diinput:",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Pilih section yang ingin diinput:",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Wrap(
+                                spacing: 8.0,
+                                children: [
+                                  // === CHIP RAW MATERIAL ===
+                                  FilterChip(
+                                    label: const Text("Raw Material"),
+                                    selected: inputItems[i].showRM!,
+                                    onSelected: (val) {
+                                      setState(() {
+                                        inputItems[i].showRM = val;
+
+                                        // JIKA DI-UNCHECK (val == false), BERSIHKAN DATA
+                                        if (!val) {
+                                          // 1. Reset variable dropdown/picker
+                                          inputItems[i].timeAwalRm = null;
+                                          inputItems[i].timeAkhirRm = null;
+                                          inputItems[i].selectedTankRm = null;
+                                          inputItems[i].selectedOilRm = null;
+                                          inputItems[i].selectedCrystallizerRm =
+                                              null;
+                                          inputItems[i].selectedTankRm = null;
+
+                                          inputItems[i].flowAwalRm.clear();
+                                          inputItems[i].flowAkhirRm.clear();
+                                          inputItems[i].flowTotalRm.clear();
+                                        }
+                                      });
+                                    },
+                                    checkmarkColor: Colors.black,
+                                    selectedColor: Colors.red.withOpacity(0.2),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Wrap(
-                                  spacing: 8.0,
-                                  children: [
-                                    // === CHIP RAW MATERIAL ===
-                                    FilterChip(
-                                      label: const Text("Raw Material"),
-                                      selected: inputItems[i].showRM!,
-                                      onSelected: (val) {
-                                        setState(() {
-                                          inputItems[i].showRM = val;
 
-                                          // JIKA DI-UNCHECK (val == false), BERSIHKAN DATA
-                                          if (!val) {
-                                            // 1. Reset variable dropdown/picker
-                                            inputItems[i].timeAwalRm = null;
-                                            inputItems[i].timeAkhirRm = null;
-                                            inputItems[i].selectedTankRm = null;
-                                            inputItems[i].selectedOilRm = null;
-                                            inputItems[i]
-                                                .selectedCrystallizerRm = null;
-                                            inputItems[i].selectedTankRm = null;
+                                  // === CHIP FINISH GOODS ===
+                                  FilterChip(
+                                    label: const Text("Finish Goods"),
+                                    selected: inputItems[i].showFG!,
+                                    onSelected: (val) {
+                                      setState(() {
+                                        inputItems[i].showFG = val;
 
-                                            inputItems[i].flowAwalRm.clear();
-                                            inputItems[i].flowAkhirRm.clear();
-                                            inputItems[i].flowTotalRm.clear();
-                                          }
-                                        });
-                                      },
-                                      checkmarkColor: Colors.black,
-                                      selectedColor: Colors.red.withOpacity(
-                                        0.2,
-                                      ),
-                                    ),
+                                        if (!val) {
+                                          inputItems[i].timeAwalFg = null;
+                                          inputItems[i].timeAkhirFg = null;
+                                          inputItems[i].selectedTankFg = null;
+                                          inputItems[i].selectedOilFg = null;
+                                          inputItems[i].selectedCrystallizerFg =
+                                              null;
+                                          inputItems[i].selectedTankFg = null;
 
-                                    // === CHIP FINISH GOODS ===
-                                    FilterChip(
-                                      label: const Text("Finish Goods"),
-                                      selected: inputItems[i].showFG!,
-                                      onSelected: (val) {
-                                        setState(() {
-                                          inputItems[i].showFG = val;
+                                          inputItems[i].flowAwalFg.clear();
+                                          inputItems[i].flowAkhirFg.clear();
+                                          inputItems[i].flowTotalFg.clear();
+                                        }
+                                      });
+                                    },
+                                    checkmarkColor: Colors.black,
+                                    selectedColor: Colors.red.withOpacity(0.2),
+                                  ),
 
-                                          if (!val) {
-                                            inputItems[i].timeAwalFg = null;
-                                            inputItems[i].timeAkhirFg = null;
-                                            inputItems[i].selectedTankFg = null;
-                                            inputItems[i].selectedOilFg = null;
-                                            inputItems[i]
-                                                .selectedCrystallizerFg = null;
-                                            inputItems[i].selectedTankFg = null;
+                                  // === CHIP BY PRODUCT ===
+                                  FilterChip(
+                                    label: const Text("By Product"),
+                                    selected: inputItems[i].showBP!,
+                                    onSelected: (val) {
+                                      setState(() {
+                                        inputItems[i].showBP = val;
 
-                                            inputItems[i].flowAwalFg.clear();
-                                            inputItems[i].flowAkhirFg.clear();
-                                            inputItems[i].flowTotalFg.clear();
-                                          }
-                                        });
-                                      },
-                                      checkmarkColor: Colors.black,
-                                      selectedColor: Colors.red.withOpacity(
-                                        0.2,
-                                      ),
-                                    ),
+                                        // JIKA DI-UNCHECK, BERSIHKAN DATA BP
+                                        if (!val) {
+                                          // 1. Reset variable dropdown/picker
+                                          inputItems[i].timeAwalBp = null;
+                                          inputItems[i].timeAkhirBp = null;
+                                          inputItems[i].selectedTankBp = null;
+                                          inputItems[i].selectedOilBp = null;
 
-                                    // === CHIP BY PRODUCT ===
-                                    FilterChip(
-                                      label: const Text("By Product"),
-                                      selected: inputItems[i].showBP!,
-                                      onSelected: (val) {
-                                        setState(() {
-                                          inputItems[i].showBP = val;
-
-                                          // JIKA DI-UNCHECK, BERSIHKAN DATA BP
-                                          if (!val) {
-                                            // 1. Reset variable dropdown/picker
-                                            inputItems[i].timeAwalBp = null;
-                                            inputItems[i].timeAkhirBp = null;
-                                            inputItems[i].selectedTankBp = null;
-                                            inputItems[i].selectedOilBp = null;
-
-                                            // 2. Bersihkan Text Controllers
-                                            inputItems[i].flowAwalBp.clear();
-                                            inputItems[i].flowAkhirBp.clear();
-                                            inputItems[i].flowTotalBp.clear();
-                                          }
-                                        });
-                                      },
-                                      checkmarkColor: Colors.black,
-                                      selectedColor: Colors.red.withOpacity(
-                                        0.2,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Divider(),
-                              ],
-                            ),
+                                          // 2. Bersihkan Text Controllers
+                                          inputItems[i].flowAwalBp.clear();
+                                          inputItems[i].flowAkhirBp.clear();
+                                          inputItems[i].flowTotalBp.clear();
+                                        }
+                                      });
+                                    },
+                                    checkmarkColor: Colors.black,
+                                    selectedColor: Colors.red.withOpacity(0.2),
+                                  ),
+                                ],
+                              ),
+                              const Divider(),
+                            ],
                           ),
+                        ),
 
                         if (inputItems[i].showRM == true)
                           FraSectionRbdpoRolRps(
@@ -760,6 +755,9 @@ class _DailyProductionFractionPageState
                             flowmeterAwalController: inputItems[i].flowAwalRm,
                             flowmeterAkhirController: inputItems[i].flowAkhirRm,
                             flowmeterTotalController: inputItems[i].flowTotalRm,
+
+                            selectedCrystallizer:
+                                inputItems[i].selectedCrystallizerRm,
                             onCrystallizerChanged:
                                 (val) => setState(
                                   () =>
@@ -832,6 +830,8 @@ class _DailyProductionFractionPageState
                                 (val) => setState(
                                   () => inputItems[i].selectedOilFg = val,
                                 ),
+                            selectedCrystallizer:
+                                inputItems[i].selectedCrystallizerFg,
                             onCrystallizerChanged:
                                 (val) => setState(
                                   () =>
@@ -1026,7 +1026,7 @@ class _DailyProductionFractionPageState
                     ),
                   ),
                 ],
-              CheckboxListTile(
+                CheckboxListTile(
                   value: isTicketComplete ?? false,
                   title: Text(
                     "Ticket Selesai",
@@ -1259,12 +1259,22 @@ class _DailyProductionFractionPageState
               ticketId: item.ticketId,
               company: companyName,
               plant: currentPlant.code,
-              transactionDate: getTransactionDate(),
-              postingDate: postingDate,
+              transactionDate: widget.listReport[index].transactionDate,
+              postingDate: widget.listReport[index].postingDate,
               workCenter: selectedWorkCenter,
               shift: selectedShift,
               no: index + 1,
-              oilTypeRmId: selectedOilRm,
+              oilTypeRmName:
+                  (item.selectedOilRm != null)
+                      ? context
+                          .read<ProductProvider>()
+                          .productFractionationList
+                          .firstWhere(
+                            (element) => element.id == item.selectedOilRm,
+                          )
+                          .rawMaterial
+                      : null,
+              oilTypeRmId: item.selectedOilRm,
               oilTypeRmCr: item.selectedCrystallizerRm,
               oilTypeRmFromTank: item.selectedTankRm,
               oilTypeRmAwalJam: item.timeAwalRm,
@@ -1272,7 +1282,18 @@ class _DailyProductionFractionPageState
               oilTypeRmAkhirJam: item.timeAkhirRm,
               oilTypeRmAkhirFlowmeter: parseInt(item.flowAkhirRm.text),
               oilTypeRmTotal: parseInt(item.flowTotalRm.text),
-              oilTypeFgsId: selectedOilFg,
+
+              oilTypeFgsId: item.selectedOilFg,
+              oilTypeFgsName:
+                  (item.selectedOilFg != null)
+                      ? context
+                          .read<ProductProvider>()
+                          .productFractionationList
+                          .firstWhere(
+                            (element) => element.id == item.selectedOilFg,
+                          )
+                          .finishGood
+                      : null,
               oilTypeFgsCr: item.selectedCrystallizerFg,
               oilTypeFgsAwalJam: item.timeAwalFg,
               oilTypeFgsAwalFlowmeter: parseInt(item.flowAwalFg.text),
@@ -1280,7 +1301,17 @@ class _DailyProductionFractionPageState
               oilTypeFgsAkhirFlowmeter: parseInt(item.flowAkhirFg.text),
               oilTypeFgsTotal: parseInt(item.flowTotalFg.text),
               oilTypeFgsToTank: item.selectedTankFg,
-              oilTypeFghId: selectedOilBp,
+              oilTypeFghName:
+                  (item.selectedOilBp != null)
+                      ? context
+                          .read<ProductProvider>()
+                          .productFractionationList
+                          .firstWhere(
+                            (element) => element.id == item.selectedOilBp,
+                          )
+                          .finishGood
+                      : null,
+              oilTypeFghId: item.selectedOilBp,
               oilTypeFghAwalJam: item.timeAwalBp,
               oilTypeFghAwalFlowmeter: parseDouble(item.flowAwalBp),
               oilTypeFghAkhirJam: item.timeAkhirBp,
@@ -1299,18 +1330,18 @@ class _DailyProductionFractionPageState
               uuAir: parseInt(uuAirController.text),
               entryBy: currentUser?.username,
               entryDate: DateTime.now(),
-              preparedBy: null,
-              preparedDate: null,
-              preparedStatus: null,
-              preparedStatusRemarks: null,
-              verifiedBy: null,
-              verifiedDate: null,
-              verifiedStatus: null,
-              verifiedStatusRemarks: null,
-              checkedBy: null,
-              checkedDate: null,
-              checkedStatus: null,
-              checkedStatusRemarks: null,
+              preparedBy: widget.listReport[index].preparedBy,
+              preparedDate: widget.listReport[index].preparedDate,
+              preparedStatus: widget.listReport[index].preparedStatus,
+              preparedStatusRemarks: widget.listReport[index].preparedStatusRemarks,
+              verifiedBy: widget.listReport[index].verifiedBy,
+              verifiedDate: widget.listReport[index].verifiedDate,
+              verifiedStatus: widget.listReport[index].verifiedStatus,
+              verifiedStatusRemarks: widget.listReport[index].verifiedStatusRemarks,
+              checkedBy: widget.listReport[index].checkedBy,
+              checkedDate: widget.listReport[index].checkedDate,
+              checkedStatus: widget.listReport[index].checkedStatus,
+              checkedStatusRemarks: widget.listReport[index].checkedStatusRemarks,
               formNo: dataForm.code,
               dateIssued: dataForm.dateIssued,
               revisionNo: dataForm.revisionNo,
@@ -1330,9 +1361,9 @@ class _DailyProductionFractionPageState
       // ... Handle success/error (tetap sama) ...
       if (success) {
         if (!mounted) return;
-        // ... fetchAllTickets ...
+        listUpdatedReport = entities;
         _showSnackBar('Update berhasil.');
-        Navigator.pop(context);
+        Navigator.pop(context, entities);
       } else {
         _showSnackBar('Gagal update.');
       }

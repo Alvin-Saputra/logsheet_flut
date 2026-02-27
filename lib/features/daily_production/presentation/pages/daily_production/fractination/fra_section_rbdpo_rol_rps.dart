@@ -51,6 +51,7 @@ class FraSectionRbdpoRolRps extends StatefulWidget {
     required this.onCrystallizerChanged,
     required this.onOilRmChanged,
     required this.selectedOil,
+    required this.selectedCrystallizer,
     required this.onUseTankFromLastShiftChangedRm,
     this.showCheckboxUseTankFromLastShiftChangedRm = false,
     required this.onUseTankFromLastRowRm,

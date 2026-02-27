@@ -81,6 +81,7 @@ class DailyProductionRefineryEntity {
   String? preparedBy;
   DateTime? preparedDate;
   String? preparedStatus;
+  String? preparedStatusRemarks;
   String? verifiedBy;
   DateTime? verifiedDate;
   String? verifiedStatus;
@@ -157,6 +158,7 @@ class DailyProductionRefineryEntity {
     this.preparedBy,
     this.preparedDate,
     this.preparedStatus,
+    this.preparedStatusRemarks,
     this.verifiedBy,
     this.verifiedDate,
     this.verifiedStatus,
@@ -286,6 +288,7 @@ class DailyProductionRefineryEntity {
       revisionNo: parseInt(map['revision_no']),
       revisionDate: parseDateTime(map['revision_date']),
       checkedStatusRemarks: map['checked_status_remarks'] as String?,
+      preparedStatusRemarks: map['prepared_status_remarks'] as String?,
       isCompleted: parseBool(map['is_completed']),
     );
   }

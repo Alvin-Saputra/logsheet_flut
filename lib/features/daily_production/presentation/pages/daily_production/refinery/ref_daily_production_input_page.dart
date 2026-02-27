@@ -1051,7 +1051,7 @@ class _DailyProductionPageState
                         // Row(children: [Text("Shift: "), Text("I")]),
                         CustomTextField(
                           controller: totalOilController,
-                          label: 'Total',
+                          label: 'Total CPO',
                           icon: Icons.functions,
                           isNumeric: true,
                         ),
@@ -1063,7 +1063,7 @@ class _DailyProductionPageState
                         ),
                         CustomTextField(
                           controller: steamOilTypeController,
-                          label: 'Steam',
+                          label: 'Steam CPO',
                           icon: Icons.functions,
                           isNumeric: true,
                         ),

@@ -44,8 +44,8 @@ class FractionationInputItem {
     this.showBP = true,
   }) {
     // Pasang Listener otomatis untuk hitung Flowmeter Total
-    _setupListener(flowAwalRm, flowAkhirRm, flowTotalRm);
-    _setupListener(flowAwalFg, flowAkhirFg, flowTotalFg);
+    _setupListener(flowAwalRm, flowAkhirRm, flowTotalRm, isDecimal: true);
+    _setupListener(flowAwalFg, flowAkhirFg, flowTotalFg, isDecimal: true);
     _setupListener(flowAwalBp, flowAkhirBp, flowTotalBp, isDecimal: true);
   }
 

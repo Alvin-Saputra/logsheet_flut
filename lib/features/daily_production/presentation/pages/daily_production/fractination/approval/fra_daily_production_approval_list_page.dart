@@ -34,11 +34,11 @@ class _DailyProductionFractinationApprovalListPageState
 
   void _fetchData() {
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
-    
+
     // Fetch Data
-    context
-        .read<DailyProductionFractionationProvider>()
-        .fetchReportsForManager(plantCode);
+    context.read<DailyProductionFractionationProvider>().fetchReportsForManager(
+      plantCode,
+    );
   }
 
   @override
@@ -59,7 +59,8 @@ class _DailyProductionFractinationApprovalListPageState
     final currentUser = context.watch<UserProvider>().currentUser;
     final String userRole = currentUser?.role ?? "";
 
-    final bool isManager = userRole.contains("MGR_PROD") || userRole.contains("MGR");
+    final bool isManager =
+        userRole.contains("MGR_PROD") || userRole.contains("MGR");
 
     return Consumer<DailyProductionFractionationProvider>(
       builder: (context, provider, child) {
@@ -67,7 +68,8 @@ class _DailyProductionFractinationApprovalListPageState
           return const Center(child: CircularProgressIndicator());
         }
 
-        List<DailyProductionFractionationEntity> rawList = provider.reportsForManager;
+        List<DailyProductionFractionationEntity> rawList =
+            provider.reportsForManager;
 
         if (rawList.isEmpty) {
           return const Center(child: Text("No data needing approval"));
@@ -98,7 +100,8 @@ class _DailyProductionFractinationApprovalListPageState
           padding: const EdgeInsets.all(8),
           itemCount: allTickets.length,
           itemBuilder: (context, index) {
-            List<DailyProductionFractionationEntity> thisTicketRows = allTickets[index];
+            List<DailyProductionFractionationEntity> thisTicketRows =
+                allTickets[index];
             final headerData = thisTicketRows.first;
 
             // Grouping per Shift
@@ -112,14 +115,19 @@ class _DailyProductionFractinationApprovalListPageState
             }
             var sortedShiftKeys = shiftMap.keys.toList()..sort();
 
-            String titleDate = headerData.transactionDate != null
-                ? DateFormat('dd MMM yyyy').format(headerData.transactionDate!)
-                : "-";
+            String titleDate =
+                headerData.transactionDate != null
+                    ? DateFormat(
+                      'dd MMM yyyy',
+                    ).format(headerData.transactionDate!)
+                    : "-";
             String titleWC = headerData.workCenter ?? "-";
 
             // Status Global Tiket (untuk warna icon)
             bool hasRejection = thisTicketRows.any(
-              (e) => e.preparedStatus == "Rejected" || e.checkedStatus == "Rejected",
+              (e) =>
+                  e.preparedStatus == "Rejected" ||
+                  e.checkedStatus == "Rejected",
             );
 
             return Card(
@@ -127,14 +135,15 @@ class _DailyProductionFractinationApprovalListPageState
               margin: const EdgeInsets.only(bottom: 8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
-                side: hasRejection
-                    ? const BorderSide(color: Colors.red, width: 1)
-                    : BorderSide.none,
+                side:
+                    hasRejection
+                        ? const BorderSide(color: Colors.red, width: 1)
+                        : BorderSide.none,
               ),
               child: ExpansionTile(
                 leading: Icon(
                   Icons.verified_user,
-                  color: hasRejection ? Colors.red : Colors.orange,
+                  color: _getApprovalStatusColor(thisTicketRows.first),
                 ),
                 title: Text(
                   "${headerData.id}",
@@ -142,63 +151,64 @@ class _DailyProductionFractinationApprovalListPageState
                 ),
                 subtitle: Text("$titleDate • WC: $titleWC"),
                 childrenPadding: const EdgeInsets.all(8),
-                children: sortedShiftKeys.map((shiftKey) {
-                  List<DailyProductionFractionationEntity> itemsInThisShift = shiftMap[shiftKey]!;
-                  var repItem = itemsInThisShift.first;
+                children:
+                    sortedShiftKeys.map((shiftKey) {
+                      List<DailyProductionFractionationEntity>
+                      itemsInThisShift = shiftMap[shiftKey]!;
+                      var repItem = itemsInThisShift.first;
 
-                  // Status Helper Booleans
-                  bool isPrepared = repItem.preparedStatus == "Approved";
-                  bool isChecked = repItem.checkedStatus == "Approved";
-                  bool isRejected = repItem.preparedStatus == "Rejected" ||
-                      repItem.checkedStatus == "Rejected";
+                      // Status Helper Booleans
+                      bool isPrepared = repItem.preparedStatus == "Approved";
+                      bool isChecked = repItem.checkedStatus == "Approved";
+                      bool isRejected =
+                          repItem.preparedStatus == "Rejected" ||
+                          repItem.checkedStatus == "Rejected";
 
-                  // Cek apakah Lead belum melakukan apa-apa (Null)
-                  bool isLeadPending = repItem.preparedStatus == null;
+                      // Cek apakah Lead belum melakukan apa-apa (Null)
+                      bool isLeadPending = repItem.preparedStatus == null;
 
-                  return ListTile(
-                    leading: const Icon(Icons.access_time),
-                    title: Text('Shift $shiftKey'),
-                    subtitle: Text(
-                      _getApprovalStatusText(repItem),
-                      style: TextStyle(
-                        color: _getApprovalStatusColor(repItem),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      
-                     
-                      if (isManager) {
-                    
-                        if (isLeadPending) {
-                          _showSnackBar("Gagal: Shift ini belum di-approve oleh Lead.");
-                          return; 
-                        }
+                      return ListTile(
+                        leading: const Icon(Icons.access_time),
+                        title: Text('Shift $shiftKey'),
+                        subtitle: Text(
+                          _getApprovalStatusText(repItem),
+                          style: TextStyle(
+                            color: _getApprovalStatusColor(repItem),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () {
+                          if (isManager) {
+                            if (isLeadPending) {
+                              _showSnackBar(
+                                "Gagal: Shift ini belum di-approve oleh Lead.",
+                              );
+                              return;
+                            }
 
-                      
-                        if (repItem.preparedStatus == "Rejected") {
-                          _showSnackBar("Gagal: Shift ini statusnya REJECTED oleh Lead.");
-                          return; 
-                        }
+                            if (repItem.preparedStatus == "Rejected") {
+                              _showSnackBar(
+                                "Gagal: Shift ini statusnya REJECTED oleh Lead.",
+                              );
+                              return;
+                            }
 
-    
-                        if (isPrepared && !isChecked) {
-                       
-                          _navigateToDetail(context, itemsInThisShift);
-                        } else if (isChecked) {
-                          _showSnackBar("Shift ini sudah Anda approve (Checked).");
-                         
-                           _navigateToDetail(context, itemsInThisShift);
-                        }
-                      } 
-                      else {
-               
-                        _navigateToDetail(context, itemsInThisShift);
-                      }
-                    },
-                  );
-                }).toList(),
+                            if (isPrepared && !isChecked) {
+                              _navigateToDetail(context, itemsInThisShift);
+                            } else if (isChecked) {
+                              _showSnackBar(
+                                "Shift ini sudah Anda approve (Checked).",
+                              );
+
+                              _navigateToDetail(context, itemsInThisShift);
+                            }
+                          } else {
+                            _navigateToDetail(context, itemsInThisShift);
+                          }
+                        },
+                      );
+                    }).toList(),
               ),
             );
           },
@@ -208,14 +218,18 @@ class _DailyProductionFractinationApprovalListPageState
   }
 
   void _navigateToDetail(
-      BuildContext context, List<DailyProductionFractionationEntity> items) {
+    BuildContext context,
+    List<DailyProductionFractionationEntity> items,
+  ) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => DailyProductionFractionationApprovalDetailPage(
-          reportEntities: items,
-          reportIdentifier: "${items.first.id} - Shift ${items.first.shift}",
-        ),
+        builder:
+            (context) => DailyProductionFractionationApprovalDetailPage(
+              reportEntities: items,
+              reportIdentifier:
+                  "${items.first.id} - Shift ${items.first.shift}",
+            ),
       ),
     ).then((value) {
       if (value == true) {
@@ -248,6 +262,7 @@ class _DailyProductionFractinationApprovalListPageState
     if (item.checkedStatus == "Rejected" || item.preparedStatus == "Rejected") {
       return Colors.red;
     }
-    return Colors.orange;
+    if (item.preparedStatus == "Approved") return Colors.orange;
+    return Colors.blue;
   }
 }

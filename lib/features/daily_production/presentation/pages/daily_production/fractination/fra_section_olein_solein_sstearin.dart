@@ -43,6 +43,7 @@ class FraSectionOleinSoleinSstearin extends StatelessWidget {
     required this.onOilFgChanged,
     this.selectedTimeAwal,
     this.selectedTimeAkhir,
+     required this.selectedCrystallizer,
     required this.onTimeTapAwal,
     required this.onTimeTapAkhir,
     required this.onCrystallizerChanged,

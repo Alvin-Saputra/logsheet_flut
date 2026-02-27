@@ -913,6 +913,8 @@ class _DailyProductionFractionPageState
                           flowmeterAwalController: inputItems[i].flowAwalRm,
                           flowmeterAkhirController: inputItems[i].flowAkhirRm,
                           flowmeterTotalController: inputItems[i].flowTotalRm,
+
+                          selectedCrystallizer: inputItems[i].selectedCrystallizerRm,
                           onCrystallizerChanged:
                               (val) => setState(
                                 () =>
@@ -999,11 +1001,12 @@ class _DailyProductionFractionPageState
                               (val) => setState(
                                 () => inputItems[i].selectedOilFg = val,
                               ),
+                          selectedCrystallizer: inputItems[i].selectedCrystallizerFg,    
                           onCrystallizerChanged:
                               (val) => setState(
                                 () =>
                                     inputItems[i].selectedCrystallizerFg = val,
-                              ),
+                              ), 
                         ),
 
                       SizedBox(height: 16.0),

@@ -243,22 +243,21 @@ class _DailyProductionFractionationDetailPageState
 
                       SizedBox(height: 12.0),
                       CustomSectionCard('Raw Material (RM)', [
+                        // CustomSectionCardData(
+                        //   'Oil Type Id',
+                        //   _displayValue(
+                        //     _listCurrentReport[pageIndex].oilTypeRmId,
+                        //   ),
+                        // ),
                         CustomSectionCardData(
-                          'Oil Type Id',
-                          _displayValue(
-                            _listCurrentReport[pageIndex].oilTypeRmId,
-                          ),
-                        ),
-
-                        CustomSectionCardData(
-                          'Oil Type Name',
+                          'Oil Type',
                           _displayValue(
                             _listCurrentReport[pageIndex].oilTypeRmName,
                           ),
                         ),
                         // CustomSectionCardData('No', _displayValue(_currentReport.oilTypeRmNo)),
                         CustomSectionCardData(
-                          'Cr',
+                          'Crystallizer',
                           _displayValue(
                             _listCurrentReport[pageIndex].oilTypeRmCr,
                           ),
@@ -304,22 +303,21 @@ class _DailyProductionFractionationDetailPageState
                       ]),
 
                       CustomSectionCard('Finished Goods (FG)', [
+                        // CustomSectionCardData(
+                        //   'Oil Type',
+                        //   _displayValue(
+                        //     _listCurrentReport[pageIndex].oilTypeFgsId,
+                        //   ),
+                        // ),
                         CustomSectionCardData(
                           'Oil Type',
-                          _displayValue(
-                            _listCurrentReport[pageIndex].oilTypeFgsId,
-                          ),
-                        ),
-
-                        CustomSectionCardData(
-                          'Oil Type Name',
                           _displayValue(
                             _listCurrentReport[pageIndex].oilTypeFgsName,
                           ),
                         ),
                         // CustomSectionCardData('No', _displayValue(_currentReport.oilTypeFgsNo)),
                         CustomSectionCardData(
-                          'Cr',
+                          'Crystallizer',
                           _displayValue(
                             _listCurrentReport[pageIndex].oilTypeFgsCr,
                           ),
@@ -378,7 +376,7 @@ class _DailyProductionFractionationDetailPageState
                         ),
 
                         CustomSectionCardData(
-                          'Oil Type Name',
+                          'Oil Type',
                           _displayValue(
                             _listCurrentReport[pageIndex].oilTypeFghName,
                           ),
@@ -541,6 +539,13 @@ class _DailyProductionFractionationDetailPageState
               CustomSectionCardData(
                 'Checked Remarks',
                 _displayValue(_listCurrentReport[0].checkedStatusRemarks),
+              ),
+
+              CustomSectionCardData(
+                'Status (Open/Closed)',
+                _displayValue(
+                  _listCurrentReport[0].isCompleted == true ? "Closed" : "Open",
+                ),
               ),
             ]),
 

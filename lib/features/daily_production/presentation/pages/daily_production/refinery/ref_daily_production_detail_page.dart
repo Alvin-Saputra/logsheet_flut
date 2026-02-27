@@ -130,9 +130,9 @@ class _DailyProductionRefineryDetailPageState
                       ),
                 ),
               );
-              if (result != null && result is DailyProductionRefineryEntity) {
+              if (result != null && result is List<DailyProductionRefineryEntity>) {
                 setState(() {
-                  _listCurrentReport[0] = result;
+                  _listCurrentReport = result;
                 });
               }
             },
@@ -236,9 +236,9 @@ class _DailyProductionRefineryDetailPageState
                       CustomSectionCard('Raw Material (RM)', [
                         CustomSectionCardData(
                           'Oil Type',
-                          _displayValue(
-                            _listCurrentReport[pageIndex].oilTypeRm,
-                          ),
+                         
+                            (_listCurrentReport[pageIndex].oilTypeRm !=null )?_listCurrentReport[pageIndex].oilTypeRm:'-',
+                          
                         ),
                         CustomSectionCardData(
                           'Awal Jam',
@@ -525,6 +525,10 @@ class _DailyProductionRefineryDetailPageState
                 'Prepared Status',
                 _displayValue(_listCurrentReport[0].preparedStatus),
               ),
+                CustomSectionCardData(
+                'Prepared Remarks',
+                _displayValue(_listCurrentReport[0].preparedStatusRemarks),
+              ),
               const Divider(),
               CustomSectionCardData(
                 'Verified By',
@@ -538,6 +542,7 @@ class _DailyProductionRefineryDetailPageState
                 'Verified Status',
                 _displayValue(_listCurrentReport[0].verifiedStatus),
               ),
+              
               const Divider(),
               CustomSectionCardData(
                 'Checked By',
@@ -551,10 +556,13 @@ class _DailyProductionRefineryDetailPageState
                 'Checked Status',
                 _displayValue(_listCurrentReport[0].checkedStatus),
               ),
-
+               CustomSectionCardData(
+                'Checked Remarks',
+                _displayValue(_listCurrentReport[0].checkedStatusRemarks),
+              ),
               CustomSectionCardData(
-                'Is Completed',
-                _displayValue(_listCurrentReport[0].isCompleted.toString()),
+                'Status (Open/Closed)',
+                _displayValue(_listCurrentReport[0].isCompleted == true ? "Closed" : "Open"),
               ),
             ]),
 

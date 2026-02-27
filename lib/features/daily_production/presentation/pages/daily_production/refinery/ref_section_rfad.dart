@@ -48,54 +48,54 @@ class SectionRfad extends StatefulWidget {
 
 class _SectionRfadState extends State<SectionRfad> {
   String flowrateUnit = "T/H";
-  double flowRateAwal = 0.0;
-  double flowRateAkhir = 0.0;
+  // double flowRateAwal = 0.0;
+  // double flowRateAkhir = 0.0;
 
-  void _calculateTotalFlowRate() {
-    String awalText = widget.flowRateAwalController.text;
-    String akhirText = widget.flowRateAkhirController.text;
+  // void _calculateTotalFlowRate() {
+  //   String awalText = widget.flowRateAwalController.text;
+  //   String akhirText = widget.flowRateAkhirController.text;
 
-    //parse to double
-    flowRateAwal = double.tryParse(awalText) ?? 0.0;
-    flowRateAkhir = double.tryParse(akhirText) ?? 0.0;
+  //   //parse to double
+  //   flowRateAwal = double.tryParse(awalText) ?? 0.0;
+  //   flowRateAkhir = double.tryParse(akhirText) ?? 0.0;
 
-    if (widget.selectedWorkCenter == "REF-01") {
-      setState(() {
-        flowRateAwal = flowRateAwal / 1000;
-        flowRateAkhir = flowRateAkhir / 1000;
-      });
+  //   if (widget.selectedWorkCenter == "REF-01") {
+  //     setState(() {
+  //       flowRateAwal = flowRateAwal / 1000;
+  //       flowRateAkhir = flowRateAkhir / 1000;
+  //     });
 
-      // widget.flowRateAwalController.text = flowRateAwal.toStringAsFixed(3);
-      // widget.flowRateAkhirController.text = flowRateAwal.toStringAsFixed(3);
-    }
+  //     // widget.flowRateAwalController.text = flowRateAwal.toStringAsFixed(3);
+  //     // widget.flowRateAkhirController.text = flowRateAwal.toStringAsFixed(3);
+  //   }
 
-    double totalFlowRate = flowRateAkhir - flowRateAwal;
+  //   double totalFlowRate = flowRateAkhir - flowRateAwal;
 
-    String newTotal = totalFlowRate.toStringAsFixed(3);
+  //   String newTotal = totalFlowRate.toStringAsFixed(3);
 
-    if (widget.flowRateTotalController.text != newTotal) {
-      setState(() {
-        widget.flowRateTotalController.text = newTotal;
-      });
-    }
-  }
+  //   if (widget.flowRateTotalController.text != newTotal) {
+  //     setState(() {
+  //       widget.flowRateTotalController.text = newTotal;
+  //     });
+  //   }
+  // }
 
   @override
   void initState() {
     super.initState();
 
-    widget.flowRateAwalController.addListener(_calculateTotalFlowRate);
-    widget.flowRateAkhirController.addListener(_calculateTotalFlowRate);
+    // widget.flowRateAwalController.addListener(_calculateTotalFlowRate);
+    // widget.flowRateAkhirController.addListener(_calculateTotalFlowRate);
 
-    _calculateTotalFlowRate();
+    // _calculateTotalFlowRate();
   }
 
   @override
   void dispose() {
     super.dispose();
 
-    widget.flowRateAwalController.removeListener(_calculateTotalFlowRate);
-    widget.flowRateAkhirController.removeListener(_calculateTotalFlowRate);
+    // widget.flowRateAwalController.removeListener(_calculateTotalFlowRate);
+    // widget.flowRateAkhirController.removeListener(_calculateTotalFlowRate);
   }
 
   @override
@@ -165,9 +165,9 @@ class _SectionRfadState extends State<SectionRfad> {
                   isNumeric: true,
                   isRequired: true,
                 ),
-                if (widget.selectedWorkCenter == 'REF-01') ...[
-                  Text("Flow Rate: $flowRateAwal T/H"),
-                ],
+                // if (widget.selectedWorkCenter == 'REF-01') ...[
+                //   Text("Flow Rate: $flowRateAwal T/H"),
+                // ],
                 const SizedBox(height: 12),
                 const Text("Akhir", style: _sectionTextStyle),
                 const SizedBox(height: 10),
@@ -178,31 +178,25 @@ class _SectionRfadState extends State<SectionRfad> {
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller: widget.flowRateAkhirController,
-                  label: 'Flow Rate ($flowrateUnit)',
+                  label: 'Flow Rate($flowrateUnit)',
                   icon: Icons.speed,
                   isNumeric: true,
                   isRequired: true,
                 ),
-                if (widget.selectedWorkCenter == 'REF-01') ...[
-                  Text("Flow Rate: $flowRateAkhir T/H"),
-                ],
+                // if (widget.selectedWorkCenter == 'REF-01') ...[
+                //   Text("Flow Rate: $flowRateAkhir T/H"),
+                // ],
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Text(
-                      "Total Flowrate: ",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      widget.flowRateTotalController.text.isEmpty
-                          ? '0.000'
-                          : "${widget.flowRateTotalController.text} T/H",
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ],
+               
+                Text("Total Flowrate: ", style: _sectionTextStyle),
+
+                const SizedBox(height: 10),
+                CustomTextField(
+                  controller: widget.flowRateTotalController,
+                  label: 'Total($flowrateUnit)',
+                  icon: Icons.functions,
+                  isNumeric: true,
+                  readOnly: true,
                 ),
                 const SizedBox(height: 12),
                 const Text("To Tank", style: _sectionTextStyle),
