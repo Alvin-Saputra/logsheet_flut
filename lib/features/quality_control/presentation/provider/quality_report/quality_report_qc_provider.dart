@@ -190,7 +190,7 @@ class QualityReportQCProvider with ChangeNotifier {
       notifyListeners();
 
       switch (role) {
-        case "LEAD":
+        case "LEAD" || "LEAD_QC":
           // preparedStatusShift1 or 2 or 3 must be empty
           if (filter) {
             _reportsList =
@@ -201,14 +201,13 @@ class QualityReportQCProvider with ChangeNotifier {
           }
           break;
 
-        case "MGR":
+        case "MGR" || "MGR_QC":
           if (filter) {
             _reportsList =
                 _reportsList
                     .where(
                       (report) =>
-                          report.preparedBy != null &&
-                          report.checkedStatus == null,
+                          report.preparedStatus == "Approved"
                     )
                     .toList();
             notifyListeners();

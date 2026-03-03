@@ -201,7 +201,7 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
                 );
               },
             ),
-
+            const SizedBox(height: 10),
             const Text("From Tank", style: _sectionTextStyle),
             const SizedBox(height: 10),
             Consumer<ValueProvider>(
@@ -288,7 +288,6 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
               label: 'Flow Rate ($flowrateUnit)',
               icon: Icons.speed,
               isNumeric: true,
-              isRequired: true,
             ),
             // if (widget.selectedWorkCenter == 'REF-01') ...[
             //   Text("Flow Rate: $flowRateAwal T/H"),
@@ -310,7 +309,6 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
               label: 'Flow Rate ($flowrateUnit)',
               icon: Icons.speed,
               isNumeric: true,
-              isRequired: true,
             ),
             // if (widget.selectedWorkCenter == 'REF-01') ...[
             //   Text("Flow Rate: $flowRateAkhir T/H"),
@@ -321,7 +319,6 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
               label: 'OIP',
               icon: Icons.speed,
               isNumeric: true,
-              isRequired: true,
             ),
             const SizedBox(height: 12),
             Text("Total Flowrate: ", style: _sectionTextStyle),

@@ -130,7 +130,8 @@ class _DailyProductionRefineryDetailPageState
                       ),
                 ),
               );
-              if (result != null && result is List<DailyProductionRefineryEntity>) {
+              if (result != null &&
+                  result is List<DailyProductionRefineryEntity>) {
                 setState(() {
                   _listCurrentReport = result;
                 });
@@ -187,6 +188,18 @@ class _DailyProductionRefineryDetailPageState
               ),
             ),
 
+             CustomSectionCard('ID & General Info', [
+              CustomSectionCardData(
+                'Company',
+                _displayValue(_listCurrentReport[0].company),
+              ),
+              CustomSectionCardData(
+                'Plant',
+                _displayValue(_listCurrentReport[0].plant),
+              ),
+              CustomSectionCardData('Ticket ID', _listCurrentReport[0].id),
+            ]),
+
             CustomSectionCard('Production Details', [
               Center(
                 child: SmoothPageIndicator(
@@ -214,31 +227,36 @@ class _DailyProductionRefineryDetailPageState
                 itemBuilder: (context, pageIndex) {
                   return Column(
                     children: [
-                      CustomSectionCard('ID & General Info', [
-                        CustomSectionCardData(
-                          'Ticket ID',
-                          _listCurrentReport[pageIndex].id,
-                        ),
-                        CustomSectionCardData(
-                          'Company',
-                          _displayValue(_listCurrentReport[pageIndex].company),
-                        ),
-                        CustomSectionCardData(
-                          'Plant',
-                          _displayValue(_listCurrentReport[pageIndex].plant),
-                        ),
+                      // CustomSectionCard('ID & General Info', [
+                      //   CustomSectionCardData(
+                      //     'Ticket ID',
+                      //     _listCurrentReport[pageIndex].id,
+                      //   ),
+                      //   CustomSectionCardData(
+                      //     'Company',
+                      //     _displayValue(_listCurrentReport[pageIndex].company),
+                      //   ),
+                      //   CustomSectionCardData(
+                      //     'Plant',
+                      //     _displayValue(_listCurrentReport[pageIndex].plant),
+                      //   ),
+                      //   CustomSectionCardData(
+                      //     'CPO Tank',
+                      //     _displayValue(_listCurrentReport[pageIndex].cpoTank),
+                      //   ),
+                      // ]),
+
+                      CustomSectionCard('Raw Material (RM)', [
                         CustomSectionCardData(
                           'CPO Tank',
                           _displayValue(_listCurrentReport[pageIndex].cpoTank),
                         ),
-                      ]),
-
-                      CustomSectionCard('Raw Material (RM)', [
                         CustomSectionCardData(
                           'Oil Type',
-                         
-                            (_listCurrentReport[pageIndex].oilTypeRm !=null )?_listCurrentReport[pageIndex].oilTypeRm:'-',
-                          
+
+                          (_listCurrentReport[pageIndex].oilTypeRm != null)
+                              ? _listCurrentReport[pageIndex].oilTypeRm
+                              : '-',
                         ),
                         CustomSectionCardData(
                           'Awal Jam',
@@ -525,7 +543,7 @@ class _DailyProductionRefineryDetailPageState
                 'Prepared Status',
                 _displayValue(_listCurrentReport[0].preparedStatus),
               ),
-                CustomSectionCardData(
+              CustomSectionCardData(
                 'Prepared Remarks',
                 _displayValue(_listCurrentReport[0].preparedStatusRemarks),
               ),
@@ -542,7 +560,7 @@ class _DailyProductionRefineryDetailPageState
                 'Verified Status',
                 _displayValue(_listCurrentReport[0].verifiedStatus),
               ),
-              
+
               const Divider(),
               CustomSectionCardData(
                 'Checked By',
@@ -556,13 +574,15 @@ class _DailyProductionRefineryDetailPageState
                 'Checked Status',
                 _displayValue(_listCurrentReport[0].checkedStatus),
               ),
-               CustomSectionCardData(
+              CustomSectionCardData(
                 'Checked Remarks',
                 _displayValue(_listCurrentReport[0].checkedStatusRemarks),
               ),
               CustomSectionCardData(
                 'Status (Open/Closed)',
-                _displayValue(_listCurrentReport[0].isCompleted == true ? "Closed" : "Open"),
+                _displayValue(
+                  _listCurrentReport[0].isCompleted == true ? "Closed" : "Open",
+                ),
               ),
             ]),
 
@@ -597,11 +617,23 @@ class _DailyProductionRefineryDetailPageState
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: ElevatedButton(
                             onPressed: () {
+                              // if (_listCurrentReport[0].isCompleted == false) {
+                              //   ScaffoldMessenger.of(context).showSnackBar(
+                              //     const SnackBar(
+                              //       content: Text(
+                              //         "Report Must be Completed Before Being Rejected",
+                              //       ),
+                              //     ),
+                              //   );
+                              //   return;
+                              // }
                               _showApprovedRejectedBottomSheet(
                                 context,
                                 false,
                                 shift,
                                 user!,
+
+                                _listCurrentReport[0].isCompleted ?? false,
                               );
                             },
                             style: ElevatedButton.styleFrom(
@@ -620,11 +652,23 @@ class _DailyProductionRefineryDetailPageState
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: ElevatedButton(
                             onPressed: () {
+                              //   if(_listCurrentReport[0].isCompleted == false){
+                              //   ScaffoldMessenger.of(context).showSnackBar(
+                              //     const SnackBar(
+                              //       content: Text(
+                              //         "Report Must be Completed Before Being Approved",
+                              //       ),
+                              //     ),
+                              //   );
+                              //   return;
+                              // }
                               _showApprovedRejectedBottomSheet(
                                 context,
                                 true,
                                 shift,
                                 user!,
+
+                                _listCurrentReport[0].isCompleted ?? false,
                               );
                             },
                             style: ElevatedButton.styleFrom(
@@ -714,6 +758,7 @@ class _DailyProductionRefineryDetailPageState
     bool isApproved,
     String shift,
     UserEntity user,
+    bool isTicketCompleted,
   ) {
     showModalBottomSheet(
       context: context,
@@ -738,6 +783,16 @@ class _DailyProductionRefineryDetailPageState
                   ),
                 ),
                 const SizedBox(height: 16),
+                Text(
+                  isTicketCompleted
+                      ? "Are you sure you want to ${isApproved ? "approve" : "reject"} this report?"
+                      : "Are you sure you want to ${isApproved ? "approve" : "reject"} this report? Report must be completed before it can be ${isApproved ? "approved" : "rejected"}.",
+                  style: const TextStyle(
+                    fontSize: 14,
+                    // fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
                 if (!isApproved)
                   TextFormField(
                     controller: _remarkController,
@@ -748,49 +803,74 @@ class _DailyProductionRefineryDetailPageState
                     maxLines: 5,
                   ),
                 const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () async {
-                    final result = await context
-                        .read<DailyProductionRefineryProvider>()
-                        .sendApproveRejectReport(
-                          user.username,
-                          isApproved ? "Approved" : "Rejected",
-                          user.role,
-                          shift,
-                          isApproved ? null : _remarkController.text,
-                          _listCurrentReport[0].id!,
-                          _listCurrentReport[0].plant!,
-                        );
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text("Cancel"),
+                        ),
+                      ),
+                    ),
 
-                    if (result) {
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            isApproved
-                                ? "ID Transaksi ${_listCurrentReport[0].id} berhasil diapprove"
-                                : "ID Transaksi ${_listCurrentReport[0].id} berhasil direject",
-                          ),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final result = await context
+                              .read<DailyProductionRefineryProvider>()
+                              .sendApproveRejectReport(
+                                user.username,
+                                isApproved ? "Approved" : "Rejected",
+                                user.role,
+                                shift,
+                                isApproved ? null : _remarkController.text,
+                                _listCurrentReport[0].id!,
+                                _listCurrentReport[0].plant!,
+                                changeUncompletedTicket:
+                                    isTicketCompleted ? false : true,
+                                approveAllShift: false
+                              );
+
+                          if (result) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isApproved
+                                      ? "ID Transaksi ${_listCurrentReport[0].id} berhasil diapprove"
+                                      : "ID Transaksi ${_listCurrentReport[0].id} berhasil direject",
+                                ),
+                              ),
+                            );
+                            Navigator.of(context).pop();
+                            Navigator.of(context).pop();
+                          } else {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isApproved
+                                      ? "ID Transaksi ${_listCurrentReport[0].id} gagal diapprove"
+                                      : "ID Transaksi ${_listCurrentReport[0].id} gagal direject",
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green[700],
+                          foregroundColor: Colors.white,
                         ),
-                      );
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pop();
-                    } else {
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            isApproved
-                                ? "ID Transaksi ${_listCurrentReport[0].id} gagal diapprove"
-                                : "ID Transaksi ${_listCurrentReport[0].id} gagal direject",
-                          ),
+                        child: Text(
+                          isApproved ? 'Submit Approval' : 'Submit Rejection',
                         ),
-                      );
-                    }
-                  },
-                  child: Text(
-                    isApproved ? 'Submit Approval' : 'Submit Rejection',
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

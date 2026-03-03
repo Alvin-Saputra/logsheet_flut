@@ -20,6 +20,7 @@ class DailyProductionRefineryApprovalListPage extends StatefulWidget {
 class _DailyProductionRefineryApprovalListPageState
     extends State<DailyProductionRefineryApprovalListPage> {
   DataFormNoEntity? formRefinery;
+  final TextEditingController _remarkController = TextEditingController();
 
   @override
   void initState() {
@@ -127,6 +128,14 @@ class _DailyProductionRefineryApprovalListPageState
                   e.checkedStatus == "Rejected",
             );
 
+            bool isAllCheckedNull = thisTicketRows.every(
+              (e) => e.checkedStatus == null,
+            );
+
+            bool isAllPreparedApproved = thisTicketRows.every(
+              (e) => e.preparedStatus == "Approved",
+            );
+
             return Card(
               elevation: 2,
               margin: const EdgeInsets.only(bottom: 8),
@@ -138,74 +147,130 @@ class _DailyProductionRefineryApprovalListPageState
                         : BorderSide.none,
               ),
               child: ExpansionTile(
-                leading: Icon(
-                  Icons.verified_user,
-                  color: _getApprovalStatusColor(thisTicketRows.first),
-                ),
+                leading: Icon(Icons.verified_user, color: Colors.blueGrey),
                 title: Text(
                   "${headerData.id}",
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text("$titleDate • WC: $titleWC"),
                 childrenPadding: const EdgeInsets.all(8),
-                children:
-                    sortedShiftKeys.map((shiftKey) {
-                      List<DailyProductionRefineryEntity> itemsInThisShift =
-                          shiftMap[shiftKey]!;
-                      var repItem = itemsInThisShift.first;
+                children: [
+                  ...sortedShiftKeys.map((shiftKey) {
+                    List<DailyProductionRefineryEntity> itemsInThisShift =
+                        shiftMap[shiftKey]!;
+                    var repItem = itemsInThisShift.first;
 
-                      // Status Helper Booleans
-                      bool isPrepared = repItem.preparedStatus == "Approved";
-                      bool isChecked = repItem.checkedStatus == "Approved";
-                      bool isRejected =
-                          repItem.preparedStatus == "Rejected" ||
-                          repItem.checkedStatus == "Rejected";
+                    // Status Helper Booleans
+                    bool isPrepared = repItem.preparedStatus == "Approved";
+                    bool isChecked = repItem.checkedStatus == "Approved";
+                    bool isLeadPending = repItem.preparedStatus == null;
 
-                      // Cek apakah Lead belum melakukan apa-apa (Null)
-                      bool isLeadPending = repItem.preparedStatus == null;
+                    String approvalText = _getApprovalStatusText(repItem);
+                    Color approvalColor = _getApprovalStatusColor(repItem);
 
-                      return ListTile(
-                        leading: const Icon(Icons.access_time),
-                        title: Text('Shift $shiftKey'),
-                        subtitle: Text(
-                          _getApprovalStatusText(repItem),
-                          style: TextStyle(
-                            color: _getApprovalStatusColor(repItem),
-                            fontWeight: FontWeight.w600,
-                          ),
+                    return ListTile(
+                      leading: const Icon(
+                        Icons.access_time,
+                        color: Colors.blueGrey,
+                      ),
+                      title: Padding(
+                        padding: const EdgeInsets.only(bottom: 6.0),
+                        child: Text(
+                          'Shift $shiftKey',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        onTap: () {
-                          if (isManager) {
-                            if (isLeadPending) {
-                              _showSnackBar(
-                                "Gagal: Shift ini belum di-approve oleh Lead.",
-                              );
-                              return;
-                            }
+                      ),
+                      subtitle: Wrap(
+                        spacing: 8.0,
+                        runSpacing: 4.0,
+                        children: [
+                          _buildStatusBadge(
+                            approvalText,
+                            approvalColor,
+                            icon:
+                                approvalText.contains("Approved")
+                                    ? Icons.check_circle
+                                    : (approvalText.contains("Rejected")
+                                        ? Icons.cancel
+                                        : Icons.pending),
+                          ),
+                        ],
+                      ),
+                      trailing: const Icon(Icons.more_horiz, size: 16),
+                      onTap: () {
+                        if (isManager) {
+                          if (isLeadPending) {
+                            _showSnackBar(
+                              "Gagal: Shift ini belum di-approve oleh Lead.",
+                            );
+                            return;
+                          }
 
-                            if (repItem.preparedStatus == "Rejected") {
-                              _showSnackBar(
-                                "Gagal: Shift ini statusnya REJECTED oleh Lead.",
-                              );
-                              return;
-                            }
+                          if (repItem.preparedStatus == "Rejected") {
+                            _showSnackBar(
+                              "Gagal: Shift ini statusnya REJECTED oleh Lead.",
+                            );
+                            return;
+                          }
 
-                            if (isPrepared && !isChecked) {
-                              _navigateToDetail(context, itemsInThisShift);
-                            } else if (isChecked) {
-                              _showSnackBar(
-                                "Shift ini sudah Anda approve (Checked).",
-                              );
-
-                              _navigateToDetail(context, itemsInThisShift);
-                            }
-                          } else {
+                          if (isPrepared && !isChecked) {
+                            _navigateToDetail(context, itemsInThisShift);
+                          } else if (isChecked) {
+                            _showSnackBar(
+                              "Shift ini sudah Anda approve (Checked).",
+                            );
                             _navigateToDetail(context, itemsInThisShift);
                           }
-                        },
-                      );
-                    }).toList(),
+                        } else {
+                          _navigateToDetail(context, itemsInThisShift);
+                        }
+                      },
+                    );
+                  }).toList(),
+
+                  if (isAllPreparedApproved && isAllCheckedNull)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                _showApprovedRejectedBottomSheet(
+                                  context: context,
+                                  isApproved: false,
+                                  headerData: headerData,
+                                  user: currentUser,
+                                );
+                              },
+                              child: const Text('Reject All'),
+                            ),
+                          ),
+                        ),
+
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                _showApprovedRejectedBottomSheet(
+                                  context: context,
+                                  isApproved: true,
+                                  headerData: headerData,
+                                  user: currentUser,
+                                );
+                              },
+                              child: const Text('Approve All'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green[700],
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
               ),
             );
           },
@@ -262,7 +327,168 @@ class _DailyProductionRefineryApprovalListPageState
     if (item.preparedStatus == "Approved") {
       return Colors.orange;
     }
-    
+
     return Colors.blue;
+  }
+
+  Widget _buildStatusBadge(String text, Color color, {IconData? icon}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.5)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showApprovedRejectedBottomSheet({
+    required BuildContext context,
+    required bool isApproved,
+    required DailyProductionRefineryEntity headerData,
+    required dynamic
+    user, // Menggunakan tipe dari UserProvider Anda (UserEntity)
+  }) {
+    // Karena approve all, kita bisa set default tiket completed atau sesuaikan dengan bisnis logic
+    bool isTicketCompleted = true;
+
+    // Reset remarks setiap kali bottom sheet dibuka
+    _remarkController.clear();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Text(
+                  isApproved ? "Approve All Shifts" : "Reject All Shifts",
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  "Are you sure you want to ${isApproved ? "approve" : "reject"} ALL shifts for Ticket ID: ${headerData.id}?",
+                  style: const TextStyle(fontSize: 14),
+                ),
+                const SizedBox(height: 16),
+                if (!isApproved)
+                  TextFormField(
+                    controller: _remarkController,
+                    decoration: const InputDecoration(
+                      labelText: "Remarks",
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 5,
+                  ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text("Cancel"),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final result = await context
+                              .read<DailyProductionRefineryProvider>()
+                              .sendApproveRejectReport(
+                                user.username ?? "",
+                                isApproved ? "Approved" : "Rejected",
+                                user.role ?? "",
+                                "", // shift kosong
+                                isApproved ? null : _remarkController.text,
+                                headerData.id ??
+                                    "", // PINDAH KE SINI (Parameter ke-6)
+                                headerData.plant ??
+                                    "", // PINDAH KE SINI (Parameter ke-7)
+                                changeUncompletedTicket: !isTicketCompleted,
+                                approveAllShift: true,
+                              );
+
+                          if (!context.mounted) return;
+
+                          if (result) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isApproved
+                                      ? "Semua shift berhasil diapprove"
+                                      : "Semua shift berhasil direject",
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                            Navigator.of(
+                              context,
+                            ).pop(); // Tutup bottom sheet saja
+                            _fetchData(); // Refresh list data di background
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isApproved
+                                      ? "Gagal melakukan approve"
+                                      : "Gagal melakukan reject",
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              isApproved ? Colors.green[700] : Colors.red[700],
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text(
+                          isApproved ? 'Submit Approval' : 'Submit Rejection',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }

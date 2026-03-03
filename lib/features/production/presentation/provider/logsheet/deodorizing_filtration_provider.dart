@@ -214,35 +214,34 @@ class DeodorizingFiltrationProvider extends ChangeNotifier {
         "deodorizing filtration ticket list length is ${_deodorizingList.length}",
       );
 
-      // switch (role) {
-      //   case "LEAD":
-      //     // preparedStatusShift1 or 2 or 3 must be empty
-      //     if (filter) {
-      //       _pretreatmentList =
-      //           _pretreatmentList
-      //               .where((report) => report.preparedBy == null)
-      //               .toList();
-      //       notifyListeners();
-      //     }
-      //     break;
+      switch (role) {
+        case "LEAD" || "LEAD_PROD":
+          // preparedStatusShift1 or 2 or 3 must be empty
+          if (filter) {
+            _deodorizingList =
+                _deodorizingList
+                    .where((report) => report.preparedBy == null)
+                    .toList();
+            notifyListeners();
+          }
+          break;
 
-      //   case "MGR":
-      //     if (filter) {
-      //       _pretreatmentList =
-      //           _pretreatmentList
-      //               .where(
-      //                 (report) =>
-      //                     report.preparedBy != null &&
-      //                     report.checkedStatus == null,
-      //               )
-      //               .toList();
-      //       notifyListeners();
-      //     }
-      //     break;
-      //   default:
-      //     break;
-      // }
-      // notifyListeners();
+        case "MGR" || "MGR_PROD":
+          if (filter) {
+            _deodorizingList =
+                _deodorizingList
+                    .where(
+                      (report) =>
+                          report.preparedStatus == "Approved"
+                    )
+                    .toList();
+            notifyListeners();
+          }
+          break;
+        default:
+          break;
+      }
+      notifyListeners();
 
       _setLoading(false);
       _setErrorMessage(null);

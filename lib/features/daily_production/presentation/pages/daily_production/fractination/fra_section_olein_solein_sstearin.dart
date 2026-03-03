@@ -268,7 +268,7 @@ class FraSectionOleinSoleinSstearin extends StatelessWidget {
                   label: 'Flowmeter',
                   icon: Icons.speed,
                   isNumeric: true,
-                  isRequired: true,
+                  
                 ),
                 const SizedBox(height: 12),
                 const Text("Akhir", style: _sectionTextStyle),
@@ -283,7 +283,7 @@ class FraSectionOleinSoleinSstearin extends StatelessWidget {
                   label: 'Flowmeter',
                   icon: Icons.speed,
                   isNumeric: true,
-                  isRequired: true,
+                  
                 ),
                 const SizedBox(height: 12),
                 const Text("Total", style: _sectionTextStyle),

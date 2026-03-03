@@ -118,6 +118,12 @@ class _MaintenanceStartupProductionListPageState
               .where((item) => item.preparedStatus == null)
               .toList();
     }
+     else if ((AppRoles.managerProd.contains(role))) {
+      reportList =
+          startUpProduksiChecklistProvider.uniqueReportList
+              .where((item) => item.preparedStatus == "Approved")
+              .toList();
+    }
 
     return Column(
       children: [

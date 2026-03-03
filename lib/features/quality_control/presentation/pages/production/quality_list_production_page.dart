@@ -117,11 +117,11 @@ class _QualityReportProductionListState
     return Consumer2<QualityReportProductionProvider, PlantProvider>(
       builder: (context, qualityProvider, plantprovider, child) {
         List<QualityReportProductionEntity> filteredList =
-            qualityProvider.reportsList
-                .where(
-                  (e) => e.preparedStatus == null && e.checkedStatus == null,
-                )
-                .toList();
+            qualityProvider.reportsList;
+                // .where(
+                //   (e) => e.preparedStatus == null && e.checkedStatus == null,
+                // )
+                // .toList();
         if (qualityProvider.isLoading) {
           return Center(child: CircularProgressIndicator());
         }

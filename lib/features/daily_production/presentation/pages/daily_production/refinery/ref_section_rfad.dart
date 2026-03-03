@@ -163,7 +163,6 @@ class _SectionRfadState extends State<SectionRfad> {
                   label: 'Flow Rate ($flowrateUnit)',
                   icon: Icons.speed,
                   isNumeric: true,
-                  isRequired: true,
                 ),
                 // if (widget.selectedWorkCenter == 'REF-01') ...[
                 //   Text("Flow Rate: $flowRateAwal T/H"),
@@ -181,7 +180,6 @@ class _SectionRfadState extends State<SectionRfad> {
                   label: 'Flow Rate($flowrateUnit)',
                   icon: Icons.speed,
                   isNumeric: true,
-                  isRequired: true,
                 ),
                 // if (widget.selectedWorkCenter == 'REF-01') ...[
                 //   Text("Flow Rate: $flowRateAkhir T/H"),

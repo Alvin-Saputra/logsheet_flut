@@ -989,37 +989,37 @@ class _DailyProductionFractionPageState
                             controller: uuFlowmeterBefore,
                             label: 'Flowmeter Before',
                             icon: Icons.functions,
-                            isRequired: true,
+                            // isRequired: true,
                           ),
                           CustomTextField(
                             controller: uuFlowmeterAfter,
                             label: 'Flowmeter After',
                             icon: Icons.functions,
-                            isRequired: true,
+                            // isRequired: true,
                           ),
                           CustomTextField(
                             controller: uuFlowmeterTotal,
                             label: 'Total',
                             icon: Icons.functions,
-                            isRequired: true,
+                            // isRequired: true,
                           ),
                           CustomTextField(
                             controller: uuYieldController,
                             label: 'Yield %',
                             icon: Icons.functions,
-                            isRequired: true,
+                            // isRequired: true,
                           ),
                           CustomTextField(
                             controller: uuListrikController,
                             label: 'Listrik',
                             icon: Icons.electric_bolt_rounded,
-                            isRequired: true,
+                            // isRequired: true,
                           ),
                           CustomTextField(
                             controller: uuAirController,
                             label: 'Air',
                             icon: Icons.water_drop_rounded,
-                            isRequired: true,
+                            // isRequired: true,
                           ),
                         ],
                       ),
@@ -1034,15 +1034,16 @@ class _DailyProductionFractionPageState
                   ),
                   onChanged: (value) {
                     setState(() {
-                      String? nonFormFieldsValidationMessage =
-                          _validateNonFormFields();
+                      // String? nonFormFieldsValidationMessage =
+                      //     _validateNonFormFields();
 
-                      if (nonFormFieldsValidationMessage != null) {
-                        showSnackBar(nonFormFieldsValidationMessage, context);
-                      } else if (nonFormFieldsValidationMessage == null &&
-                          _formKey.currentState!.validate()) {
-                        isTicketComplete = value;
-                      }
+                      // if (nonFormFieldsValidationMessage != null) {
+                      //   showSnackBar(nonFormFieldsValidationMessage, context);
+                      // } else if (nonFormFieldsValidationMessage == null &&
+                      //     _formKey.currentState!.validate()) {
+                      //   isTicketComplete = value;
+                      // }
+                       isTicketComplete = value;
                     });
                   },
                   controlAffinity: ListTileControlAffinity.leading,

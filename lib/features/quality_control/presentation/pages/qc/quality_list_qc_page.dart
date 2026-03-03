@@ -151,12 +151,12 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
             ) {
               // 1. Ambil data yang difilter
               List<QualityReportQcEntity> filteredList =
-                  qualityProvider.reportsList
-                      .where(
-                        (e) =>
-                            e.preparedStatus == null && e.checkedStatus == null,
-                      )
-                      .toList();
+                  qualityProvider.reportsList;
+              // .where(
+              //   (e) =>
+              //       e.preparedStatus == null && e.checkedStatus == null,
+              // )
+              // .toList();
 
               if (qualityProvider.isLoading) {
                 return const Center(child: CircularProgressIndicator());
@@ -563,12 +563,24 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
         const SizedBox(width: 10),
         ElevatedButton.icon(
           onPressed: () async {
+            // final plantCode =
+            //     context.read<PlantProvider>().currentPlant?.code ?? "";
+            // await context.read<QualityReportQCProvider>().fetchFilteredTickets(
+            //   _selectedDate,
+            //   plantCode,
+            //   _tempSelectedShift,
+            // );
+
+            final username = context.read<UserProvider>().currentUser?.username;
+            final role = context.read<UserProvider>().currentUser?.role;
             final plantCode =
                 context.read<PlantProvider>().currentPlant?.code ?? "";
-            await context.read<QualityReportQCProvider>().fetchFilteredTickets(
-              _selectedDate,
+            await context.read<QualityReportQCProvider>().fetchAllTickets(
+              null,
+              null,
+              username ?? "",
+              role ?? "",
               plantCode,
-              _tempSelectedShift,
             );
           },
           icon: const Icon(Icons.search),
@@ -635,11 +647,22 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
       final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
       _selectedDate = picked;
       _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
-      await context.read<QualityReportQCProvider>().fetchFilteredTickets(
-        _selectedDate,
-        plantCode,
-        _tempSelectedShift,
-      );
+      // await context.read<QualityReportQCProvider>().fetchFilteredTickets(
+      //   _selectedDate,
+      //   plantCode,
+      //   _tempSelectedShift,
+      // );
+
+        final username = context.read<UserProvider>().currentUser?.username;
+            final role = context.read<UserProvider>().currentUser?.role;
+           
+            await context.read<QualityReportQCProvider>().fetchAllTickets(
+              null,
+              null,
+              username ?? "",
+              role ?? "",
+              plantCode,
+            );
     }
   }
 

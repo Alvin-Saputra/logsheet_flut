@@ -241,10 +241,16 @@ class DryFractionationProvider with ChangeNotifier {
         // PERBAIKAN: Gunakan List.from untuk keamanan tipe data
         _reportList = data ?? [];
 
-        if (AppRoles.leadProd.contains(role) ||
-            AppRoles.productionQualityManagerApproval.contains(role)) {
+        if (AppRoles.leadProd.contains(role) 
+            ) {
           _reportList =
               _reportList.where((report) => report.preparedBy == null).toList();
+          notifyListeners();
+        }
+        else if (
+            AppRoles.productionQualityManagerApproval.contains(role)) {
+          _reportList =
+              _reportList.where((report) => report.preparedStatus == "Approved").toList();
           notifyListeners();
         }
 

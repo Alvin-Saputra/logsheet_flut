@@ -166,30 +166,42 @@ class DailyProductionRefineryProvider with ChangeNotifier {
       notifyListeners();
 
       switch (role) {
-        case "LEAD" || "LEAD_PROD" || "MGR" || "MGR_PROD":
-          // preparedStatusShift1 or 2 or 3 must be empty
+        case "LEAD" || "LEAD_PROD":
           if (filter) {
-            _reportsList =
+            // 1. Kumpulkan semua ID yang memiliki shift yang belum disiapkan (preparedBy == null)
+            final targetIds =
                 _reportsList
                     .where((report) => report.preparedBy == null)
+                    .map((report) => report.id)
+                    .toSet();
+
+            // 2. Tampilkan SEMUA shift yang bernaung di bawah ID tersebut
+            _reportsList =
+                _reportsList
+                    .where((report) => targetIds.contains(report.id))
                     .toList();
             notifyListeners();
           }
           break;
 
-        // case "MGR":
-        //   if (filter) {
-        //     _reportsList =
-        //         _reportsList
-        //             .where(
-        //               (report) =>
-        //                   report.preparedBy != null &&
-        //                   report.checkedStatus == null,
-        //             )
-        //             .toList();
-        //     notifyListeners();
-        //   }
-        //   break;
+        case "MGR" || "MGR_PROD":
+          if (filter) {
+            // 1. Kumpulkan semua ID yang memiliki shift yang butuh di-approve Manager
+            final targetIds =
+                _reportsList
+                    .where((report) => report.preparedStatus == "Approved")
+                    .map((report) => report.id)
+                    .toSet();
+
+            // 2. Tampilkan SEMUA shift yang bernaung di bawah ID tersebut
+            _reportsList =
+                _reportsList
+                    .where((report) => targetIds.contains(report.id))
+                    .toList();
+            notifyListeners();
+          }
+          break;
+
         default:
           break;
       }
@@ -234,7 +246,10 @@ class DailyProductionRefineryProvider with ChangeNotifier {
     _setErrorMessage(null);
     try {
       log('Updating report...');
-      final result = await _repository.updateReportTicket(entities, deletedTicketIds);
+      final result = await _repository.updateReportTicket(
+        entities,
+        deletedTicketIds,
+      );
       log(result.toString());
       await fetchAllTickets(null, null, username, role, plantCode);
       await Future.delayed(const Duration(milliseconds: 300));
@@ -254,8 +269,10 @@ class DailyProductionRefineryProvider with ChangeNotifier {
     String shift,
     String? remark,
     String id,
-    String plantCode,
-  ) async {
+    String plantCode, {
+    bool changeUncompletedTicket = false,
+    bool approveAllShift = true,
+  }) async {
     _setLoading(true);
     _setErrorMessage(null);
 
@@ -268,6 +285,8 @@ class DailyProductionRefineryProvider with ChangeNotifier {
         shift,
         remark,
         id,
+        changeUncompletedTicket,
+        approveAllShift,
       );
       log("status from provider: $result");
       await fetchAllTickets(null, null, username, userRole, plantCode);

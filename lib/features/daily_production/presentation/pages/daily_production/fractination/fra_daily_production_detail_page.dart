@@ -581,11 +581,22 @@ class _DailyProductionFractionationDetailPageState
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: ElevatedButton(
                             onPressed: () {
+                              // if(_listCurrentReport[0].isCompleted == false){
+                              //   ScaffoldMessenger.of(context).showSnackBar(
+                              //     const SnackBar(
+                              //       content: Text(
+                              //         "Report Must be Completed Before Being Rejected",
+                              //       ),
+                              //     ),
+                              //   );
+                              //   return;
+                              // }
                               _showApprovedRejectedBottomSheet(
                                 context,
                                 false,
                                 shift,
                                 user!,
+                                _listCurrentReport[0].isCompleted ?? false,
                               );
                             },
                             style: ElevatedButton.styleFrom(
@@ -604,11 +615,22 @@ class _DailyProductionFractionationDetailPageState
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: ElevatedButton(
                             onPressed: () {
+                              //   if(_listCurrentReport[0].isCompleted == false){
+                              //   ScaffoldMessenger.of(context).showSnackBar(
+                              //     const SnackBar(
+                              //       content: Text(
+                              //         "Report Must be Completed Before Being Approved",
+                              //       ),
+                              //     ),
+                              //   );
+                              //   return;
+                              // }
                               _showApprovedRejectedBottomSheet(
                                 context,
                                 true,
                                 shift,
                                 user!,
+                                _listCurrentReport[0].isCompleted ?? false,
                               );
                             },
                             style: ElevatedButton.styleFrom(
@@ -695,6 +717,7 @@ class _DailyProductionFractionationDetailPageState
     bool isApproved,
     String shift,
     UserEntity user,
+    bool isTicketCompleted,
   ) {
     showModalBottomSheet(
       context: context,
@@ -719,6 +742,16 @@ class _DailyProductionFractionationDetailPageState
                   ),
                 ),
                 const SizedBox(height: 16),
+                Text(
+                  isTicketCompleted
+                      ? "Are you sure you want to ${isApproved ? "approve" : "reject"} this report?"
+                      : "Are you sure you want to ${isApproved ? "approve" : "reject"} this report? Report must be completed before it can be ${isApproved ? "approved" : "rejected"}.",
+                  style: const TextStyle(
+                    fontSize: 14,
+                    // fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
                 if (!isApproved)
                   TextFormField(
                     controller: _remarkController,
@@ -729,49 +762,77 @@ class _DailyProductionFractionationDetailPageState
                     maxLines: 5,
                   ),
                 const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () async {
-                    final result = await context
-                        .read<DailyProductionFractionationProvider>()
-                        .sendApproveRejectReport(
-                          user.username,
-                          isApproved ? "Approved" : "Rejected",
-                          user.role,
-                          shift,
-                          isApproved ? null : _remarkController.text,
-                          _listCurrentReport[0].plant!,
-                          _listCurrentReport[0].id,
-                        );
 
-                    if (result) {
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            isApproved
-                                ? "Report berhasil diapprove"
-                                : "Report berhasil direject",
-                          ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text("Cancel"),
                         ),
-                      );
-                      Navigator.of(context).pop(); // Close bottom sheet
-                      Navigator.of(context).pop(); // Go back from detail page
-                    } else {
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            isApproved
-                                ? "Report gagal diapprove"
-                                : "Report gagal direject",
-                          ),
+                      ),
+                    ),
+
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final result = await context
+                              .read<DailyProductionFractionationProvider>()
+                              .sendApproveRejectReport(
+                                user.username,
+                                isApproved ? "Approved" : "Rejected",
+                                user.role,
+                                shift,
+                                isApproved ? null : _remarkController.text,
+                                _listCurrentReport[0].plant!,
+                                _listCurrentReport[0].id,
+                                changeUncompletedTicket:
+                                    isTicketCompleted ? false : true,
+                                approveAllShift: false,
+                              );
+
+                          if (result) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isApproved
+                                      ? "Report berhasil diapprove"
+                                      : "Report berhasil direject",
+                                ),
+                              ),
+                            );
+                            Navigator.of(context).pop(); // Close bottom sheet
+                            Navigator.of(
+                              context,
+                            ).pop(); // Go back from detail page
+                          } else {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isApproved
+                                      ? "Report gagal diapprove"
+                                      : "Report gagal direject",
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green[700],
+                          foregroundColor: Colors.white,
                         ),
-                      );
-                    }
-                  },
-                  child: Text(
-                    isApproved ? 'Submit Approval' : 'Submit Rejection',
-                  ),
+                        child: Text(
+                          isApproved ? 'Submit Approval' : 'Submit Rejection',
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

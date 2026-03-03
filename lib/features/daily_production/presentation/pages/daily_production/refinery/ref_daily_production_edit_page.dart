@@ -1100,28 +1100,28 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
                             label: 'Total CPO',
                             icon: Icons.functions,
                             isNumeric: true,
-                            isRequired: true,
+                            // isRequired: true,
                           ),
                           CustomTextField(
                             controller: totalSteamController,
                             label: 'Total Steam',
                             icon: Icons.functions,
                             isNumeric: true,
-                            isRequired: true,
+                            // isRequired: true,
                           ),
                           CustomTextField(
                             controller: steamOilTypeController,
                             label: 'Steam CPO',
                             icon: Icons.functions,
                             isNumeric: true,
-                            isRequired: true,
+                            // isRequired: true,
                           ),
                           CustomTextField(
                             controller: yieldPercentController,
                             label: 'Yield %',
                             icon: Icons.functions,
                             isNumeric: true,
-                            isRequired: true,
+                            // isRequired: true,
                           ),
                         ],
                       ),
@@ -1145,15 +1145,16 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
                   ),
                   onChanged: (value) {
                     setState(() {
-                      String? nonFormFieldsValidationMessage =
-                          _validateNonFormFields();
+                      // String? nonFormFieldsValidationMessage =
+                      //     _validateNonFormFields();
 
-                      if (nonFormFieldsValidationMessage != null) {
-                        showSnackBar(nonFormFieldsValidationMessage, context);
-                      } else if (nonFormFieldsValidationMessage == null &&
-                          _formKey.currentState!.validate()) {
-                        isTicketComplete = value;
-                      }
+                      // if (nonFormFieldsValidationMessage != null) {
+                      //   showSnackBar(nonFormFieldsValidationMessage, context);
+                      // } else if (nonFormFieldsValidationMessage == null &&
+                      //     _formKey.currentState!.validate()) {
+                      //   isTicketComplete = value;
+                      // }
+                       isTicketComplete = value;
                     });
                   },
                   controlAffinity: ListTileControlAffinity.leading,

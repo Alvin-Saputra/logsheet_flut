@@ -345,6 +345,8 @@ class DailyProductionRefineryMySQLService {
     final String shift,
     final String? remark,
     final String id,
+    final bool changeUncompletedTicket,
+    final bool approveAllShift,
   ) async {
     MySQLConnection? connection;
     try {
@@ -357,30 +359,60 @@ class DailyProductionRefineryMySQLService {
       }
       connection = connResult.connection;
       final date = DateTime.now();
+
       String? sql;
       Map<String, dynamic>? params;
 
+      final completedSql = changeUncompletedTicket ? ", is_completed = 1" : "";
+      final shiftCondition = approveAllShift ? "" : " AND shift = :shift";
+
+
+
       if (AppRoles.managerProd.contains(userRole)) {
-        sql =
-            "UPDATE t_daily_production_refinery SET verified_by = :username, verified_status = :status, verified_date = :date, checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id AND flag != 'D'";
+        sql = """
+      UPDATE t_daily_production_refinery 
+      SET 
+        verified_by = :username, 
+        verified_status = :status, 
+        verified_date = :date, 
+        checked_by = :username, 
+        checked_status = :status, 
+        checked_date = :date, 
+        checked_status_remarks = :remark
+        $completedSql
+      WHERE id = :id AND flag != 'D' $shiftCondition
+      """;
+
         params = {
           "username": username,
           "status": status,
           "date": date,
           "remark": remark,
           "id": id,
+          "shift":shift
         };
       } else if (AppRoles.leadProd.contains(userRole)) {
-        sql =
-            "UPDATE t_daily_production_refinery SET prepared_by = :username, prepared_status = :status, prepared_date = :date, prepared_status_remarks = :remark WHERE id = :id AND flag != 'D'";
+        sql = """
+      UPDATE t_daily_production_refinery 
+      SET 
+        prepared_by = :username, 
+        prepared_status = :status, 
+        prepared_date = :date, 
+        prepared_status_remarks = :remark
+        $completedSql
+      WHERE id = :id AND flag != 'D' $shiftCondition
+      """;
+
         params = {
           "username": username,
           "status": status,
           "date": date,
           "remark": remark,
           "id": id,
+          "shift":shift
         };
       }
+
       final result = await connResult.connection!.execute(sql ?? "", params);
       log("Query Sent: $sql");
       log("Affected Rows: ${result.affectedRows}");

@@ -116,6 +116,12 @@ class _MaintenanceChangeProductListPageState
               .where((item) => item.preparedStatus == null)
               .toList();
     }
+    else if ((AppRoles.managerProd.contains(role))) {
+      reportList =
+          changeProductChecklistProvider.uniqueReportList
+              .where((item) => item.preparedStatus == "Approved")
+              .toList();
+    }
 
     return Column(
       children: [

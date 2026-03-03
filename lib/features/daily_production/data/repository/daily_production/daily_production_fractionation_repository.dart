@@ -85,6 +85,8 @@ class DailyProductionFractionationRepository {
     final String shift,
     final String? remark,
     final String id,
+    final bool changeUncompletedTicket,
+    final bool approveAllShift,
   ) async {
     return await _mySQLService.sendApproveRejectTicket(
       username,
@@ -93,6 +95,8 @@ class DailyProductionFractionationRepository {
       shift,
       remark,
       id,
+      changeUncompletedTicket,
+      approveAllShift
     );
   }
 

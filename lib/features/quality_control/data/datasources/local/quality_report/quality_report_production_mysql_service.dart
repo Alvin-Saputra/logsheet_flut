@@ -528,7 +528,7 @@ class QualityReportProductionMySQLService {
           baseQuery = """
             $selectAndJoinClause
             WHERE
-              a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
+              a.plant = :plantCode AND a.prepared_status IS NULL AND (a.flag IS NULL OR a.flag = 'T')
           """;
           params["plantCode"] = plantCode;
           break;

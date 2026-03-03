@@ -80,11 +80,11 @@ class _DeodorizingFiltrationListPageState
     return Consumer<DeodorizingFiltrationProvider>(
       builder: (context, provider, child) {
         List<DeodorizingFiltrationEntity> filteredList =
-            provider.deodorizingList
-                .where(
-                  (e) => e.preparedStatus == null && e.checkedStatus == null,
-                )
-                .toList();
+            provider.deodorizingList;
+                // .where(
+                //   (e) => e.preparedStatus == null && e.checkedStatus == null,
+                // )
+                // .toList();
         if (provider.isLoading) {
           return Center(child: CircularProgressIndicator());
         }

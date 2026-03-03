@@ -117,6 +117,7 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
                       "FRACTIONATION LIST LENGTH: ${provider.productFractionationList.length}",
                     );
                     return DropdownButtonFormField<String>(
+                      isExpanded: true,
                       value: selectedOil,
                       items:
                           provider.productFractionationList.map((oil) {
@@ -125,6 +126,8 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
                               child: Text(
                                 oil.finishGood!,
                                 style: TextStyle(fontSize: 14),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                             );
                           }).toList(),
@@ -242,7 +245,7 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
                   label: 'Flowmeter',
                   icon: Icons.speed,
                   isNumeric: true,
-                  isRequired: true,
+                  
                 ),
                 const SizedBox(height: 12),
                 const Text("Akhir", style: _sectionTextStyle),
@@ -257,7 +260,7 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
                   label: 'Flowmeter',
                   icon: Icons.speed,
                   isNumeric: true,
-                  isRequired: true,
+                  
                 ),
                 const SizedBox(height: 12),
                 const Text("Total", style: _sectionTextStyle),

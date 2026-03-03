@@ -227,14 +227,15 @@ class _DailyProductionRefineryReportListsPageState
                           color: Colors.blueGrey,
                         ),
 
-                        trailing: Text(
+                        trailing: _buildStatusBadge(
                           (ticketClosedStatus == true) ? "Close" : "Open",
-                          style: TextStyle(
-                            color:
-                                (ticketClosedStatus == true)
-                                    ? Colors.red
-                                    : Colors.green,
-                          ),
+                          (ticketClosedStatus == true)
+                              ? Colors.red
+                              : Colors.green,
+                          icon:
+                              (ticketClosedStatus == true)
+                                  ? Icons.lock
+                                  : Icons.lock_open,
                         ),
                         title: Text(
                           "${headerData.id}",
@@ -248,6 +249,12 @@ class _DailyProductionRefineryReportListsPageState
                             itemsInThisShift = shiftMap[shiftKey]!;
 
                             var representativeItem = itemsInThisShift.first;
+                            String approvalText = _getApprovalStatusText(
+                              representativeItem,
+                            );
+                            Color approvalColor = _getApprovalStatusColor(
+                              representativeItem,
+                            );
 
                             return ListTile(
                               leading: const Icon(
@@ -257,16 +264,34 @@ class _DailyProductionRefineryReportListsPageState
                                 Icons.keyboard_double_arrow_right_outlined,
                               ),
                               title: Text('Shift $shiftKey'),
-                              subtitle: Text(
-                                (representativeItem.isCompleted == true)
-                                    ? "Close"
-                                    : "Open",
-                                style: TextStyle(
-                                  color:
-                                      (representativeItem.isCompleted == true)
-                                          ? Colors.red
-                                          : Colors.green,
-                                ),
+                              subtitle: Wrap(
+                                spacing: 8.0, // Jarak horizontal antar badge
+                                runSpacing:
+                                    4.0, // Jarak vertikal jika turun baris
+                                children: [
+                                  // Badge 1: Status Open/Close Shift
+                                  _buildStatusBadge(
+                                    (representativeItem.isCompleted == true)
+                                        ? "Close"
+                                        : "Open",
+                                    (representativeItem.isCompleted == true)
+                                        ? Colors.red
+                                        : Colors.green,
+                                  ),
+
+                                  // Badge 2: Status Approval
+                                  _buildStatusBadge(
+                                    approvalText,
+                                    approvalColor,
+                                    // Tambahkan icon opsional berdasarkan teks
+                                    icon:
+                                        approvalText == "Approved"
+                                            ? Icons.check_circle
+                                            : (approvalText == "Rejected"
+                                                ? Icons.cancel
+                                                : Icons.pending),
+                                  ),
+                                ],
                               ),
                               onTap: () {
                                 Navigator.push(
@@ -359,44 +384,7 @@ class _DailyProductionRefineryReportListsPageState
             onTap: () => _pickDate(context),
           ),
         ),
-        // const SizedBox(width: 10),
-        // Expanded(
-        //   child: DropdownButtonFormField<String?>(
-        //     isExpanded: true,
-        //     value: _tempSelectedShift,
-        //     decoration: InputDecoration(
-        //       filled: true,
-        //       fillColor: const Color(0xFFF0ECE9),
-        //       hintText: "Pilih Shift",
-        //       contentPadding: const EdgeInsets.symmetric(
-        //         horizontal: 16,
-        //         vertical: 14,
-        //       ),
-        //       border: OutlineInputBorder(
-        //         borderRadius: BorderRadius.circular(12),
-        //         borderSide: BorderSide.none,
-        //       ),
-        //       prefixIcon: const Icon(Icons.access_time),
-        //     ),
-        //     items: [
-        //       const DropdownMenuItem<String?>(
-        //         value: "All",
-        //         child: Text('Semua'),
-        //       ),
-        //       ...shifts.map(
-        //         (shift) => DropdownMenuItem<String?>(
-        //           value: shift,
-        //           child: Text(" $shift"),
-        //         ),
-        //       ),
-        //     ],
-        //     onChanged: (value) {
-        //       setState(() {
-        //         _tempSelectedShift = value;
-        //       });
-        //     },
-        //   ),
-        // ),
+
         const SizedBox(width: 10),
         ElevatedButton.icon(
           onPressed: () async {
@@ -425,40 +413,53 @@ class _DailyProductionRefineryReportListsPageState
     );
   }
 
-  String _getStatusText(DailyProductionRefineryEntity report) {
-    if (report.checkedStatus == "Approved") {
-      return "Approved";
-    }
-
-    if (report.checkedStatus == "Rejected") {
-      return "Rejected";
-    }
-    if (report.preparedStatus == "Approved") {
-      return "Prepared ${report.shift}";
-    }
-
-    if (report.preparedStatus == "Rejected") {
-      return "Rejected";
-    }
-    return "Submitted";
+  String _getApprovalStatusText(DailyProductionRefineryEntity item) {
+    if (item.checkedStatus == "Approved") return "Approved";
+    if (item.checkedStatus == "Rejected") return "Rejected";
+    if (item.preparedStatus == "Approved") return "Prepared";
+    if (item.preparedStatus == "Rejected") return "Rejected";
+    if (item.preparedStatus == null) return "Submitted";
+    // Jika null
+    return "Waiting Approval (Lead)";
   }
 
-  Color _getStatusColor(DailyProductionRefineryEntity report) {
-    if (report.checkedStatus == "Approved") {
-      return Colors.green;
-    }
-
-    if (report.checkedStatus == "Rejected") {
+  Color _getApprovalStatusColor(DailyProductionRefineryEntity item) {
+    if (item.checkedStatus == "Approved") return Colors.green;
+    if (item.checkedStatus == "Rejected" || item.preparedStatus == "Rejected") {
       return Colors.red;
     }
-
-    if (report.preparedStatus == "Approved") {
-      return Colors.orangeAccent;
+    if (item.preparedStatus == "Approved") {
+      return Colors.orange;
     }
 
-    if (report.preparedStatus == "Rejected") {
-      return Colors.red;
-    }
-    return Colors.grey;
+    return Colors.blue;
+  }
+
+  Widget _buildStatusBadge(String text, Color color, {IconData? icon}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1), // Latar belakang transparan
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.5)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
