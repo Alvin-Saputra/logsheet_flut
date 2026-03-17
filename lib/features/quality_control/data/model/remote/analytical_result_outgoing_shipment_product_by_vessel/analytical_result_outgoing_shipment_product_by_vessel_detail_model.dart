@@ -13,7 +13,7 @@ class AnalyticalResultOutgoingShipmentProductByVesselDetailModel
   final String jsonIdHdr;
 
   @JsonKey(name: 'palka_s_palka')
-  final int? jsonPalkaSPalka;
+  final String? jsonPalkaSPalka;
 
   @JsonKey(name: 'palka_s_ffa')
   final String? jsonPalkaSFfa;
@@ -31,7 +31,7 @@ class AnalyticalResultOutgoingShipmentProductByVesselDetailModel
   final String? jsonPalkaSMni;
 
   @JsonKey(name: 'palka_p_palka')
-  final int? jsonPalkaPPalka;
+  final String? jsonPalkaPPalka; 
 
   @JsonKey(name: 'palka_p_ffa')
   final String? jsonPalkaPFfa;

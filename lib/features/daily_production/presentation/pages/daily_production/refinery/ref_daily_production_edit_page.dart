@@ -79,7 +79,7 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
 
   final totalOilController = TextEditingController();
   final totalSteamController = TextEditingController();
-  final steamOilTypeController = TextEditingController();
+  final steamCpoController = TextEditingController();
   final yieldPercentController = TextEditingController();
 
   // Bleaching Earth
@@ -137,7 +137,7 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
 
     totalOilController.dispose();
     totalSteamController.dispose();
-    steamOilTypeController.dispose();
+    steamCpoController.dispose();
     yieldPercentController.dispose();
   }
 
@@ -219,6 +219,27 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
     setState(() => isLoading = true);
     await Future.delayed(const Duration(milliseconds: 600));
     setState(() => isLoading = false);
+  }
+
+   void _calculateSteamCpo() {
+    // Mengambil nilai teks dan memastikan format koma/titik aman untuk di-parse
+    final totalCpoText = totalOilController.text.replaceAll(',', '.');
+    final totalSteamText = totalSteamController.text.replaceAll(',', '.');
+
+    if (totalCpoText.isNotEmpty && totalSteamText.isNotEmpty) {
+      final totalCpo = double.tryParse(totalCpoText) ?? 0.0;
+      final totalSteam = double.tryParse(totalSteamText) ?? 0.0;
+
+      if (totalCpo > 0) {
+        final steamCpo = totalSteam / totalCpo;
+
+        steamCpoController.text = steamCpo.toStringAsFixed(3);
+      } else {
+        steamCpoController.clear();
+      }
+    } else {
+      steamCpoController.clear();
+    }
   }
 
   void _prepopulateData() {
@@ -350,7 +371,7 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
       steamItem = firstItem.uuItem ?? '';
       totalOilController.text = firstItem.uuTotalCpo?.toString() ?? "";
       totalSteamController.text = firstItem.uuTotalSteam?.toString() ?? "";
-      steamOilTypeController.text = firstItem.uuSteamCpo?.toString() ?? "";
+      steamCpoController.text = firstItem.uuSteamCpo?.toString() ?? "";
       yieldPercentController.text = firstItem.uuYieldPercent?.toString() ?? "";
     });
   }
@@ -378,6 +399,8 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
       // Jika kosong (Mode Insert Baru), tambah 1 baris kosong
       _addNewRow();
     }
+     totalOilController.addListener(_calculateSteamCpo);
+    totalSteamController.addListener(_calculateSteamCpo);
   }
 
   Future<void> showSaveConfirmationDialog(
@@ -1110,7 +1133,7 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
                             // isRequired: true,
                           ),
                           CustomTextField(
-                            controller: steamOilTypeController,
+                            controller: steamCpoController,
                             label: 'Steam CPO',
                             icon: Icons.functions,
                             isNumeric: true,
@@ -1384,7 +1407,7 @@ class _DailyProductionPageState extends State<RefDailyProductionEditPage> {
                   budgetValue != null ? double.tryParse(budgetValue!) : null,
               uuTotalCpo: parseDouble(totalOilController),
               uuTotalSteam: parseDouble(totalSteamController),
-              uuSteamCpo: parseDouble(steamOilTypeController),
+              uuSteamCpo: parseDouble(steamCpoController),
               uuYieldPercent: parseDouble(yieldPercentController),
               entryBy: currentUser?.username,
               entryDate: DateTime.now(),

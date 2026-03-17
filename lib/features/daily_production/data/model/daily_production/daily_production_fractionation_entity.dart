@@ -20,7 +20,7 @@ class DailyProductionFractionationEntity {
   final int? oilTypeRmAwalFlowmeter;
   final TimeOfDay? oilTypeRmAkhirJam;
   final int? oilTypeRmAkhirFlowmeter;
-  final int? oilTypeRmTotal;
+  final double? oilTypeRmTotal;
 
   final String? oilTypeFgsId;
   final String? oilTypeFgsName;
@@ -29,7 +29,7 @@ class DailyProductionFractionationEntity {
   final int? oilTypeFgsAwalFlowmeter;
   final TimeOfDay? oilTypeFgsAkhirJam;
   final int? oilTypeFgsAkhirFlowmeter;
-  final int? oilTypeFgsTotal;
+  final double? oilTypeFgsTotal;
   final String? oilTypeFgsToTank;
 
   final String? oilTypeFghId;
@@ -210,7 +210,7 @@ class DailyProductionFractionationEntity {
       oilTypeRmAwalFlowmeter: parseInt(map['oil_type_rm_awal_flowmeter']),
       oilTypeRmAkhirJam: parseTimeOfDay(map['oil_type_rm_akhir_jam']),
       oilTypeRmAkhirFlowmeter: parseInt(map['oil_type_rm_akhir_flowmeter']),
-      oilTypeRmTotal: parseInt(map['oil_type_rm_total']),
+      oilTypeRmTotal: parseDouble(map['oil_type_rm_total']),
       oilTypeFgsId: map['oil_type_fgs'] as String?,
       oilTypeFgsName: map['oil_type_fgs_name'] as String?,
       oilTypeFgsCr: map['oil_type_fgs_cr'] as String?,
@@ -218,7 +218,7 @@ class DailyProductionFractionationEntity {
       oilTypeFgsAwalFlowmeter: parseInt(map['oil_type_fgs_awal_flowmeter']),
       oilTypeFgsAkhirJam: parseTimeOfDay(map['oil_type_fgs_akhir_jam']),
       oilTypeFgsAkhirFlowmeter: parseInt(map['oil_type_fgs_akhir_flowmeter']),
-      oilTypeFgsTotal: parseInt(map['oil_type_fgs_total']),
+      oilTypeFgsTotal: parseDouble(map['oil_type_fgs_total']),
       oilTypeFgsToTank: map['oil_type_fgs_to_tank'] as String?,
       oilTypeFghId: map['oil_type_fgh'] as String?,
       oilTypeFghName: map['oil_type_fgh_name'] as String?,

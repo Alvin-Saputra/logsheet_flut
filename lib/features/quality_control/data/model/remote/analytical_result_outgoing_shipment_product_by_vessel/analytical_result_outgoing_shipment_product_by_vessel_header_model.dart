@@ -173,7 +173,7 @@ class AnalyticalResultOutgoingShipmentProductByVesselHeaderModel
          updatedDate: formatStringtoDate(jsonUpdatedDate ?? '', 'yyyy-MM-dd'),
          formNo: jsonFormNo,
          dateIssued: formatStringtoDate(jsonDateIssued ?? '', 'yyyy-MM-dd'),
-         revisionNo: jsonRevisionNo.toString(),
+         revisionNo: jsonRevisionNo?.toString(),
          revisionDate: formatStringtoDate(jsonRevisionDate ?? '', 'yyyy-MM-dd'),
          details: jsonDetail ?? [],
        );

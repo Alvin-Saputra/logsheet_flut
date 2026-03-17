@@ -83,7 +83,7 @@ class _DailyProductionPageState
 
   final totalOilController = TextEditingController();
   final totalSteamController = TextEditingController();
-  final steamOilTypeController = TextEditingController();
+  final steamCpoController = TextEditingController();
   final yieldPercentController = TextEditingController();
 
   // Bleaching Earth
@@ -137,7 +137,7 @@ class _DailyProductionPageState
 
     totalOilController.dispose();
     totalSteamController.dispose();
-    steamOilTypeController.dispose();
+    steamCpoController.dispose();
     yieldPercentController.dispose();
   }
 
@@ -210,6 +210,27 @@ class _DailyProductionPageState
     setState(() => isLoading = true);
     await Future.delayed(const Duration(milliseconds: 600));
     setState(() => isLoading = false);
+  }
+
+  void _calculateSteamCpo() {
+    // Mengambil nilai teks dan memastikan format koma/titik aman untuk di-parse
+    final totalCpoText = totalOilController.text.replaceAll(',', '.');
+    final totalSteamText = totalSteamController.text.replaceAll(',', '.');
+
+    if (totalCpoText.isNotEmpty && totalSteamText.isNotEmpty) {
+      final totalCpo = double.tryParse(totalCpoText) ?? 0.0;
+      final totalSteam = double.tryParse(totalSteamText) ?? 0.0;
+
+      if (totalCpo > 0) {
+        final steamCpo = totalSteam / totalCpo;
+
+        steamCpoController.text = steamCpo.toStringAsFixed(3);
+      } else {
+        steamCpoController.clear();
+      }
+    } else {
+      steamCpoController.clear();
+    }
   }
 
   bool get _isAddShiftMode => widget.isFromAddNewShift && widget.entity != null;
@@ -305,6 +326,8 @@ class _DailyProductionPageState
       selectedRefineryMachine = widget.entity?.workCenter;
     }
     _syncAddShiftContext();
+    totalOilController.addListener(_calculateSteamCpo);
+    totalSteamController.addListener(_calculateSteamCpo);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _fetchInitialDataIfNeeded();
@@ -1062,7 +1085,7 @@ class _DailyProductionPageState
                           isNumeric: true,
                         ),
                         CustomTextField(
-                          controller: steamOilTypeController,
+                          controller: steamCpoController,
                           label: 'Steam CPO',
                           icon: Icons.functions,
                           isNumeric: true,
@@ -1333,7 +1356,7 @@ class _DailyProductionPageState
                   budgetValue != null ? double.tryParse(budgetValue!) : null,
               uuTotalCpo: parseDouble(totalOilController),
               uuTotalSteam: parseDouble(totalSteamController),
-              uuSteamCpo: parseDouble(steamOilTypeController),
+              uuSteamCpo: parseDouble(steamCpoController),
               uuYieldPercent: parseDouble(yieldPercentController),
               entryBy: currentUser?.username,
               entryDate: DateTime.now(),

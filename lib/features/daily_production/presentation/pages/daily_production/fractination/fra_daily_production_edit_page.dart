@@ -1282,7 +1282,7 @@ class _DailyProductionFractionPageState
               oilTypeRmAwalFlowmeter: parseInt(item.flowAwalRm.text),
               oilTypeRmAkhirJam: item.timeAkhirRm,
               oilTypeRmAkhirFlowmeter: parseInt(item.flowAkhirRm.text),
-              oilTypeRmTotal: parseInt(item.flowTotalRm.text),
+              oilTypeRmTotal: parseDouble(item.flowTotalRm),
 
               oilTypeFgsId: item.selectedOilFg,
               oilTypeFgsName:
@@ -1300,7 +1300,7 @@ class _DailyProductionFractionPageState
               oilTypeFgsAwalFlowmeter: parseInt(item.flowAwalFg.text),
               oilTypeFgsAkhirJam: item.timeAkhirFg,
               oilTypeFgsAkhirFlowmeter: parseInt(item.flowAkhirFg.text),
-              oilTypeFgsTotal: parseInt(item.flowTotalFg.text),
+              oilTypeFgsTotal: parseDouble(item.flowTotalFg),
               oilTypeFgsToTank: item.selectedTankFg,
               oilTypeFghName:
                   (item.selectedOilBp != null)
